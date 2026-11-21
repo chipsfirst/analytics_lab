@@ -1,0 +1,19 @@
+{
+  "name": "Аналитика-лаб",
+  "short_name": "Аналитика",
+  "description": "Учебник, тесты, тренажёры, демонстрации и игры по аналитике данных, статистике, теории игр, вероятности, SQL и Excel.",
+  "lang": "ru",
+  "start_url": ".",
+  "scope": ".",
+  "display": "standalone",
+  "background_color": "#f5f6f8",
+  "theme_color": "#2f5bd7",
+  "icons": [
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}
