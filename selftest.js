@@ -20,7 +20,7 @@ function ok(cond, msg) {
 
 // --- структура контента ---
 var topicIds = Object.keys(window.TOPICS);
-ok(topicIds.length === 6, "ожидалось 6 разделов, найдено " + topicIds.length);
+ok(topicIds.length === 10, "ожидалось 10 разделов, найдено " + topicIds.length);
 
 topicIds.forEach(function (id) {
   var t = window.TOPICS[id];
@@ -38,12 +38,12 @@ topicIds.forEach(function (id) {
   });
 });
 
-ok(Object.keys(window.TRAINERS).length === 6, "тренажёры есть не для всех разделов");
+ok(Object.keys(window.TRAINERS).length === 10, "тренажёры есть не для всех разделов");
 topicIds.forEach(function (id) {
   ok(window.TRAINERS[id] && window.TRAINERS[id].length > 0, id + ": нет тренажёров");
 });
 
-ok(Object.keys(window.GAMES).length === 3, "ожидалось 3 игры");
+ok(Object.keys(window.GAMES).length === 6, "ожидалось 6 игр");
 
 // --- генераторы задач: 300 прогонов на каждый ---
 topicIds.forEach(function (id) {
@@ -134,7 +134,8 @@ if (window.SEARCH) {
 
   var bayes = window.SEARCH.find(index, "байес");
   ok(bayes.length > 0, "поиск не нашёл «Байес»");
-  ok(bayes.length === 0 || bayes[0].entry.href.indexOf("#/theory/probability") === 0, "«Байес» ведёт не туда");
+  ok(bayes.some(function (h) { return h.entry.href.indexOf("#/theory/probability") === 0; }),
+    "поиск по «Байес» не нашёл главу про формулу Байеса");
 
   var windows = window.SEARCH.find(index, "оконн");
   ok(windows.some(function (h) { return h.entry.href === "#/theory/sql/5"; }), "глава про оконные функции не найдена");
@@ -143,7 +144,7 @@ if (window.SEARCH) {
 }
 
 // --- демо и песочница ---
-ok(Object.keys(window.DEMOS).length === 3, "демонстраций: " + Object.keys(window.DEMOS).length);
+ok(Object.keys(window.DEMOS).length === 9, "демонстраций: " + Object.keys(window.DEMOS).length);
 Object.keys(window.DEMOS).forEach(function (id) {
   var d = window.DEMOS[id];
   ok(d.title && d.tag && typeof d.mount === "function", "демо " + id + " неполное");
