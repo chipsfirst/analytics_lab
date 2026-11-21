@@ -6,6 +6,14 @@
   var cleanup = null;
   var quiz = null;
   var trainer = null;
+  var keyHandler = null;
+
+  // один обработчик клавиатуры на всю страницу: тесты меняют карточку целиком
+  function setKeys(fn) {
+    if (keyHandler) document.removeEventListener("keydown", keyHandler);
+    keyHandler = fn;
+    if (fn) document.addEventListener("keydown", fn);
+  }
 
   var NAV = [
     ["#/", "Главная"],
@@ -54,17 +62,35 @@
     return '<p class="meta">' + parts.join(" · ") + "</p>";
   }
 
-  function topicCard(id) {
+  function topicCard(id, cta) {
     var t = window.TOPICS[id];
+    var links = cta
+      ? '<a class="btn primary" href="#/' + cta.kind + "/" + id + '">' + esc(cta.label) + "</a>"
+      : '<a class="btn" href="#/theory/' + id + '">Учебник</a>' +
+        '<a class="btn" href="#/quiz/' + id + '">Тест</a>' +
+        '<a class="btn" href="#/trainer/' + id + '">Тренажёр</a>';
     return '<div class="card">' +
       "<h3>" + esc(t.title) + "</h3>" +
       "<p>" + esc(t.tag) + "</p>" +
       progressLine(id) +
-      '<div class="links">' +
-        '<a class="btn" href="#/theory/' + id + '">Учебник</a>' +
-        '<a class="btn" href="#/quiz/' + id + '">Тест</a>' +
-        '<a class="btn" href="#/trainer/' + id + '">Тренажёр</a>' +
-      "</div></div>";
+      '<div class="links">' + links + "</div></div>";
+  }
+
+  function entryGrid(registry, prefix, label, primary) {
+    return '<div class="grid">' + Object.keys(registry).map(function (id) {
+      var item = registry[id];
+      return '<div class="card"><h3>' + esc(item.title) + "</h3><p>" + esc(item.tag) + "</p>" +
+        '<div class="links"><a class="btn' + (primary ? " primary" : "") + '" href="' + prefix + id + '">' +
+        esc(label) + "</a></div></div>";
+    }).join("") + "</div>";
+  }
+
+  function continueHref() {
+    var l = window.PROGRESS.last();
+    if (l && window.TOPICS[l.id] && window.TOPICS[l.id].chapters[l.i]) {
+      return "#/theory/" + l.id + "/" + l.i;
+    }
+    return "#/theory";
   }
 
   function progressBlock() {
@@ -76,7 +102,7 @@
       '<div class="stat"><div class="k">лучшие ответы в тестах</div><div class="v">' +
         s.quizBest + " / " + s.quizTotal + "</div></div>" +
       "</div>" +
-      '<div class="btn-row"><a class="btn" href="#/theory">Продолжить</a>' +
+      '<div class="btn-row"><a class="btn" href="' + continueHref() + '">Продолжить</a>' +
       '<button class="btn" id="resetProgress">Сбросить прогресс</button></div></div>';
   }
 
@@ -90,35 +116,21 @@
       "</div>" +
       progressBlock() +
       "<h2>Разделы</h2>" +
-      '<div class="grid">' + topicIds().map(topicCard).join("") + "</div>" +
+      '<div class="grid">' + topicIds().map(function (id) { return topicCard(id); }).join("") + "</div>" +
       "<h2>Демонстрации</h2>" +
-      '<div class="grid">' + Object.keys(window.DEMOS).map(function (id) {
-        var d = window.DEMOS[id];
-        return '<div class="card"><h3>' + esc(d.title) + "</h3><p>" + esc(d.tag) + "</p>" +
-          '<div class="links"><a class="btn" href="#/demos/' + id + '">Открыть</a></div></div>';
-      }).join("") + "</div>" +
+      entryGrid(window.DEMOS, "#/demos/", "Открыть") +
       "<h2>Игры</h2>" +
-      '<div class="grid">' + Object.keys(window.GAMES).map(function (id) {
-        var g = window.GAMES[id];
-        return '<div class="card"><h3>' + esc(g.title) + "</h3><p>" + esc(g.tag) + "</p>" +
-          '<div class="links"><a class="btn" href="#/games/' + id + '">Играть</a></div></div>';
-      }).join("") + "</div>" +
+      entryGrid(window.GAMES, "#/games/", "Играть") +
       '<div class="note"><b>Практика SQL</b>В разделе SQL есть <a href="#/sandbox">песочница</a>: ' +
       "настоящая база в браузере, можно писать любые запросы.</div>";
   }
 
   function listPage(kind, title, lead, label) {
-    return "<h1>" + escapeHtml(title) + "</h1><p class=\"lead\">" + lead + "</p>" +
-      '<div class="grid" style="margin-top:20px">' + topicIds().map(function (id) {
-        var t = window.TOPICS[id];
-        return '<div class="card"><h3>' + esc(t.title) + "</h3><p>" + esc(t.tag) + "</p>" +
-          progressLine(id) +
-          '<div class="links"><a class="btn primary" href="#/' + kind + "/" + id + '">' + label + "</a></div></div>";
+    return "<h1>" + esc(title) + "</h1><p class=\"lead\">" + lead + "</p>" +
+      '<div class="grid">' + topicIds().map(function (id) {
+        return topicCard(id, { kind: kind, label: label });
       }).join("") + "</div>";
   }
-
-  // заголовки страниц задаются в коде, но экранируем на всякий случай
-  function escapeHtml(s) { return esc(s); }
 
   function theory(id, chapterIdx) {
     var t = window.TOPICS[id];
@@ -145,12 +157,26 @@
       "</aside><article>" + body + "</article></div>";
   }
 
+  function wrapTables(root) {
+    Array.prototype.forEach.call(root.querySelectorAll("article table"), function (t) {
+      if (t.parentNode.classList.contains("table-wrap")) return;
+      var box = document.createElement("div");
+      box.className = "table-wrap";
+      t.parentNode.insertBefore(box, t);
+      box.appendChild(t);
+    });
+  }
+
   function bindChapters() {
     var p = path();
+    wrapTables(app);
 
     if (p[0] === "theory" && p[1] && p[2] && /^\d+$/.test(p[2])) {
       var target = document.getElementById("ch-" + p[2]);
-      if (target) target.scrollIntoView({ behavior: "instant", block: "start" });
+      if (target) {
+        window.PROGRESS.setLast(p[1], Number(p[2]));
+        target.scrollIntoView({ behavior: "instant", block: "start" });
+      }
     }
 
     Array.prototype.forEach.call(app.querySelectorAll("a[data-ch]"), function (a) {
@@ -159,6 +185,7 @@
         var i = a.getAttribute("data-ch");
         var s = document.getElementById("ch-" + i);
         if (s) s.scrollIntoView();
+        window.PROGRESS.setLast(p[1], Number(i));
         try { history.replaceState(null, "", "#/theory/" + p[1] + "/" + i); } catch (err) {}
       });
     });
@@ -168,6 +195,7 @@
         var i = Number(b.getAttribute("data-read"));
         var now = !window.PROGRESS.isRead(p[1], i);
         window.PROGRESS.setRead(p[1], i, now);
+        window.PROGRESS.setLast(p[1], i);
         b.textContent = now ? "Прочитано" : "Отметить прочитанной";
         b.className = "btn small" + (now ? " is-read" : "");
         b.setAttribute("aria-pressed", String(now));
@@ -240,6 +268,10 @@
 
       var rev = document.getElementById("review");
       if (rev) rev.addEventListener("click", function () { startQuiz(quiz.id, review); renderQuiz(); });
+
+      setKeys(function (e) {
+        if (e.key === "Enter") { var a = document.getElementById("again"); if (a) a.click(); }
+      });
       return;
     }
 
@@ -281,6 +313,22 @@
     var next = document.getElementById("next");
     if (next) next.addEventListener("click", function () {
       quiz.i++; quiz.picked = -1; renderQuiz();
+    });
+
+    setKeys(function (e) {
+      if (e.altKey || e.ctrlKey || e.metaKey) return;
+      if (quiz.picked >= 0) {
+        if (e.key === "Enter") {
+          var n = document.getElementById("next");
+          if (n) { e.preventDefault(); n.click(); }
+        }
+        return;
+      }
+      var k = parseInt(e.key, 10);
+      if (k >= 1 && k <= quiz.qs[quiz.i].options.length) {
+        var b = app.querySelector('.option[data-k="' + (k - 1) + '"]');
+        if (b) { e.preventDefault(); b.click(); }
+      }
     });
   }
 
@@ -373,11 +421,7 @@
 
   function gamesList() {
     return "<h1>Игры</h1><p class=\"lead\">Короткие интерактивные модели: они показывают, где интуиция ошибается.</p>" +
-      '<div class="grid" style="margin-top:20px">' + Object.keys(window.GAMES).map(function (id) {
-        var g = window.GAMES[id];
-        return '<div class="card"><h3>' + esc(g.title) + "</h3><p>" + esc(g.tag) + "</p>" +
-          '<div class="links"><a class="btn primary" href="#/games/' + id + '">Играть</a></div></div>';
-      }).join("") + "</div>";
+      entryGrid(window.GAMES, "#/games/", "Играть", true);
   }
 
   function mountPage(registry, id, rootId, listHref, listName, kind) {
@@ -393,12 +437,7 @@
 
   function demosList() {
     return "<h1>Демонстрации</h1><p class=\"lead\">Интерактивные модели: крутите параметры и смотрите, " +
-      "как меняется результат.</p>" +
-      '<div class="grid" style="margin-top:20px">' + Object.keys(window.DEMOS).map(function (id) {
-        var d = window.DEMOS[id];
-        return '<div class="card"><h3>' + esc(d.title) + "</h3><p>" + esc(d.tag) + "</p>" +
-          '<div class="links"><a class="btn primary" href="#/demos/' + id + '">Открыть</a></div></div>';
-      }).join("") + "</div>";
+      "как меняется результат.</p>" + entryGrid(window.DEMOS, "#/demos/", "Открыть", true);
   }
 
   function sandboxPage() {
@@ -457,6 +496,7 @@
 
   function render() {
     if (cleanup) { try { cleanup(); } catch (e) {} cleanup = null; }
+    setKeys(null);
     var p = path();
     renderNav();
     window.scrollTo(0, 0);
@@ -508,6 +548,20 @@
       e.preventDefault();
       var v = document.getElementById("searchInput").value.trim();
       location.hash = v ? "#/search/" + encodeURIComponent(v) : "#/search";
+    });
+  }
+
+  var themeBtn = document.getElementById("themeBtn");
+  if (themeBtn) {
+    var drawTheme = function () {
+      themeBtn.textContent = document.documentElement.dataset.theme === "dark" ? "Светлая" : "Тёмная";
+    };
+    drawTheme();
+    themeBtn.addEventListener("click", function () {
+      var next = document.documentElement.dataset.theme === "dark" ? "light" : "dark";
+      document.documentElement.dataset.theme = next;
+      try { localStorage.setItem("theme", next); } catch (e) {}
+      drawTheme();
     });
   }
 

@@ -6,6 +6,15 @@
 <title>Аналитика-лаб: учебник, тесты, тренажёры</title>
 <meta name="description" content="Учебник, тесты, тренажёры, демонстрации и игры по аналитике данных, статистике, теории игр и теории вероятностей, SQL и Excel.">
 <meta name="theme-color" content="#2f5bd7">
+<script>
+(function () {
+  try {
+    var saved = localStorage.getItem("theme");
+    var dark = matchMedia("(prefers-color-scheme: dark)").matches;
+    document.documentElement.dataset.theme = saved || (dark ? "dark" : "light");
+  } catch (e) {}
+})();
+</script>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="style.css">
@@ -19,6 +28,7 @@
       <label class="sr-only" for="searchInput">Поиск по сайту</label>
       <input type="search" id="searchInput" placeholder="Поиск" autocomplete="off">
     </form>
+    <button class="btn small theme-btn" id="themeBtn" type="button" aria-label="Переключить тему">Тема</button>
   </div>
 </header>
 <main id="app"></main>
@@ -29,6 +39,16 @@
 </footer>
 <script src="vendor/sql-wasm.js"></script>
 <script src="data.js"></script>
+<script src="topics/analytics.js"></script>
+<script src="topics/statistics.js"></script>
+<script src="topics/gametheory.js"></script>
+<script src="topics/probability.js"></script>
+<script src="topics/sql.js"></script>
+<script src="topics/excel.js"></script>
+<script src="topics/python.js"></script>
+<script src="topics/regression.js"></script>
+<script src="topics/classification.js"></script>
+<script src="topics/ml.js"></script>
 <script src="trainers.js"></script>
 <script src="games.js"></script>
 <script src="progress.js"></script>

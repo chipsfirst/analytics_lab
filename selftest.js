@@ -3,6 +3,8 @@
 
 global.window = global;
 require("./data.js");
+["analytics", "statistics", "gametheory", "probability", "sql", "excel", "python", "regression", "classification", "ml"]
+  .forEach(function (id) { require("./topics/" + id + ".js"); });
 require("./trainers.js");
 require("./games.js");
 require("./progress.js");

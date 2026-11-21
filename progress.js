@@ -7,14 +7,14 @@
 
   var KEY = "analytics-lab-progress-v1";
 
-  function empty() { return { chapters: {}, quizzes: {} }; }
+  function empty() { return { chapters: {}, quizzes: {}, last: null }; }
 
   function load() {
     try {
       var raw = window.localStorage.getItem(KEY);
       if (!raw) return empty();
       var p = JSON.parse(raw);
-      return { chapters: p.chapters || {}, quizzes: p.quizzes || {} };
+      return { chapters: p.chapters || {}, quizzes: p.quizzes || {}, last: p.last || null };
     } catch (e) {
       return empty();
     }
@@ -66,6 +66,11 @@
     },
 
     clear: function () { data = empty(); save(); },
+
+    // последняя открытая глава: к ней ведёт кнопка «Продолжить»
+    setLast: function (topic, i) { data.last = { id: topic, i: i }; save(); },
+
+    last: function () { return data.last; },
 
     summary: function (topics) {
       var chapters = 0, totalChapters = 0, best = 0, total = 0;
