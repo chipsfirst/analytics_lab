@@ -26,6 +26,7 @@ FILES = [
     "js/topics/useful.js",
     "js/core/tracks.js",
     "js/core/cheatsheet.js",
+    "js/core/glossary.js",
     "js/features/trainers.js",
     "js/features/games.js",
     "js/core/progress.js",

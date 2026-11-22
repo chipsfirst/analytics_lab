@@ -41,6 +41,12 @@
           });
         });
       });
+      (window.GLOSSARY || []).forEach(function (g) {
+        out.push({
+          topic: "glossary", topicTitle: "Словарь", kind: "Термин", title: g.term,
+          text: strip(g.def) + " " + strip((g.aliases || []).join(" ")), href: "#/glossary/" + g.id
+        });
+      });
       return out;
     },
 

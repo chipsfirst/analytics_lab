@@ -8,6 +8,7 @@ require("./js/data.js");
 require("./js/features/trainers.js");
 require("./js/features/games.js");
 require("./js/core/progress.js");
+require("./js/core/glossary.js");
 require("./js/core/search.js");
 require("./js/features/demos.js");
 require("./js/sandboxes/sql.js");
@@ -172,7 +173,7 @@ ok(typeof window.SEARCH === "object", "SEARCH не загрузился");
 if (window.SEARCH) {
   var index = window.SEARCH.index(window.TOPICS);
   ok(index.length > 25, "индекс слишком мал: " + index.length);
-  ok(index.every(function (e) { return /^#\/(theory\/[a-z]+\/\d+|quiz\/[a-z]+)$/.test(e.href); }),
+  ok(index.every(function (e) { return /^#\/(theory\/[a-z]+\/\d+|quiz\/[a-z]+|glossary\/[a-z0-9-]+)$/.test(e.href); }),
     "в индексе есть ссылка неверного вида");
 
   var bayes = window.SEARCH.find(index, "байес");
