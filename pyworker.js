@@ -57,6 +57,14 @@ self.onmessage = function (e) {
         pyodide = p;
         pyodide.setStdout({ batched: function (text) { send({ type: "stdout", text: text }); } });
         pyodide.setStderr({ batched: function (text) { send({ type: "stderr", text: text }); } });
+
+        // Изоляция: после загрузки ядра сеть и скрипты из кода пользователя недоступны.
+        var blocked = function () { throw new Error("Сеть в песочнице отключена"); };
+        self.fetch = blocked;
+        self.XMLHttpRequest = blocked;
+        self.WebSocket = blocked;
+        self.importScripts = blocked;
+
         send({ type: "ready" });
       })
       .catch(function (err) {

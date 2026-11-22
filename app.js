@@ -149,8 +149,16 @@
         c.html + "</section>";
     }).join("");
 
+    var tiles = t.chapters.map(function (c, i) {
+      var read = window.PROGRESS.isRead(id, i);
+      return '<a class="chapter-tile' + (read ? " read" : "") + '" href="#/theory/' + id + "/" + i + '">' +
+        '<span class="tile-num">' + (i + 1) + "</span>" +
+        '<span class="tile-title">' + esc(c.title) + "</span></a>";
+    }).join("");
+
     return '<p><a href="#/theory">&larr; все разделы</a></p>' +
       "<h1>" + esc(t.title) + "</h1><p class=\"lead\">" + esc(t.lead) + "</p>" +
+      '<div class="chapter-tiles">' + tiles + "</div>" +
       '<div class="reader reader-top"><aside class="toc"><b>Главы</b><ol>' + toc + "</ol>" +
       '<div class="btn-row"><a class="btn" href="#/quiz/' + id + '">Тест</a>' +
       '<a class="btn" href="#/trainer/' + id + '">Тренажёр</a></div>' +

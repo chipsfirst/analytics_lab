@@ -44,17 +44,20 @@
         '<button class="btn" id="nbAdd">+ ячейка</button>' +
         '<button class="btn" id="nbClear">Очистить</button>' +
         '<button class="btn" id="nbRetry" hidden>Повторить</button>' +
+        '<button class="btn" id="nbStop" hidden>Остановить</button>' +
         '<span class="nb-status" id="nbStatus">Загрузка Python…</span>' +
       "</div>" +
       '<div class="nb-progress" id="nbProgress"><div></div></div>' +
       '<div class="nb-cells" id="nbCells"></div>' +
       '<p class="demo-note">Первый запуск скачивает около 10 МБ — ядро Python. Дальше браузер держит его в памяти вкладки. ' +
-      "Ввод с клавиатуры (input) не поддерживается; если цикл зациклился, закройте вкладку — состояние не сохранится.</p>";
+      "Код выполняется в отдельном воркере: страница, localStorage и сеть ему недоступны, зацикливание останавливает кнопка «Остановить», " +
+      "а ввод с клавиатуры (input) не поддерживается. Это изоляция от страницы, но не полноценная песочница безопасности — не запускайте сюда чужой код.</p>";
 
     var cellsBox = root.querySelector("#nbCells");
     var status = root.querySelector("#nbStatus");
     var bar = root.querySelector("#nbProgress");
     var retry = root.querySelector("#nbRetry");
+    var stop = root.querySelector("#nbStop");
 
     function setStatus(text, bad) {
       status.textContent = text;
@@ -186,6 +189,7 @@
           ready = true;
           if (bar) bar.classList.add("done");
           if (retry) retry.hidden = true;
+          if (stop) stop.hidden = false;
           setStatus("Python готов");
           return;
         }
@@ -194,6 +198,7 @@
           running = false;
           if (bar) bar.classList.add("done");
           if (retry) retry.hidden = false;
+          if (stop) stop.hidden = true;
           setStatus("Не удалось загрузить Python: " + (msg.text || "неизвестная ошибка"), true);
           return;
         }
@@ -227,6 +232,18 @@
     }
 
     if (retry) retry.addEventListener("click", startWorker);
+
+    if (stop) stop.addEventListener("click", function () {
+      if (worker) { try { worker.terminate(); } catch (e) {} }
+      worker = null;
+      ready = false;
+      running = false;
+      fatal = false;
+      if (bar) bar.classList.remove("done");
+      stop.hidden = true;
+      startWorker();
+    });
+
     startWorker();
 
     return function cleanup() {
