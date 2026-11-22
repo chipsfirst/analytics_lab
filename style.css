@@ -66,6 +66,9 @@ html { scroll-behavior: smooth; }
 
 body {
   margin: 0;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
   background: var(--bg);
   color: var(--ink);
   font: 14.5px/1.62 var(--mono);
@@ -167,6 +170,8 @@ nav a.active { background: var(--accent-soft); color: var(--accent); }
 :root[data-theme="dark"] .icon-sun { display: block; }
 
 main {
+  flex: 1 0 auto;
+  width: 100%;
   max-width: 980px;
   margin: 0 auto;
   padding: 24px 20px 48px;
@@ -615,13 +620,24 @@ p a { text-decoration: underline; text-underline-offset: 2px; }
 /* Компактная главная: весь экран без прокрутки на ноутбуке. */
 .hero { padding: 0 0 6px; }
 .hero h1 { font-size: 26px; margin-bottom: 4px; }
-.hero .lead { margin-bottom: 6px; }
+.hero .lead { margin-bottom: 2px; }
 .hero .btn-row { margin-top: 6px; gap: 8px; }
 .hero .btn { margin: 4px 0; padding: 7px 12px; font-size: 13px; }
-.progress-card { margin: 8px 0 2px; padding: 10px 12px; }
+.progress-card { margin: 6px 0 2px; padding: 10px 12px; }
 .progress-card .btn { margin: 4px 0; padding: 6px 10px; font-size: 12.5px; }
-.home-links { margin-top: 8px; }
+.home-links { margin-top: 6px; }
 .home-link { padding: 8px 10px; }
 .home-hint { margin: 4px 0 0; font-size: 12px; line-height: 1.2; }
-.foot { margin-top: 8px; }
+.foot { margin-top: 2px; }
 .foot-inner { padding: 9px 20px; }
+
+.home-actions { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin-top: 6px; }
+.home-action { display: block; padding: 8px 11px; border: 1px solid var(--line); border-radius: 10px; background: var(--panel); color: var(--ink); }
+.home-action:hover { border-color: var(--accent); text-decoration: none; }
+.home-action b { display: block; font-size: 13.5px; margin-bottom: 1px; }
+.home-action span { display: block; font-size: 12px; color: var(--muted); }
+.home-action.primary { background: var(--accent-soft); border-color: var(--accent); }
+.home-tools { display: flex; flex-wrap: wrap; align-items: center; gap: 3px 12px; margin-top: 4px; font-size: 12.5px; color: var(--muted); }
+.home-tools a { color: var(--muted); text-decoration: underline; }
+.home-tools a:hover { color: var(--accent); }
+@media (max-width: 640px) { .home-actions { grid-template-columns: 1fr; } }

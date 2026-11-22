@@ -208,16 +208,25 @@
   }
 
   function home() {
+    var topicCount = Object.keys(window.TOPICS).length;
+    var chapterCount = Object.keys(window.TOPICS).reduce(function (n, id) {
+      return n + window.TOPICS[id].chapters.length;
+    }, 0);
     return '<div class="hero">' +
-      "<h1>Аналитика, статистика, теория игр и вероятность</h1>" +
-      '<p class="lead">Короткий учебник, тесты и тренажёры. Без регистрации: прогресс хранится в браузере.</p>' +
-      '<div class="btn-row"><a class="btn primary" href="#/theory">Начать с теории</a>' +
-      '<a class="btn" href="#/path">Маршрут обучения</a>' +
-      '<a class="btn" href="#/calc">Калькуляторы</a>' +
-      '<a class="btn" href="#/analyst-exam">Сертификация</a>' +
-      '<a class="btn" href="#/notebook">Python-блокнот</a>' +
-      '<a class="btn" href="#/project">Сквозной проект</a>' +
-      '<a class="btn" href="#/trainer">Сразу к тренажёрам</a></div>' +
+      "<h1>Лаборатория аналитики</h1>" +
+      '<p class="lead">Практикум по аналитике данных: статистика, SQL, Python, BI и эксперименты. ' +
+      "Короткая теория, тесты и тренажёры; прогресс хранится в браузере.</p>" +
+      '<div class="home-actions">' +
+      '<a class="home-action primary" href="#/theory"><b>Начать с теории</b><span>' +
+        topicCount + " разделов, " + chapterCount + " глав</span></a>" +
+      '<a class="home-action" href="#/path"><b>Маршрут обучения</b><span>Три трека под цель</span></a>' +
+      '<a class="home-action" href="#/trainer"><b>Тренажёры</b><span>Задачи с автопроверкой</span></a>' +
+      "</div>" +
+      '<div class="home-tools"><span>Инструменты:</span>' +
+      '<a href="#/project">Сквозной проект</a>' +
+      '<a href="#/calc">Калькуляторы</a>' +
+      '<a href="#/analyst-exam">Сертификация</a>' +
+      '<a href="#/notebook">Python-блокнот</a></div>' +
       "</div>" +
       progressBlock() +
       '<div class="home-links">' +
