@@ -226,6 +226,8 @@
       "</div>" +
       '<div class="home-tools"><span>Инструменты:</span>' +
       '<a href="#/project">Сквозной проект</a>' +
+      '<a href="#/datalab">Практика на данных</a>' +
+      '<a href="#/cases">Кейсы</a>' +
       '<a href="#/calc">Калькуляторы</a>' +
       '<a href="#/analyst-exam">Сертификация</a>' +
       '<a href="#/notebook">Python-блокнот</a></div>' +
@@ -254,6 +256,17 @@
       '<div class="grid">' + topicIds().map(function (id) {
         return topicCard(id, null, true);
       }).join("") + "</div>";
+  }
+
+  function sourcesHtml(id) {
+    var list = (window.SOURCES && window.SOURCES[id]) || [];
+    if (!list.length) return "";
+    return '<details class="sources"><summary>Что почитать по разделу</summary><ul>' +
+      list.map(function (b) {
+        var text = esc(b.author + (b.year ? ", " + b.year : "")) + " — <i>" + esc(b.title) + "</i>";
+        return "<li>" + (b.url ? '<a href="' + b.url + '" target="_blank" rel="noopener">' + text + "</a>" : text) + "</li>";
+      }).join("") +
+      '</ul><p class="meta">Книги — для углубления, ссылки — на официальную документацию.</p></details>';
   }
 
   function theory(id, chapterIdx) {
@@ -288,6 +301,7 @@
     return '<div class="topic-page" data-topic="' + id + '">' +
       '<p><a href="#/textbook">&larr; все разделы</a></p>' +
       "<h1>" + icon(meta.icon) + esc(t.title) + "</h1><p class=\"lead\">" + esc(t.lead) + "</p>" +
+      sourcesHtml(id) +
       '<div class="reader reader-top"><aside class="toc"><b>Главы</b><ol>' + toc + "</ol>" +
       '<div class="btn-row"><a class="btn" href="#/quiz/' + id + '">Тест</a>' +
       '<a class="btn" href="#/trainer/' + id + '">Тренажёр</a>' +
@@ -1239,6 +1253,220 @@
       }).join("");
   }
 
+  function progressPage() {
+    var ids = Object.keys(window.TOPICS);
+    var totalRead = ids.reduce(function (n, id) { return n + window.PROGRESS.readCount(id); }, 0);
+    var totalCh = ids.reduce(function (n, id) { return n + window.TOPICS[id].chapters.length; }, 0);
+    var due = window.PROGRESS.dueReviews();
+    var weak = 0;
+    var cards = ids.map(function (id) {
+      var t = window.TOPICS[id];
+      var read = Math.min(window.PROGRESS.readCount(id), t.chapters.length);
+      var q = window.PROGRESS.quiz(id);
+      var m = window.PROGRESS.mini(id);
+      var last = q ? (q.lastScore == null ? q.best : q.lastScore) : null;
+      var qTotal = q ? q.total : t.quiz.length;
+      var weakTopic = (last !== null && qTotal && last / qTotal < 0.6) ||
+        (m && m.total && m.correct / m.total < 0.6);
+      if (weakTopic) weak++;
+      var dueCount = due.filter(function (r) { return r.topic === id; }).length;
+      var next = 0;
+      while (next < t.chapters.length && window.PROGRESS.isRead(id, next)) next++;
+      var href = next < t.chapters.length ? "#/theory/" + id + "/" + next : "#/quiz/" + id;
+      var status = weakTopic ? "слабое место" : dueCount ? "пора повторить" : "в норме";
+      return '<div class="card progress-topic' + (weakTopic ? " weak" : "") + '"><p class="meta">' + esc(t.title) +
+        ' · <b>' + status + '</b></p><div class="topic-bar" aria-hidden="true"><div style="width:' +
+        Math.round(read / t.chapters.length * 100) + '%"></div></div>' +
+        '<p class="meta">Глав: ' + read + " из " + t.chapters.length +
+        " · Тест: " + (last === null ? "—" : last + " из " + qTotal) +
+        " · Мини: " + (m && m.total ? m.correct + " из " + m.total : "—") +
+        (dueCount ? " · К повторению: " + dueCount : "") + "</p>" +
+        '<div class="links"><a class="btn small" href="' + href + '">' +
+        (next < t.chapters.length ? "Продолжить" : "К тесту") + "</a>" +
+        '<a class="btn small" href="#/quiz/' + id + '">Тест</a></div></div>';
+    }).join("");
+    return "<h1>Слабые темы</h1>" +
+      '<p class="lead">Локальная картина по разделам: что прочитано, где просели тесты и что пора повторить. ' +
+      "Данные хранятся только в этом браузере.</p>" +
+      '<div class="stats"><div class="stat"><div class="k">глав прочитано</div><div class="v">' + totalRead + " / " + totalCh +
+      '</div></div><div class="stat"><div class="k">слабых разделов</div><div class="v">' + weak +
+      '</div></div><div class="stat"><div class="k">к повторению</div><div class="v">' + due.length + "</div></div></div>" +
+      '<div class="btn-row"><button class="btn" id="exportNotes">Скачать конспект</button>' +
+      '<a class="btn" href="#/review">Повторить ошибки</a></div>' +
+      '<div class="grid">' + cards + "</div>";
+  }
+
+  function bindProgress() {
+    var btn = document.getElementById("exportNotes");
+    if (!btn) return;
+    btn.addEventListener("click", function () {
+      var ids = Object.keys(window.TOPICS);
+      var parts = ["# Конспект: Лаборатория аналитики", "", "Дата: " + new Date().toLocaleDateString("ru-RU"), ""];
+      var count = 0;
+      ids.forEach(function (id) {
+        var t = window.TOPICS[id], chapterParts = [];
+        t.chapters.forEach(function (c, i) {
+          if (!window.PROGRESS.isRead(id, i)) return;
+          var box = document.createElement("div");
+          box.innerHTML = c.html || "";
+          Array.prototype.forEach.call(box.querySelectorAll("figure, script, style"), function (el) { el.remove(); });
+          var text = (box.textContent || "").replace(/[ \t]+\n/g, "\n").replace(/\n{3,}/g, "\n\n").trim();
+          chapterParts.push("### " + c.title + "\n\n" + text);
+          count++;
+        });
+        if (chapterParts.length) parts.push("## " + t.title + "\n\n" + chapterParts.join("\n\n"));
+      });
+      if (!count) { btn.textContent = "Сначала отметьте главы"; return; }
+      var blob = new Blob([parts.join("\n\n")], { type: "text/markdown;charset=utf-8" });
+      var a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = "konspekt-analitika.md";
+      document.body.appendChild(a);
+      a.click();
+      setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 200);
+      btn.textContent = "Конспект скачан";
+    });
+  }
+
+  var CASE_BANK = [
+    { topic: "Аналитика", title: "Конверсия упала после релиза",
+      prompt: "В понедельник выкатили новую форму оплаты. За неделю конверсия в покупку упала с 4,2% до 3,5%. Что проверить до вывода «релиз виноват»?",
+      solution: "Сначала проверить определение метрики и полноту данных: не изменился ли знаменатель, не потерялись ли события, не сдвинулся ли период. Затем разрезать по платформам, новым/старым пользователям, каналам и шагам воронки. Сравнить с контрольным периодом и параллельными сегментами, где релиза не было. Учесть сезонность и маркетинговые всплески. Только после этого формулировать причинную гипотезу и, если возможно, проверять её тестом.",
+      rubric: ["Проверены определение метрики и качество данных", "Есть разбивка по сегментам и шагам воронки", "Учтены сезонность и внешние изменения", "Вывод отделён от гипотезы"] },
+    { topic: "Статистика", title: "p = 0,04, но запускать рано",
+      prompt: "A/B-тест дал рост основной метрики с p = 0,04. Guardrail-метрика «время ответа» ухудшилась на 12%. Можно ли запускать?",
+      solution: "Формальная значимость не отменяет guardrail. Нужно оценить величину и интервал эффекта, проверить, не был ли это один из многих промежуточных взглядов, и посмотреть на сегменты. Ухудшение времени ответа может быть дороже прироста конверсии. Решение принимают по заранее заданному правилу: если guardrail выходит за допустимый порог, запуск блокируется независимо от p основной метрики.",
+      rubric: ["Учтён размер эффекта, а не только p", "Проверено правило остановки и множественность", "Guardrail имеет приоритет", "Есть явное решение и условие пересмотра"] },
+    { topic: "Теория игр", title: "Ценовая война двух магазинов",
+      prompt: "Два магазина могут держать высокую цену или снижать. Снижение даёт преимущество, если конкурент не снизил, но оба теряют маржу, если снижают вместе. Какой исход устойчив и что может изменить игру?",
+      solution: "Это вариант дилеммы заключённого: у каждого есть стимул снизить цену, поэтому равновесие Нэша — обе низкие цены, хотя обе высокие выгоднее. Игру меняют повторяемость и репутация, контракты, дифференциация продукта, издержки и сигналы. В однократной игре без обязательств кооперация неустойчива.",
+      rubric: ["Определены игроки, стратегии и выигрыши", "Найдено равновесие и проверено отклонение", "Объяснено, почему оптимум не достигается", "Предложены механизмы изменения игры"] },
+    { topic: "Вероятность", title: "Положительный тест на редкую болезнь",
+      prompt: "Болезнь встречается у 1% людей. Тест ошибочно положителен у 5% здоровых и пропускает 10% больных. Пациент получил положительный результат. Как оценить вероятность болезни?",
+      solution: "Нужно применить формулу Байеса и учесть базу. На 10 000 человек: 100 больных, из них 90 положительных; 9 900 здоровых, из них 495 ложноположительных. Всего 585 положительных, доля истинных — 90/585 ≈ 15%. Высокая точность теста не означает высокую вероятность болезни при редком состоянии.",
+      rubric: ["Учтена базовая частота", "Посчитаны TP, FP и все положительные", "Применена формула Байеса", "Сделан вывод о повторном тесте"] },
+    { topic: "SQL", title: "Выручка не сходится с дашбордом",
+      prompt: "SQL-отчёт даёт 296 700 ₽, дашборд — 268 100 ₽. В таблице есть returned и две даты. Что проверить?",
+      solution: "Сверить определение выручки: учитываются ли возвраты, по какой дате считается период, нет ли дубликатов заказов и NULL. Разница 28 600 ₽ — это три возвращённых заказа. Нужно зафиксировать фильтр returned = 0, дату платежа или заказа и гранулярность, затем добавить тест на сходимость.",
+      rubric: ["Проверен фильтр возвратов", "Сверена дата учёта", "Проверены дубликаты и NULL", "Определение метрики зафиксировано"] },
+    { topic: "Excel", title: "ВПР возвращает не ту строку",
+      prompt: "В файле 500 клиентов, у части повторяются email. ВПР по email возвращает неверный город. Как исправить и что проверить?",
+      solution: "ВПР возвращает первое совпадение, поэтому при дубликатах ключа результат зависит от порядка. Нужно выбрать уникальный ключ (ID), удалить дубликаты, проверить тип данных и лишние пробелы. Для нескольких совпадений использовать FILTER/XLOOKUP или сводную. Четвёртый аргумент должен быть 0 для точного поиска.",
+      rubric: ["Найдена причина дубликатов", "Выбран уникальный ключ", "Проверены типы и пробелы", "Исправлена формула и проверен результат"] },
+    { topic: "Python", title: "Скрипт падает на сервере",
+      prompt: "Локально скрипт читает CSV и считает выручку, на сервере — UnicodeDecodeError и другая сумма. Что делать?",
+      solution: "Явно указать кодировку (utf-8 или windows-1251), проверить разделитель и десятичный разделитель, привести числа из строк к float, обработать пустые значения. Сумму сверить с эталоном. Добавить проверку числа строк и логирование пути к файлу.",
+      rubric: ["Указана кодировка", "Проверены разделители и типы", "Обработаны пропуски", "Есть сверка с эталоном и лог"] },
+    { topic: "Регрессия", title: "R² = 0,92, а прогноз плохой",
+      prompt: "Модель прогноза спроса показывает R² = 0,92 на обучении, но на новых данных ошибается в два раза. Что проверить?",
+      solution: "Проверить переобучение и утечки, оценить на отложенной выборке и по времени, посмотреть остатки и ошибки по сегментам. Высокий R² на обучении может быть из-за большого числа признаков или признака из будущего. Нужна временная кросс-валидация и базовая модель.",
+      rubric: ["Есть отложенная/временная проверка", "Проверена утечка признаков", "Изучены остатки и сегменты", "Есть baseline и метрика ошибки"] },
+    { topic: "Классификация", title: "Мошенничество: accuracy 99%",
+      prompt: "Модель определяет мошеннические операции с accuracy 99%. Мошенничеств — 1%. Стоит ли её внедрять?",
+      solution: "Accuracy вводит в заблуждение: модель может всегда предсказывать «нет мошенничества» и получить 99%. Нужны precision, recall, PR-AUC и матрица ошибок, а также стоимость FP и FN. Следует выбрать порог под бизнес-риск и проверить на редком классе.",
+      rubric: ["Объяснён парадокс accuracy", "Посчитаны precision/recall", "Учтена стоимость ошибок", "Выбран порог и план мониторинга"] },
+    { topic: "ИИ и ML", title: "LLM уверенно выдумала цифру",
+      prompt: "Модель сделала выжимку отчёта и назвала выручку 1,2 млн, хотя в файле 980 тыс. Как выстроить процесс?",
+      solution: "Не считать текст модели источником чисел. Дать ей схему данных и попросить ссылки на фрагменты, а расчёт выполнять кодом. Ввести проверку ключевых чисел, тестовый набор и человек в контуре. Хранить версию промпта и модели.",
+      rubric: ["Числа проверяются кодом/источником", "Есть цитаты и тестовый набор", "Есть человек в контуре", "Зафиксированы версии"] },
+    { topic: "Полезное", title: "График, который врёт",
+      prompt: "На графике выручка выросла «в 3 раза»: ось Y начинается с 90 млн, а не с нуля. Как переделать и что сказать аудитории?",
+      solution: "Обрезанная ось преувеличивает визуальный эффект. Для сравнения абсолютных значений начинают с нуля, подписывают единицы и период. Если нужен акцент на изменении, показывают проценты и абсолютные значения, а также поясняют масштаб. Вывод должен опираться на числа, а не на высоту столбца.",
+      rubric: ["Замечена обрезанная ось", "Предложен корректный масштаб", "Добавлены подписи и период", "Вывод сверен с числами"] },
+    { topic: "BI", title: "Два дашборда — две правды",
+      prompt: "В Power BI выручка 268 100, в Tableau 296 700. Оба отчёта строятся из одной таблицы. Как найти причину?",
+      solution: "Сравнить определения метрики, фильтры, дату учёта, обработку возвратов и гранулярность. Разница 28 600 — три возвращённых заказа. Нужно зафиксировать каталог метрик, добавить тест сходимости и указать владельца определения.",
+      rubric: ["Сверены определения и фильтры", "Найдена разница в возвратах/дате", "Есть каталог метрик", "Добавлен тест сходимости"] }
+  ];
+
+  function casesPage() {
+    return "<h1>Кейсы с открытым ответом</h1>" +
+      '<p class="lead">Двенадцать ситуаций из практики. Сначала сформулируйте свой ответ, затем раскройте разбор и сверьтесь с критериями. ' +
+      "Это не тест с одним правильным вариантом: важна логика проверки и следующий шаг.</p>" +
+      '<div class="grid">' + CASE_BANK.map(function (c, i) {
+        return '<article class="card case-card"><p class="meta">' + esc(c.topic) + "</p><h3>" + (i + 1) + ". " + esc(c.title) + "</h3>" +
+          "<p>" + esc(c.prompt) + "</p>" +
+          '<details><summary>Разбор и критерии</summary><p>' + esc(c.solution) + "</p><ul>" +
+          c.rubric.map(function (x) { return "<li>" + esc(x) + "</li>"; }).join("") + "</ul></details></article>";
+      }).join("") + "</div>";
+  }
+
+  function datalabPage() {
+    var datasets = [
+      ["ab-test.csv", "A/B-тест", "1 200 пользователей, группы A и B, конверсия и выручка.", "user_id, group, converted, revenue"],
+      ["churn.csv", "Отток", "600 клиентов: срок, платеж, обращения в поддержку, факт оттока.", "customer_id, tenure_months, monthly_charges, support_calls, churned"],
+      ["marketing.csv", "Маркетинг", "90 дней по трём каналам: расходы, клики, конверсии, выручка.", "date, channel, spend, clicks, conversions, revenue"]
+    ];
+    var tasks = [
+      ["ab1", "A/B-тест", "Сколько всего пользователей в файле?", "SELECT COUNT(*) FROM ab;", 1200, 0.5],
+      ["ab2", "A/B-тест", "Сколько конверсий в группе B?", "SELECT SUM(converted) FROM ab WHERE group = 'B';", 87, 0.5],
+      ["ab3", "A/B-тест", "Конверсия группы B, %", "100.0 * AVG(converted) для группы B", 14.5, 0.1],
+      ["ab4", "A/B-тест", "Выручка на пользователя в группе B, ₽", "SUM(revenue) / COUNT(*) для группы B", 145.0, 1],
+      ["ch1", "Отток", "Сколько клиентов в файле?", "SELECT COUNT(*) FROM churn;", 600, 0.5],
+      ["ch2", "Отток", "Доля оттока, %", "100.0 * AVG(churned)", 21.3, 0.1],
+      ["ch3", "Отток", "Средний срок ушедших клиентов, месяцев", "AVG(tenure_months) WHERE churned = 1", 22.4, 0.2],
+      ["ch4", "Отток", "Ежемесячная выручка под риском, ₽", "SUM(monthly_charges) WHERE churned = 1", 125320, 1],
+      ["mk1", "Маркетинг", "Сколько строк в файле?", "SELECT COUNT(*) FROM marketing;", 90, 0.5],
+      ["mk2", "Маркетинг", "Общий ROAS (выручка / расходы)", "SUM(revenue) / SUM(spend)", 9.85, 0.05],
+      ["mk3", "Маркетинг", "ROAS канала Email", "SUM(revenue) / SUM(spend) для Email", 40.79, 0.1],
+      ["mk4", "Маркетинг", "CAC по всем каналам, ₽", "SUM(spend) / SUM(conversions)", 126.0, 1]
+    ];
+    function task(t) {
+      return '<div class="card dl-task" data-task="' + t[0] + '"><p class="meta">' + esc(t[1]) + "</p>" +
+        "<h3>" + esc(t[2]) + "</h3>" +
+        '<div class="answer-row"><label class="sr-only" for="dl-' + t[0] + '">Ответ</label>' +
+        '<input type="text" inputmode="decimal" id="dl-' + t[0] + '" placeholder="Ответ">' +
+        '<button class="btn" data-dl="' + t[0] + '" data-answer="' + t[4] + '" data-tol="' + t[5] + '">Проверить</button></div>' +
+        '<p class="meta"><code>' + esc(t[3]) + "</code></p></div>";
+    }
+    return "<h1>Практика на данных</h1>" +
+      '<p class="lead">Три учебных датасета и 12 задач с автопроверкой. Скачайте CSV, считайте в SQL, Python или таблице и введите ответ. ' +
+      "Числа с запятой тоже принимаются.</p>" +
+      '<div class="grid">' + datasets.map(function (d) {
+        return '<div class="card"><h3><a href="data/' + d[0] + '" download>' + esc(d[1]) + "</a></h3>" +
+          "<p>" + esc(d[2]) + "</p><p class=\"meta\">" + esc(d[3]) + "</p></div>";
+      }).join("") + "</div>" +
+      '<h2>Задачи</h2><p class="meta" id="dlProgress">Решено: 0 из 12</p>' +
+      '<div class="grid">' + tasks.map(task).join("") + "</div>" +
+      '<div class="card"><h3>Мини-проект: дашборд по маркетингу</h3>' +
+      "<p>Соберите один экран: расходы, выручка, ROAS по каналам и CAC. Добавьте период и вывод: какой канал масштабировать и почему.</p>" +
+      '<p class="meta">Шаблон: <a href="data/dashboard-sales-template.md" download>dashboard-sales-template.md</a>. ' +
+      "Проверьте, что сумма расходов и выручки совпадает с файлом.</p></div>";
+  }
+
+  function bindDatalab() {
+    var KEY = "analytics-lab-datalab-v1";
+    var done = {};
+    try { done = JSON.parse(localStorage.getItem(KEY) || "{}") || {}; } catch (e) {}
+    function save() {
+      try { localStorage.setItem(KEY, JSON.stringify(done)); } catch (e) {}
+      var n = Object.keys(done).length;
+      var el = document.getElementById("dlProgress");
+      if (el) el.textContent = "Решено: " + n + " из 12";
+    }
+    save();
+    Array.prototype.forEach.call(document.querySelectorAll("[data-dl]"), function (btn) {
+      var id = btn.getAttribute("data-dl");
+      var card = btn.closest(".dl-task");
+      if (done[id] && card) { card.classList.add("done"); btn.textContent = "Верно"; }
+      btn.addEventListener("click", function () {
+        var input = document.getElementById("dl-" + id);
+        var value = Number(String(input.value || "").replace(",", "."));
+        var answer = Number(btn.getAttribute("data-answer"));
+        var tol = Number(btn.getAttribute("data-tol") || 0.01);
+        if (input.value !== "" && Math.abs(value - answer) <= tol + 0.000001) {
+          done[id] = 1;
+          save();
+          btn.textContent = "Верно";
+          if (card) card.classList.add("done");
+        } else {
+          btn.textContent = "Ещё раз";
+          if (card) card.classList.remove("done");
+        }
+      });
+    });
+  }
+
   function reviewPage() {
     return '<h1>Повторение ошибок</h1>' +
       '<p class="lead">Вопросы, в которых вы ошибались в тестах и мини-тестах, возвращаются по интервальному ' +
@@ -1428,6 +1656,9 @@
       return { html: demosList() };
     }
     if (seg === "project") return { html: projectPage(), after: bindProject };
+    if (seg === "datalab") return { html: datalabPage(), after: bindDatalab };
+    if (seg === "cases") return { html: casesPage() };
+    if (seg === "progress") return { html: progressPage(), after: bindProgress };
     if (seg === "review") return { html: reviewPage(), after: bindReview };
     if (seg === "calc") return { html: calcPage(), after: bindCalc };
     if (seg === "bi-exam") return { mount: biExamPage };

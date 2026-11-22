@@ -107,6 +107,8 @@
       save();
     },
 
+    mini: function (topic) { return data.mini[topic] || null; },
+
     miniStats: function () {
       var correct = 0, total = 0;
       Object.keys(data.mini).forEach(function (k) {
