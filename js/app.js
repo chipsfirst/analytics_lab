@@ -235,8 +235,7 @@
       (window.OFFLINE_BUILD
         ? '<a class="home-link" href="#/offline"><b>Офлайн-версия</b><span>Как установить сайт как приложение</span></a>'
         : '<a class="home-link" href="analytics-lab-offline.zip" download><b>Офлайн-архив</b><span>Скачать сайт одним файлом</span></a>') +
-      "</div>" +
-      '<p class="meta home-hint">Разделы, игры и демонстрации — в меню сверху.</p>';
+      "</div>";
   }
 
   function listPage(kind, title, lead, label) {
