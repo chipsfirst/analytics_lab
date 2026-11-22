@@ -214,7 +214,7 @@
             q: q.q,
             explain: q.explain,
             topic: window.TOPICS[id].title,
-            options: q.options.map(function (text, k) { return { text: text, ok: k === q.correct }; })
+            options: shuffle(q.options.map(function (text, k) { return { text: text, ok: k === q.correct }; }))
           });
         });
       });

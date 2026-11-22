@@ -430,7 +430,15 @@ input:focus, select:focus, textarea:focus { border-color: var(--accent); }
 .result-text { display: block; font-size: 14px; color: var(--muted); }
 
 .foot { border-top: 1px solid var(--line); margin-top: 40px; }
-.foot-inner { padding: 20px; font-size: 13px; color: var(--muted); }
+.foot-inner { display: flex; justify-content: space-between; align-items: center; gap: 12px 24px; flex-wrap: wrap; padding: 20px; font-size: 13px; color: var(--muted); }
+.foot-brand b { color: var(--ink); font-size: 14px; }
+.foot-brand span { display: block; margin-top: 3px; }
+.foot-meta { display: flex; align-items: center; gap: 6px 14px; flex-wrap: wrap; }
+.foot-meta a { color: var(--muted); }
+.foot-meta a:hover { color: var(--accent); }
+@media (max-width: 560px) {
+  .foot-inner { align-items: flex-start; }
+}
 
 .center { text-align: center; }
 

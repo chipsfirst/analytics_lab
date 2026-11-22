@@ -1575,6 +1575,26 @@
     });
   }
 
+  function syncVersion() {
+    var el = document.getElementById("appVersion");
+    if (!el) return;
+    if (location.protocol !== "file:") {
+      fetch("VERSION", { cache: "no-store" }).then(function (r) {
+        return r.ok ? r.text() : "";
+      }).then(function (v) {
+        v = String(v || "").trim();
+        if (/^v\d/.test(v)) el.textContent = v;
+      }).catch(function () {});
+    }
+    var bug = document.getElementById("bugLink");
+    if (bug) bug.addEventListener("click", function () {
+      var body = "Страница: " + location.href + "\nВерсия: " + el.textContent + "\n\nЧто не так:\n";
+      bug.href = "https://github.com/chipsfirst/analytics_lab/issues/new?title=" +
+        encodeURIComponent("Ошибка на сайте") + "&body=" + encodeURIComponent(body);
+    });
+  }
+
+  syncVersion();
   window.addEventListener("hashchange", render);
   render();
 })();
