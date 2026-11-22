@@ -51,6 +51,7 @@
     statistics: { icon: "sigma" },
     gametheory: { icon: "scale" },
     probability: { icon: "dice" },
+    data: { icon: "layers" },
     sql: { icon: "database" },
     excel: { icon: "table" },
     python: { icon: "code" },
@@ -74,6 +75,7 @@
     network: '<circle cx="6" cy="7" r="2"/><circle cx="18" cy="7" r="2"/><circle cx="12" cy="17" r="2"/><path d="M8 8l3 7M16 8l-3 7M8 7h8"/>',
     note: '<path d="M6 4h9l4 4v12H6z"/><path d="M9 11h7M9 15h5"/>',
     chart: '<path d="M5 19V5M5 19h15"/><rect x="8" y="12" width="3" height="5"/><rect x="13" y="9" width="3" height="8"/>',
+    layers: '<path d="M12 3l9 5-9 5-9-5 9-5z"/><path d="M3 12l9 5 9-5M3 16l9 5 9-5"/>',
     link: '<path d="M10 14a4 4 0 005.7 0l2.3-2.3a4 4 0 00-5.7-5.7L11 7.3"/><path d="M14 10a4 4 0 00-5.7 0l-2.3 2.3a4 4 0 005.7 5.7L13 16.7"/>',
     flask: '<path d="M9 3h6M10 3v6l-5 9a2 2 0 001.8 3h10.4A2 2 0 0019 18l-5-9V3"/><path d="M7.5 15h9"/>',
     book: '<path d="M5 5.5A2.5 2.5 0 017.5 3H19v16H7.5A2.5 2.5 0 005 21.5z"/><path d="M5 18.5A2.5 2.5 0 017.5 16H19"/>'
@@ -228,6 +230,8 @@
       '<a href="#/project">Сквозной проект</a>' +
       '<a href="#/datalab">Практика на данных</a>' +
       '<a href="#/cases">Кейсы</a>' +
+      '<a href="#/prompt-lab">Тренажёр промптов</a>' +
+      '<a href="#/cards">Карточки</a>' +
       '<a href="#/calc">Калькуляторы</a>' +
       '<a href="#/analyst-exam">Сертификация</a>' +
       '<a href="#/notebook">Python-блокнот</a></div>' +
@@ -1316,6 +1320,152 @@
     });
   }
 
+  function cardsPage() {
+    var options = ['<option value="all">Все вопросы</option>', '<option value="glossary">Словарь терминов</option>'];
+    Object.keys(window.TOPICS).forEach(function (id) {
+      options.push('<option value="' + id + '">' + esc(window.TOPICS[id].title) + "</option>");
+    });
+    return "<h1>Карточки</h1>" +
+      '<p class="lead">Повторяйте вопросы и термины по карточкам. Отмечайте «Знаю» или «Ещё раз»; экспорт в Anki — кнопкой ниже.</p>' +
+      '<div class="btn-row"><label class="sr-only" for="cardsDeck">Колода</label><select id="cardsDeck">' +
+      options.join("") + '</select><button class="btn" id="cardsExport">Экспорт в Anki</button></div>' +
+      '<div class="card flash-card"><p class="meta" id="cardsMeta">Колода</p><div id="cardsFront" class="flash-front"></div>' +
+      '<div id="cardsBack" class="flash-back" hidden></div><div class="btn-row" id="cardsActions">' +
+      '<button class="btn primary" id="cardsShow">Показать ответ</button>' +
+      '<button class="btn" id="cardsAgain" hidden>Ещё раз</button>' +
+      '<button class="btn" id="cardsKnow" hidden>Знаю</button></div></div>' +
+      '<p class="meta" id="cardsProgress"></p>';
+  }
+
+  function bindCards() {
+    var state = { deck: [], i: 0, known: 0, revealed: false };
+    var select = document.getElementById("cardsDeck");
+    var front = document.getElementById("cardsFront");
+    var back = document.getElementById("cardsBack");
+    var meta = document.getElementById("cardsMeta");
+    var progress = document.getElementById("cardsProgress");
+    function build(value) {
+      if (value === "glossary") {
+        return window.GLOSSARY.map(function (g) {
+          return { front: g.term + (g.symbol ? " (" + g.symbol + ")" : ""), back: g.def, tag: "словарь" };
+        });
+      }
+      var ids = value === "all" ? Object.keys(window.TOPICS) : [value];
+      var out = [];
+      ids.forEach(function (id) {
+        window.TOPICS[id].quiz.forEach(function (q) {
+          out.push({ front: q.q, back: q.options[q.correct] + ". " + q.explain, tag: window.TOPICS[id].title });
+        });
+      });
+      return out;
+    }
+    function draw() {
+      var card = state.deck[state.i];
+      if (!card) {
+        front.textContent = "Карточек нет.";
+        back.hidden = true;
+        meta.textContent = "Колода пуста";
+        progress.textContent = "";
+        return;
+      }
+      meta.textContent = card.tag;
+      front.innerHTML = esc(card.front);
+      back.innerHTML = esc(card.back);
+      back.hidden = !state.revealed;
+      document.getElementById("cardsShow").hidden = state.revealed;
+      document.getElementById("cardsAgain").hidden = !state.revealed;
+      document.getElementById("cardsKnow").hidden = !state.revealed;
+      progress.textContent = "Карточка " + (state.i + 1) + " из " + state.deck.length + " · знаю: " + state.known;
+    }
+    function reset() {
+      state.deck = build(select.value);
+      state.i = 0;
+      state.known = 0;
+      state.revealed = false;
+      draw();
+    }
+    function next(known) {
+      if (known) state.known++;
+      state.i++;
+      state.revealed = false;
+      if (state.i >= state.deck.length) {
+        state.i = 0;
+        state.deck = state.deck.slice().sort(function () { return Math.random() - 0.5; });
+        progress.textContent = "Круг завершён: знаю " + state.known + " из " + state.deck.length + ". Начинаем заново.";
+      }
+      draw();
+    }
+    select.addEventListener("change", reset);
+    document.getElementById("cardsShow").addEventListener("click", function () {
+      state.revealed = true;
+      draw();
+    });
+    document.getElementById("cardsAgain").addEventListener("click", function () { next(false); });
+    document.getElementById("cardsKnow").addEventListener("click", function () { next(true); });
+    document.getElementById("cardsExport").addEventListener("click", function () {
+      var rows = ["front\tback\ttags"];
+      state.deck.forEach(function (c) {
+        rows.push(String(c.front).replace(/\t/g, " ") + "\t" + String(c.back).replace(/\t/g, " ") + "\t" + String(c.tag).replace(/\t/g, " "));
+      });
+      var blob = new Blob([rows.join("\n")], { type: "text/tab-separated-values;charset=utf-8" });
+      var a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = "anki-karty.txt";
+      document.body.appendChild(a);
+      a.click();
+      setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 200);
+    });
+    reset();
+  }
+
+  var PROMPT_TASKS = [
+    ["Суммаризация встречи", "Сделайте выжимку из транскрипта встречи: решения, задачи, ответственные и сроки. Не добавляйте того, чего не было в тексте.", "Ты помощник аналитика. Ниже транскрипт встречи. Верни: 1) три решения, 2) задачи с ответственным и сроком, 3) открытые вопросы. Если ответственного или срока нет, напиши «не указано». Не выдумывай факты.", ["Задан формат и разделы", "Есть запрет на домыслы", "Указано, что делать с пропусками"]],
+    ["Запрос SQL", "Попросите модель составить SQL по схеме заказов: выручка без возвратов по городам за февраль.", "Схема: orders(order_id, city, revenue, returned, order_date). Напиши SQL для PostgreSQL: сумма revenue по city за февраль 2026, returned = 0. Используй только эти поля. Добавь комментарий к каждой строке и не меняй данные.", ["Передана схема и СУБД", "Заданы фильтры и период", "Есть ограничение на изменения", "Запрошено объяснение"]],
+    ["Классификация отзывов", "Разметьте 100 отзывов по темам и тональности, верните таблицу.", "Разметь отзывы по темам: доставка, качество, цена, поддержка, other. Тональность: positive, neutral, negative. Верни CSV: id, тема, тональность, цитата. Если тема неочевидна, выбери other и объясни в отдельном столбце. Не меняй исходный текст.", ["Задан набор меток", "Указан формат CSV", "Есть правило для неоднозначных случаев", "Сохранён исходный текст"]],
+    ["Разбор A/B", "Объясните результат теста: конверсия выросла на 0,4 п.п., p = 0,06, guardrail ухудшился.", "Ты аналитик. Ниже результаты A/B. Объясни, что можно и что нельзя утверждать. Отдельно разбери p-value, размер эффекта и guardrail. Предложи решение и условия пересмотра. Не называй результат значимым без оговорок.", ["Разделены значимость и эффект", "Учтён guardrail", "Есть решение", "Нет утверждения о причинности без дизайна"]],
+    ["Письмо руководителю", "Сформулируйте письмо о переносе запуска на неделю из-за качества данных.", "Напиши письмо руководителю: факт, причина, риск, новое решение и что нужно от него. Тон — нейтральный, 120–150 слов. Не обвиняй команду и не скрывай риск. Закончи конкретным запросом.", ["Есть факт и причина", "Указан риск и новое решение", "Есть конкретный запрос", "Соблюдён тон и объём"]],
+    ["Извлечение таблицы", "Извлеките из текста таблицу расходов по каналам.", "Из текста ниже извлеки таблицу: канал, расход, конверсии, выручка. Верни Markdown-таблицу. Если число не указано, поставь «—». Не пересчитывай и не добавляй каналы, которых нет в тексте.", ["Заданы колонки", "Указана обработка пропусков", "Запрещены домыслы", "Формат проверяем"]],
+    ["Критика графика", "Проверьте график на манипуляции и предложите исправления.", "Опиши график по изображению: оси, масштаб, подписи, источник, период. Найди три возможные манипуляции. Для каждой предложи исправление. Не угадывай значения, которых не видно.", ["Есть проверка осей и масштаба", "Указаны подписи и период", "Предложены исправления", "Нет выдуманных чисел"]],
+    ["RAG-ответ", "Ответьте на вопрос по регламенту и покажите источники.", "Ответь на вопрос, используя только фрагменты ниже. Для каждого утверждения укажи номер фрагмента. Если ответа нет, напиши «в документах нет данных». Не используй внешние знания.", ["Ограничение только контекстом", "Требуются ссылки", "Есть fallback", "Нет внешних знаний"]]
+  ];
+
+  function promptLabPage() {
+    return "<h1>Тренажёр промптов</h1>" +
+      '<p class="lead">Восемь рабочих ситуаций. Напишите свой промпт, затем откройте разбор и проверьте его по критериям. ' +
+      "Это не автопроверка: хороший промпт зависит от задачи и контекста.</p>" +
+      '<div class="grid">' + PROMPT_TASKS.map(function (t, i) {
+        return '<article class="card prompt-card" data-prompt="' + i + '"><p class="meta">Задача ' + (i + 1) + "</p><h3>" + esc(t[0]) + "</h3>" +
+          "<p>" + esc(t[1]) + "</p>" +
+          '<label class="sr-only" for="prompt-' + i + '">Ваш промпт</label>' +
+          '<textarea id="prompt-' + i + '" rows="4" placeholder="Напишите промпт…"></textarea>' +
+          '<div class="btn-row"><button class="btn small" data-prompt-show="' + i + '">Показать разбор</button></div>' +
+          '<div class="prompt-review" data-prompt-review="' + i + '" hidden><p><b>Каркас:</b> ' + esc(t[2]) + "</p><ul>" +
+          t[3].map(function (x) { return "<li>" + esc(x) + "</li>"; }).join("") + "</ul></div></article>";
+      }).join("") + "</div>";
+  }
+
+  function bindPromptLab() {
+    var KEY = "analytics-lab-prompts-v1";
+    var drafts = {};
+    try { drafts = JSON.parse(localStorage.getItem(KEY) || "{}") || {}; } catch (e) {}
+    Array.prototype.forEach.call(document.querySelectorAll(".prompt-card"), function (card) {
+      var i = card.getAttribute("data-prompt");
+      var ta = document.getElementById("prompt-" + i);
+      if (ta) {
+        ta.value = drafts[i] || "";
+        ta.addEventListener("input", function () {
+          drafts[i] = ta.value;
+          try { localStorage.setItem(KEY, JSON.stringify(drafts)); } catch (e) {}
+        });
+      }
+      var b = card.querySelector("[data-prompt-show]");
+      if (b) b.addEventListener("click", function () {
+        var rev = card.querySelector("[data-prompt-review]");
+        if (rev) rev.hidden = !rev.hidden;
+      });
+    });
+  }
+
   var CASE_BANK = [
     { topic: "Аналитика", title: "Конверсия упала после релиза",
       prompt: "В понедельник выкатили новую форму оплаты. За неделю конверсия в покупку упала с 4,2% до 3,5%. Что проверить до вывода «релиз виноват»?",
@@ -1416,6 +1566,21 @@
       }).join("") + "</div>" +
       '<h2>Задачи</h2><p class="meta" id="dlProgress">Решено: 0 из 12</p>' +
       '<div class="grid">' + tasks.map(task).join("") + "</div>" +
+      '<h2>Собери дашборд</h2><p class="lead">Три решения из брифа: выберите вариант и получите разбор.</p>' +
+      '<div class="grid">' +
+      '<div class="card" data-dbq="0"><h3>Динамика выручки по неделям</h3><div class="options">' +
+      '<button class="option" data-db="0" data-ok="0">Круговая диаграмма</button>' +
+      '<button class="option" data-db="0" data-ok="1">Линейный график</button>' +
+      '<button class="option" data-db="0" data-ok="0">Облако слов</button></div><p class="meta" data-db-out="0"></p></div>' +
+      '<div class="card" data-dbq="1"><h3>Что поставить на первый экран?</h3><div class="options">' +
+      '<button class="option" data-db="1" data-ok="1">Три KPI, период и один главный график</button>' +
+      '<button class="option" data-db="1" data-ok="0">Все 20 графиков сразу</button>' +
+      '<button class="option" data-db="1" data-ok="0">Сырую таблицу без фильтров</button></div><p class="meta" data-db-out="1"></p></div>' +
+      '<div class="card" data-dbq="2"><h3>Как проверить дашборд перед публикацией?</h3><div class="options">' +
+      '<button class="option" data-db="2" data-ok="1">Сверить KPI с эталоном и проверить период</button>' +
+      '<button class="option" data-db="2" data-ok="0">Оценить только цвета</button>' +
+      '<button class="option" data-db="2" data-ok="0">Добавить ещё графиков</button></div><p class="meta" data-db-out="2"></p></div>' +
+      '</div>' +
       '<div class="card"><h3>Мини-проект: дашборд по маркетингу</h3>' +
       "<p>Соберите один экран: расходы, выручка, ROAS по каналам и CAC. Добавьте период и вывод: какой канал масштабировать и почему.</p>" +
       '<p class="meta">Шаблон: <a href="data/dashboard-sales-template.md" download>dashboard-sales-template.md</a>. ' +
@@ -1451,6 +1616,21 @@
           btn.textContent = "Ещё раз";
           if (card) card.classList.remove("done");
         }
+      });
+    });
+    Array.prototype.forEach.call(document.querySelectorAll("[data-db]"), function (b) {
+      b.addEventListener("click", function () {
+        var card = b.closest("[data-dbq]");
+        if (!card || card.getAttribute("data-done")) return;
+        card.setAttribute("data-done", "1");
+        var correct = b.getAttribute("data-ok") === "1";
+        Array.prototype.forEach.call(card.querySelectorAll("[data-db]"), function (x) {
+          x.disabled = true;
+          if (x.getAttribute("data-ok") === "1") x.classList.add("right");
+          else if (x === b) x.classList.add("wrong");
+        });
+        var out = card.querySelector("[data-db-out]");
+        if (out) out.textContent = correct ? "Верно." : "Неверно: правильный вариант подсвечен.";
       });
     });
   }
@@ -1646,6 +1826,8 @@
     if (seg === "project") return { html: projectPage(), after: bindProject };
     if (seg === "datalab") return { html: datalabPage(), after: bindDatalab };
     if (seg === "cases") return { html: casesPage() };
+    if (seg === "prompt-lab") return { html: promptLabPage(), after: bindPromptLab };
+    if (seg === "cards") return { html: cardsPage(), after: bindCards };
     if (seg === "progress") return { html: progressPage(), after: bindProgress };
     if (seg === "review") return { html: reviewPage(), after: bindReview };
     if (seg === "calc") return { html: calcPage(), after: bindCalc };
@@ -1827,6 +2009,54 @@
     });
   }
 
+  var paletteIndex = null;
+  function initPalette() {
+    var box = document.createElement("div");
+    box.id = "cmdPalette";
+    box.className = "cmd";
+    box.hidden = true;
+    box.innerHTML = '<div class="cmd-box" role="dialog" aria-modal="true" aria-label="Быстрый поиск">' +
+      '<input id="cmdInput" type="search" placeholder="Глава, вопрос или термин…" autocomplete="off">' +
+      '<div id="cmdResults" class="cmd-results"></div></div>';
+    document.body.appendChild(box);
+    var input = box.querySelector("#cmdInput");
+    var results = box.querySelector("#cmdResults");
+    function close() { box.hidden = true; }
+    function open() {
+      box.hidden = false;
+      input.value = "";
+      results.innerHTML = '<p class="meta">Начните вводить запрос. Enter открывает первый результат.</p>';
+      input.focus();
+    }
+    function draw() {
+      var q = input.value.trim();
+      if (q.length < 2) { results.innerHTML = '<p class="meta">Минимум два символа.</p>'; return; }
+      if (!paletteIndex) paletteIndex = window.SEARCH.index(window.TOPICS);
+      var hits = window.SEARCH.find(paletteIndex, q).slice(0, 8);
+      if (!hits.length) { results.innerHTML = '<p class="meta">Ничего не найдено.</p>'; return; }
+      results.innerHTML = hits.map(function (h) {
+        return '<a class="cmd-result" href="' + h.entry.href + '"><b>' + esc(h.entry.title) +
+          '</b><span>' + esc(h.entry.kind) + " · " + esc(h.entry.topicTitle) + "</span></a>";
+      }).join("");
+    }
+    box.addEventListener("click", function (e) { if (e.target === box) close(); });
+    input.addEventListener("input", draw);
+    input.addEventListener("keydown", function (e) {
+      if (e.key === "Enter") {
+        var first = results.querySelector(".cmd-result");
+        if (first) { e.preventDefault(); location.hash = first.getAttribute("href"); close(); }
+      }
+      if (e.key === "Escape") close();
+    });
+    document.addEventListener("keydown", function (e) {
+      if ((e.metaKey || e.ctrlKey) && String(e.key).toLowerCase() === "k") {
+        e.preventDefault();
+        if (box.hidden) open(); else close();
+      }
+    });
+  }
+
+  initPalette();
   syncVersion();
   window.addEventListener("hashchange", render);
   render();

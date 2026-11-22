@@ -832,6 +832,87 @@
     render();
   }
 
+  // ---------- подглядывание в A/B ----------
+
+  function mountPeek(root) {
+    var state = { aC: 0, aN: 0, bC: 0, bN: 0, p: [], hits: 0 };
+    root.innerHTML = '<div class="demo-controls"><button class="btn primary" id="pkDay">Следующий день</button>' +
+      '<button class="btn" id="pkTen">Ещё 10 дней</button>' +
+      '<button class="btn" id="pkReset">Сбросить</button></div>' +
+      '<div class="demo-stats"><span>Дней: <b id="pkDays">0</b></span><span>p-value: <b id="pkP">—</b></span>' +
+      '<span>Дней с p &lt; 0,05: <b id="pkHits">0</b></span></div>' +
+      '<div id="pkCanvas"></div><p class="demo-note" id="pkNote">Оба варианта имеют одинаковую истинную конверсию 10%. Любое p &lt; 0,05 здесь — ложное срабатывание.</p>';
+    var canvas = makeCanvas(root.querySelector("#pkCanvas"), 680, 250);
+    var ctx = canvas.getContext("2d");
+    function zCdf(z) {
+      var t = 1 / (1 + 0.2316419 * Math.abs(z));
+      var d = 0.3989423 * Math.exp(-z * z / 2);
+      var p = d * t * (0.3193815 + t * (-0.3565638 + t * (1.781478 + t * (-1.821256 + t * 1.330274))));
+      return z > 0 ? 1 - p : p;
+    }
+    function pValue() {
+      var p1 = state.aC / state.aN, p2 = state.bC / state.bN;
+      var pooled = (state.aC + state.bC) / (state.aN + state.bN);
+      var se = Math.sqrt(pooled * (1 - pooled) * (1 / state.aN + 1 / state.bN));
+      if (!se) return 1;
+      return Math.max(0, Math.min(1, 2 * (1 - zCdf(Math.abs((p2 - p1) / se)))));
+    }
+    function addDay() {
+      for (var i = 0; i < 140; i++) {
+        state.aN++; if (Math.random() < 0.10) state.aC++;
+        state.bN++; if (Math.random() < 0.10) state.bC++;
+      }
+      var p = pValue();
+      state.p.push(p);
+      if (p < 0.05) state.hits++;
+      draw();
+    }
+    function draw() {
+      var W = canvas.width, H = canvas.height, padL = 34, padR = 14, padT = 16, padB = 28;
+      ctx.clearRect(0, 0, W, H);
+      var plotW = W - padL - padR, plotH = H - padT - padB;
+      ctx.strokeStyle = "#c9cdd6"; ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.moveTo(padL, padT); ctx.lineTo(padL, padT + plotH); ctx.lineTo(W - padR, padT + plotH); ctx.stroke();
+      ctx.fillStyle = "#6b7280"; ctx.font = "12px -apple-system, system-ui, sans-serif";
+      ctx.fillText("p-value", 2, 10);
+      ctx.fillText("дни", W - 28, H - 8);
+      var alphaY = padT + (1 - 0.05) * plotH;
+      ctx.strokeStyle = "#c2410c"; ctx.setLineDash([4, 4]);
+      ctx.beginPath(); ctx.moveTo(padL, alphaY); ctx.lineTo(W - padR, alphaY); ctx.stroke(); ctx.setLineDash([]);
+      ctx.fillStyle = "#c2410c"; ctx.fillText("α = 0,05", padL + 4, alphaY - 4);
+      if (!state.p.length) { document.getElementById("pkDays").textContent = "0"; return; }
+      var n = Math.max(30, state.p.length);
+      ctx.strokeStyle = accent(); ctx.lineWidth = 2; ctx.beginPath();
+      state.p.forEach(function (p, i) {
+        var x = padL + (n === 1 ? 0 : i / (n - 1) * plotW);
+        var y = padT + (1 - p) * plotH;
+        if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+      });
+      ctx.stroke();
+      state.p.forEach(function (p, i) {
+        var x = padL + (n === 1 ? 0 : i / (n - 1) * plotW);
+        var y = padT + (1 - p) * plotH;
+        ctx.fillStyle = p < 0.05 ? "#c2410c" : accent();
+        ctx.beginPath(); ctx.arc(x, y, p < 0.05 ? 4 : 2.5, 0, Math.PI * 2); ctx.fill();
+      });
+      document.getElementById("pkDays").textContent = state.p.length;
+      document.getElementById("pkP").textContent = state.p[state.p.length - 1].toFixed(3).replace(".", ",");
+      document.getElementById("pkHits").textContent = state.hits;
+      var note = document.getElementById("pkNote");
+      note.textContent = state.hits
+        ? "За " + state.p.length + " дней p уже было ниже 0,05 в " + state.hits + " дне(й). Остановка на таком дне объявила бы эффект, которого нет."
+        : "Пока p не опускался ниже 0,05. Продолжайте и смотрите, как случайный шум пересекает порог.";
+    }
+    document.getElementById("pkDay").addEventListener("click", addDay);
+    document.getElementById("pkTen").addEventListener("click", function () { for (var i = 0; i < 10; i++) addDay(); });
+    document.getElementById("pkReset").addEventListener("click", function () {
+      state = { aC: 0, aN: 0, bC: 0, bN: 0, p: [], hits: 0 };
+      draw();
+    });
+    draw();
+    return function () { root.innerHTML = ""; };
+  }
+
   window.DEMOS = {
     clt: {
       title: "Центральная предельная теорема",
@@ -877,6 +958,11 @@
       title: "ROC-кривая и порог",
       tag: "Как перенос порога меняет цену ошибок",
       mount: mountRoc
+    },
+    peek: {
+      title: "Подглядывание в A/B",
+      tag: "Почему ежедневная проверка p-value повышает ложные срабатывания",
+      mount: mountPeek
     }
   };
 })();

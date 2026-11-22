@@ -1161,11 +1161,38 @@
     };
   }
 
+  function tMissingChoice() {
+    return {
+      prompt: "В поле «возраст» встречаются 999, −3 и пустые значения. Что сделать сначала?",
+      solution: "Сначала выяснить смысл значений: 999 и −3 — технические заглушки или ошибки, пусто — отсутствие ответа. Их приводят к NULL, а стратегию заполнения выбирают после этого.",
+      answer: { type: "choice", options: [
+        { text: "Понять, что означает каждое значение, и привести ошибки к NULL", ok: true },
+        { text: "Заменить всё средним", ok: false },
+        { text: "Удалить столбец", ok: false },
+        { text: "Оставить как есть", ok: false }
+      ] }
+    };
+  }
+
+  function tDataType() {
+    return {
+      prompt: "Какой тип лучше задать для поля order_date со значениями 2026-01-03?",
+      solution: "Это дата. Строка не позволит корректно фильтровать период и считать интервалы; для даты нужен тип DATE или timestamp.",
+      answer: { type: "choice", options: [
+        { text: "Дата", ok: true },
+        { text: "Целое число", ok: false },
+        { text: "Текст без изменений", ok: false },
+        { text: "Логический", ok: false }
+      ] }
+    };
+  }
+
   window.TRAINERS = {
     analytics: [tCtr, tFunnel, tRomi, tLtvCac, tAbLift, tRetention],
     statistics: [tMean, tMedian, tVariance, tSd, tZ, tSe, tMad, tTrimMean, tIqr, tPoisson],
     probability: [tComb, tUnion, tBayes, tBinom, tDice, tAtLeastOne],
     gametheory: [tNash, tDominant, tMaximin, tMixed],
+    data: [tMissingChoice, tDataType],
     sql: [tSqlWhere, tSqlDistinct, tSqlGroupHaving, tSqlOrderLimit, tSqlNull, tSqlJoin, tSqlWindow, tSqlAvgNull],
     excel: [tXlSumIf, tXlCountIf, tXlIf, tXlVlookup, tXlPct, tXlAbs],
     python: [tPySlice, tPyType, tPyConvert, tPyPrec, tPyRange, tPyBool, tPyFind],
