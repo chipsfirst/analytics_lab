@@ -12,6 +12,7 @@ window.TOPIC_ORDER = [
   "sql",
   "excel",
   "python",
+  "cs",
   "regression",
   "classification",
   "ml",

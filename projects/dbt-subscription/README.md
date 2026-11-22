@@ -5,7 +5,8 @@
 ## Быстрый старт
 
 ```bash
-python -m venv .venv
+python3.12 scripts/check_python.py
+python3.12 -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
 cp profiles.yml.example profiles.yml
@@ -13,6 +14,8 @@ dbt seed --profiles-dir .
 dbt build --profiles-dir .
 dbt source freshness --profiles-dir .
 ```
+
+`check_python.py` сразу отклоняет Python 3.14: под него нет готового wheel, и `pip` может уйти в долгую сборку.
 
 `seeds/` уже содержит четыре CSV. В репозитории сайта они не хранятся: zip собирается из `data/sub-*.csv`.
 

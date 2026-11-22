@@ -104,7 +104,7 @@
       '<pre class="code-block"><code>sub_users ─┐\nsub_subscriptions ─┼─> staging ─> dim_users / fct_payments / mart_* ─> BI\nsub_payments ─┤\nsub_tickets ─┘</code></pre>',
       "<h2>Запуск</h2>",
       '<pre class="code-block"><code>unzip dbt-subscription.zip\ncd dbt-subscription\npython -m venv .venv\nsource .venv/bin/activate\npip install -r requirements.txt\ncp profiles.yml.example profiles.yml\ndbt seed --profiles-dir .\ndbt build --profiles-dir .</code></pre>',
-      '<p class="meta">Нужен Python 3.10+ и интернет для установки dbt-duckdb. Seeds уже в архиве.</p>',
+      '<p class="meta">Нужен Python 3.12: <code>scripts/check_python.py</code> сразу отклоняет 3.14, иначе pip уходит в долгую сборку. Seeds уже в архиве.</p>',
       "<h2>Живой дашборд</h2>",
       '<div class="card"><div class="dbt-toolbar"><label>Канал <select id="dbtChannel">' +
         '<option value="">Все каналы</option><option value="paid_search">paid_search</option>' +

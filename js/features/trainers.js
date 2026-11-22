@@ -1522,11 +1522,90 @@
     };
   }
 
+  function tShapley() {
+    var a = rndStep(20, 50, 10);
+    var b = rndStep(20, 50, 10);
+    var extra = rndStep(10, 30, 10);
+    var ab = a + b + extra;
+    var phi = (a + (ab - b)) / 2;
+    return {
+      prompt: "Коалиционная игра: v(A) = " + a + ", v(B) = " + b + ", v(AB) = " + ab +
+        ". Какова доля игрока A по вектору Шепли?",
+      solution: "Для двух игроков φA = 1/2 · v(A) + 1/2 · (v(AB) − v(B)) = " +
+        a + "/2 + (" + ab + " − " + b + ")/2 = " + fmt(phi, 1) + ".",
+      answer: num(phi, 0.1, 1)
+    };
+  }
+
+  function tSignaling() {
+    return {
+      prompt: "Расширенная гарантия дорога ненадёжному продавцу и дешева надёжному. Что это за механизм?",
+      solution: "Это сигнал: дорогое действие разделяет типы, потому что плохому типу оно обходится дороже.",
+      answer: { type: "choice", options: [
+        { text: "Сигнал", ok: true },
+        { text: "Моральный риск", ok: false },
+        { text: "Неблагоприятный отбор", ok: false },
+        { text: "Доминирующая стратегия", ok: false }
+      ] }
+    };
+  }
+
+  function tCsComplexity() {
+    var cases = [
+      { q: "O(log n)", right: "Время растёт логарифмически: бинарный поиск, B-tree", wrong: ["Время не зависит от входа", "Время растёт квадратично", "Это всегда два прохода"] },
+      { q: "двойной цикл по n элементам", right: "O(n²)", wrong: ["O(1)", "O(log n)", "O(n)"] },
+      { q: "доступ к элементу массива по индексу", right: "O(1)", wrong: ["O(log n)", "O(n)", "O(n²)"] }
+    ];
+    var c = cases[rndInt(0, cases.length - 1)];
+    var opts = [{ text: c.right, ok: true }].concat(c.wrong.map(function (t) { return { text: t, ok: false }; }));
+    var k = rndInt(0, opts.length - 1);
+    opts = opts.slice(k).concat(opts.slice(0, k));
+    return {
+      prompt: "Какая сложность у операции: " + c.q + "?",
+      solution: "Сложность описывает рост числа операций; для этой операции правильный класс — «" + c.right + "».",
+      answer: { type: "choice", options: opts }
+    };
+  }
+
+  function tCsStructure() {
+    var cases = [
+      { q: "найти пользователя по уникальному email", right: "Хеш-таблица", wrong: ["Очередь", "Стек", "Несортированный массив"] },
+      { q: "выбрать заказы за диапазон дат", right: "Упорядоченный индекс (B-tree)", wrong: ["Хеш-таблица", "Стек", "Очередь"] },
+      { q: "всегда брать задачу с максимальным приоритетом", right: "Куча", wrong: ["Хеш-таблица", "Массив без порядка", "Стек"] }
+    ];
+    var c = cases[rndInt(0, cases.length - 1)];
+    var opts = [{ text: c.right, ok: true }].concat(c.wrong.map(function (t) { return { text: t, ok: false }; }));
+    var k = rndInt(0, opts.length - 1);
+    opts = opts.slice(k).concat(opts.slice(0, k));
+    return {
+      prompt: "Что лучше подходит, если нужно " + c.q + "?",
+      solution: "Структура выбирается под операцию: «" + c.right + "» делает её дешёвой.",
+      answer: { type: "choice", options: opts }
+    };
+  }
+
+  function tCsIndex() {
+    var cases = [
+      { q: "индекс по колонке", right: "Ускоряет чтение по фильтру и join, но замедляет запись", wrong: ["Всегда уменьшает таблицу", "Заменяет первичный ключ", "Отключает транзакции"] },
+      { q: "индекс по каждой колонке", right: "Запись станет дороже, а планировщик может ошибиться", wrong: ["Все запросы ускорятся", "Таблица исчезнет", "Индексы перестанут обновляться"] },
+      { q: "функция в WHERE по индексированной колонке", right: "Обычный индекс может не примениться", wrong: ["Индекс всегда сработает", "Запрос станет быстрее", "СУБД создаст индекс сама"] }
+    ];
+    var c = cases[rndInt(0, cases.length - 1)];
+    var opts = [{ text: c.right, ok: true }].concat(c.wrong.map(function (t) { return { text: t, ok: false }; }));
+    var k = rndInt(0, opts.length - 1);
+    opts = opts.slice(k).concat(opts.slice(0, k));
+    return {
+      prompt: "Что верно про " + c.q + "?",
+      solution: "Индекс — компромисс: чтение быстрее, запись и место дороже; функция может помешать его использовать.",
+      answer: { type: "choice", options: opts }
+    };
+  }
+
   window.TRAINERS = {
     analytics: [tCtr, tFunnel, tRomi, tLtvCac, tAbLift, tRetention],
     statistics: [tMean, tMedian, tVariance, tSd, tZ, tSe, tMad, tTrimMean, tIqr, tPoisson],
     probability: [tComb, tUnion, tBayes, tBinom, tDice, tAtLeastOne],
-    gametheory: [tNash, tDominant, tMaximin, tMixed],
+    gametheory: [tNash, tDominant, tMaximin, tMixed, tShapley, tSignaling],
     data: [tMissingChoice, tDataType, tDupKey, tGrainJoin, tMissingMNAR, tScaleChoice, tFreshness, tIdempotent],
     sql: [tSqlWhere, tSqlDistinct, tSqlGroupHaving, tSqlOrderLimit, tSqlNull, tSqlJoin, tSqlWindow, tSqlAvgNull],
     excel: [tXlSumIf, tXlCountIf, tXlIf, tXlVlookup, tXlPct, tXlAbs],
@@ -1537,6 +1616,7 @@
     useful: [tVizChoice, tNoteType, tReportFirst, tPortfolioProof],
     ethics: [tConsentChoice, tAnonChoice, tEthicsChoice],
     bi: [tBiConversion, tBiChartChoice, tDaxChoice, tLodChoice],
+    cs: [tCsComplexity, tCsStructure, tCsIndex],
     production: [tProdLayer, tProdDbtTest, tProdFreshness],
     timeseries: [tSmaCalc, tNaiveForecast, tMapeForecast],
     causal: [tAteCalc, tDiffInDiff, tConfounder]
