@@ -1058,6 +1058,44 @@
     };
   }
 
+  function tVizChoice() {
+    var cases = [
+      { q: "показать, как менялась выручка по месяцам", right: "Линейный график", wrong: ["Круговая диаграмма", "Ящик с усами", "Диаграмма рассеяния"] },
+      { q: "сравнить выручку пяти филиалов", right: "Столбиковая диаграмма", wrong: ["Линейный график", "Круговая диаграмма", "Диаграмма рассеяния"] },
+      { q: "показать связь цены и спроса по товарам", right: "Диаграмма рассеяния", wrong: ["Столбиковая диаграмма", "Круговая диаграмма", "Линейный график по времени"] },
+      { q: "показать доли каналов трафика, которые в сумме дают 100%", right: "Круговая диаграмма", wrong: ["Линейный график", "Ящик с усами", "Диаграмма рассеяния"] },
+      { q: "сравнить распределение зарплат по отделам с выбросами", right: "Ящик с усами", wrong: ["Круговая диаграмма", "Диаграмма рассеяния", "Линейный график"] }
+    ];
+    var c = cases[rndInt(0, cases.length - 1)];
+    var opts = [{ text: c.right, ok: true }].concat(c.wrong.map(function (t) { return { text: t, ok: false }; }));
+    var k = rndInt(0, opts.length - 1);
+    opts = opts.slice(k).concat(opts.slice(0, k));
+    return {
+      prompt: "Задача: " + c.q + ". Какой график подойдёт лучше всего?",
+      solution: "Тип графика выбирается по вопросу: здесь подходит «" + c.right + "».",
+      answer: { type: "choice", options: opts }
+    };
+  }
+
+  function tNoteType() {
+    var cases = [
+      { q: "мысль пришла в метро, записали одной строкой в телефон", right: "Мимолётная", wrong: ["Постоянная", "Проектная"] },
+      { q: "разобрали статью и записали вывод своими словами со ссылкой на источник", right: "Постоянная", wrong: ["Мимолётная", "Проектная"] },
+      { q: "список задач и черновик отчёта на эту неделю", right: "Проектная", wrong: ["Мимолётная", "Постоянная"] },
+      { q: "подчеркнули абзац в книге и закрыли, к записи не возвращались", right: "Мимолётная", wrong: ["Постоянная", "Проектная"] },
+      { q: "одна мысль на карточке полными предложениями, со ссылками на другие записи", right: "Постоянная", wrong: ["Мимолётная", "Проектная"] }
+    ];
+    var c = cases[rndInt(0, cases.length - 1)];
+    var opts = [{ text: c.right, ok: true }].concat(c.wrong.map(function (t) { return { text: t, ok: false }; }));
+    var k = rndInt(0, opts.length - 1);
+    opts = opts.slice(k).concat(opts.slice(0, k));
+    return {
+      prompt: "К какому типу относится заметка: " + c.q + "?",
+      solution: "Тип определяется назначением: «" + c.right + "» — так эта запись и должна храниться.",
+      answer: { type: "choice", options: opts }
+    };
+  }
+
   window.TRAINERS = {
     analytics: [tCtr, tFunnel, tRomi, tLtvCac, tAbLift, tRetention],
     statistics: [tMean, tMedian, tVariance, tSd, tZ, tSe, tMad, tTrimMean, tIqr, tPoisson],
@@ -1068,6 +1106,7 @@
     python: [tPySlice, tPyType, tPyConvert, tPyPrec, tPyRange, tPyBool, tPyFind],
     regression: [tRegPredict, tRegRmse, tRegDummies],
     classification: [tClfPrecision, tClfRecall, tClfThreshold, tClfOdds],
-    ml: [tKnnClass, tForestVote, tKmeansAssign]
+    ml: [tKnnClass, tForestVote, tKmeansAssign],
+    useful: [tVizChoice, tNoteType]
   };
 })();

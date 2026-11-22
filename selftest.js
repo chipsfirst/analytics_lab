@@ -3,7 +3,7 @@
 
 global.window = global;
 require("./data.js");
-["analytics", "statistics", "gametheory", "probability", "sql", "excel", "python", "regression", "classification", "ml"]
+["analytics", "statistics", "gametheory", "probability", "sql", "excel", "python", "regression", "classification", "ml", "useful"]
   .forEach(function (id) { require("./topics/" + id + ".js"); });
 require("./trainers.js");
 require("./games.js");
@@ -22,7 +22,7 @@ function ok(cond, msg) {
 
 // --- структура контента ---
 var topicIds = Object.keys(window.TOPICS);
-ok(topicIds.length === 10, "ожидалось 10 разделов, найдено " + topicIds.length);
+ok(topicIds.length === 11, "ожидалось 11 разделов, найдено " + topicIds.length);
 
 topicIds.forEach(function (id) {
   var t = window.TOPICS[id];
@@ -40,7 +40,7 @@ topicIds.forEach(function (id) {
   });
 });
 
-ok(Object.keys(window.TRAINERS).length === 10, "тренажёры есть не для всех разделов");
+ok(Object.keys(window.TRAINERS).length === 11, "тренажёры есть не для всех разделов");
 topicIds.forEach(function (id) {
   ok(window.TRAINERS[id] && window.TRAINERS[id].length > 0, id + ": нет тренажёров");
 });

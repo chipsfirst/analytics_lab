@@ -1,6 +1,6 @@
 // Кеш оболочки приложения. При изменении файлов поднимите версию —
 // иначе браузер продолжит отдавать старую копию.
-const VERSION = "v7";
+const VERSION = "v8";
 const CACHE = "analytics-lab-" + VERSION;
 
 const ASSETS = [
@@ -19,6 +19,7 @@ const ASSETS = [
   "topics/regression.js",
   "topics/classification.js",
   "topics/ml.js",
+  "topics/useful.js",
   "trainers.js",
   "games.js",
   "progress.js",
