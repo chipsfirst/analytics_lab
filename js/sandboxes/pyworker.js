@@ -55,6 +55,16 @@ self.onmessage = function (e) {
       })
       .then(function (p) {
         pyodide = p;
+        try {
+          if (msg.files && pyodide.FS) {
+            Object.keys(msg.files).forEach(function (name) {
+              pyodide.FS.writeFile("/home/pyodide/" + name, msg.files[name], { encoding: "utf8" });
+            });
+          }
+        } catch (err) {
+          send({ type: "fatal", text: "не удалось положить данные в песочницу: " + String(err && err.message || err) });
+          return;
+        }
         pyodide.setStdout({ batched: function (text) { send({ type: "stdout", text: text }); } });
         pyodide.setStderr({ batched: function (text) { send({ type: "stderr", text: text }); } });
 

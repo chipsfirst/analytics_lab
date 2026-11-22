@@ -4,20 +4,19 @@
 (function () {
   "use strict";
 
-  var KEY = "analytics-lab-pysandbox-v1";
   var EXAMPLE = 'print("Привет!")\n\ntotal = 0\nfor i in range(1, 6):\n    total += i\n\nprint("Сумма чисел от 1 до 5:", total)';
 
-  function loadCells() {
+  function loadCells(key) {
     try {
-      var raw = window.localStorage.getItem(KEY);
+      var raw = window.localStorage.getItem(key);
       var list = raw ? JSON.parse(raw) : null;
       if (Array.isArray(list) && list.length) return list.map(String);
     } catch (e) {}
     return [EXAMPLE];
   }
 
-  function saveCells(cells) {
-    try { window.localStorage.setItem(KEY, JSON.stringify(cells)); } catch (e) {}
+  function saveCells(cells, key) {
+    try { window.localStorage.setItem(key, JSON.stringify(cells)); } catch (e) {}
   }
 
   function esc(s) {
@@ -30,13 +29,16 @@
     return (n / 1048576).toFixed(1).replace(".", ",") + " МБ";
   }
 
-  function mount(root) {
-    var cells = loadCells();
+  function mount(root, opts) {
+    opts = opts || {};
+    var KEY = "analytics-lab-pysandbox-v1" + (opts.keySuffix || "");
+    var cells = opts.cells && opts.cells.length ? opts.cells.map(String) : loadCells(KEY);
     var worker = null;
     var ready = false;
     var running = false;
     var currentOut = null;
     var fatal = false;
+    var files = opts.files || {};
 
     root.innerHTML =
       '<div class="nb-bar">' +
@@ -73,7 +75,7 @@
         return '<div class="nb-cell" data-i="' + i + '">' +
           '<div class="nb-head"><span class="nb-num">In [' + (i + 1) + "]</span>" +
           '<button class="btn small" data-run="' + i + '">Выполнить</button></div>' +
-          '<textarea class="nb-code" spellcheck="false" data-code="' + i + '">' + esc(code) + "</textarea>" +
+          '<textarea class="nb-code" spellcheck="false" aria-label="Ячейка Python ' + (i + 1) + '" data-code="' + i + '">' + esc(code) + "</textarea>" +
           '<pre class="nb-out" data-out="' + i + '"></pre></div>';
       }).join("");
     }
@@ -127,7 +129,7 @@
       var t = e.target;
       if (t && t.hasAttribute("data-code")) {
         cells[Number(t.getAttribute("data-code"))] = t.value;
-        saveCells(cells);
+        saveCells(cells, KEY);
       }
     });
 
@@ -147,7 +149,7 @@
 
     root.querySelector("#nbAdd").addEventListener("click", function () {
       cells.push("");
-      saveCells(cells);
+      saveCells(cells, KEY);
       draw();
       var last = cellsBox.querySelectorAll("textarea");
       if (last.length) last[last.length - 1].focus();
@@ -156,7 +158,7 @@
     root.querySelector("#nbClear").addEventListener("click", function () {
       if (!confirm("Очистить все ячейки? Код будет удалён.")) return;
       cells = [""];
-      saveCells(cells);
+      saveCells(cells, KEY);
       draw();
     });
 
@@ -244,7 +246,7 @@
         setStatus("Ошибка загрузки Python: " + text + ". Проверьте интернет и нажмите «Повторить».", true);
       };
 
-      worker.postMessage({ type: "init" });
+      worker.postMessage({ type: "init", files: files });
     }
 
     if (retry) retry.addEventListener("click", startWorker);

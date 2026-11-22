@@ -481,6 +481,12 @@ input:focus, select:focus, textarea:focus { border-color: var(--accent); }
 .figure figcaption { margin-top: 6px; font-size: 12px; color: var(--muted); }
 .figure text { font-family: var(--mono); }
 .gloss-group h2 { margin-top: 26px; }
+.task-box { margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--line); display: grid; gap: 8px; }
+.task-box select { padding: 7px 9px; border: 1px solid var(--line); border-radius: 8px; background: var(--bg); color: var(--ink); font: inherit; }
+.project-stage { border: 1px solid var(--line); border-radius: 10px; padding: 12px 16px; margin: 12px 0; background: var(--panel); }
+.project-stage.done { border-color: var(--ok); }
+.project-stage h2 { margin-top: 0; }
+.project-stage label { display: block; margin: 6px 0; font-size: 13px; }
 .review-item { border-bottom: 1px solid var(--line); padding: 10px 0; }
 .review-item p { margin: 4px 0; }
 .gloss-item { border-bottom: 1px solid var(--line); padding: 10px 0; }
@@ -581,3 +587,11 @@ a { text-underline-offset: 2px; }
   .formula, .note, .example, table { page-break-inside: avoid; }
   a { color: #000; text-decoration: underline; }
 }
+
+.calc-card { margin-top: 14px; }
+.calc-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px 14px; }
+.calc-grid label { display: grid; gap: 4px; font-size: .9rem; color: var(--muted); }
+.calc-grid input { padding: 8px 9px; border: 1px solid var(--line); border-radius: 8px; background: var(--bg); color: var(--ink); font: inherit; }
+.calc-out { margin: 12px 0 0; font-weight: 600; }
+
+p a { text-decoration: underline; text-underline-offset: 2px; }

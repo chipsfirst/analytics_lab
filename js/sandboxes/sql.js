@@ -35,6 +35,18 @@
     ["COUNT(*) и COUNT(discount)", "SELECT COUNT(*) AS rows_all, COUNT(discount) AS not_null\nFROM orders;"]
   ];
 
+
+  var TASKS = [
+    { title: "Сумма всех заказов", prompt: "Посчитайте сумму amount по всем заказам одним числом.",
+      sql: "SELECT SUM(amount) AS total FROM orders;" },
+    { title: "Города с несколькими заказами", prompt: "Выведите city и число заказов только для городов, где заказов больше одного.",
+      sql: "SELECT u.city, COUNT(*) AS orders FROM orders o JOIN users u ON u.id = o.user_id GROUP BY u.city HAVING COUNT(*) > 1 ORDER BY u.city;" },
+    { title: "Средний чек со скидкой", prompt: "Посчитайте средний amount по заказам, где discount не NULL.",
+      sql: "SELECT ROUND(AVG(amount), 2) AS avg_amount FROM orders WHERE discount IS NOT NULL;" },
+    { title: "Пользователи без заказов", prompt: "Выведите имена пользователей, у которых нет ни одного заказа.",
+      sql: "SELECT u.name FROM users u LEFT JOIN orders o ON o.user_id = u.id WHERE o.id IS NULL;" }
+  ];
+
   var engine = null;   // загруженный sql.js
   var db = null;       // текущая база
   var loading = null;
@@ -78,6 +90,13 @@
         '<textarea id="sQuery" spellcheck="false" rows="5">SELECT * FROM orders ORDER BY amount DESC;</textarea>' +
         '<div id="sOut" class="sandbox-out" aria-live="polite">Загрузка движка…</div>' +
         '<details class="schema"><summary>Схема и данные</summary>' + SCHEMA_HTML + "</details>" +
+        '<div class="task-box"><b>Задачи с проверкой</b>' +
+        '<select id="sTask" aria-label="Задача"><option value="">Выберите задачу…</option>' +
+        TASKS.map(function (t, i) { return '<option value="' + i + '">' + esc(t.title) + "</option>"; }).join("") +
+        "</select>" +
+        '<p id="sTaskPrompt" class="meta">Выберите задачу, напишите запрос и нажмите «Проверить задачу».</p>' +
+        '<button class="btn" id="sCheck">Проверить задачу</button>' +
+        '<div id="sTaskOut" aria-live="polite"></div></div>' +
         "</div>";
 
       var ta = document.getElementById("sQuery");
@@ -137,6 +156,42 @@
 
       document.getElementById("sReset").addEventListener("click", function () {
         ensure(function () { resetDb(); say("<p>База восстановлена в исходном виде.</p>"); });
+      });
+
+      var taskSel = document.getElementById("sTask");
+      var taskPrompt = document.getElementById("sTaskPrompt");
+      var taskOut = document.getElementById("sTaskOut");
+      var checkBtn = document.getElementById("sCheck");
+      taskSel.addEventListener("change", function () {
+        var t = TASKS[Number(taskSel.value)];
+        taskPrompt.textContent = t ? t.prompt : "Выберите задачу, напишите запрос и нажмите «Проверить задачу».";
+        taskOut.innerHTML = "";
+      });
+      checkBtn.addEventListener("click", function () {
+        var t = TASKS[Number(taskSel.value)];
+        if (!t) { taskOut.innerHTML = '<p class="verdict bad">Сначала выберите задачу.</p>'; return; }
+        var sql = ta.value.trim();
+        if (!sql) { taskOut.innerHTML = '<p class="verdict bad">Напишите запрос.</p>'; return; }
+        ensure(function () {
+          try {
+            var got = db.exec(sql);
+            var want = db.exec(t.sql);
+            function norm(res) {
+              var rows = (res[0] ? res[0].values : []).map(function (r) {
+                return r.map(function (v) { return typeof v === "number" ? Math.round(v * 100) / 100 : v; });
+              });
+              rows.sort(function (a, b) { return JSON.stringify(a) < JSON.stringify(b) ? -1 : 1; });
+              return JSON.stringify(rows);
+            }
+            if (norm(got) === norm(want)) {
+              taskOut.innerHTML = '<p class="verdict ok" role="status">Верно. Задача решена.</p>';
+            } else {
+              taskOut.innerHTML = '<p class="verdict bad" role="status">Пока не совпало. Проверьте фильтры, группировку и сортировку.</p>';
+            }
+          } catch (e) {
+            taskOut.innerHTML = '<p class="verdict bad" role="status">' + esc(e.message) + "</p>";
+          }
+        });
       });
 
       ensure(function () { say("<p>Готово: пишите запрос и жмите «Выполнить» (или Cmd/Ctrl + Enter).</p>"); });

@@ -199,6 +199,8 @@
       (m.total ? '<div class="stat"><div class="k">мини-тесты</div><div class="v">' + m.correct + " / " + m.total + "</div></div>" : "") +
       "</div>" +
       '<div class="btn-row"><a class="btn" href="' + continueHref() + '">Продолжить</a>' +
+      (window.PROGRESS.dueReviews().length ? '<a class="btn" href="#/review">Повторить ошибки (' +
+        window.PROGRESS.dueReviews().length + ")</a>" : "") +
       '<button class="btn" id="exportProgress">Экспорт прогресса</button>' +
       '<button class="btn" id="importProgress">Импорт</button>' +
       '<input type="file" id="importFile" accept=".json,application/json" hidden>' +
@@ -212,6 +214,10 @@
       "интерактивные демонстрации и игры на интуицию. Без регистрации: прогресс хранится в браузере.</p>" +
       '<div class="btn-row"><a class="btn primary" href="#/theory">Начать с теории</a>' +
       '<a class="btn" href="#/path">Маршрут обучения</a>' +
+      '<a class="btn" href="#/calc">Калькуляторы</a>' +
+      '<a class="btn" href="#/analyst-exam">Сертификация</a>' +
+      '<a class="btn" href="#/notebook">Python-блокнот</a>' +
+      '<a class="btn" href="#/project">Сквозной проект</a>' +
       '<a class="btn" href="#/trainer">Сразу к тренажёрам</a></div>' +
       "</div>" +
       progressBlock() +
@@ -256,6 +262,11 @@
         (read ? "Прочитано" : "Отметить прочитанной") + "</button></span></div>" +
         c.html +
         chapterTermsHtml(id, i, c.html) +
+        '<p class="meta"><a href="https://github.com/chipsfirst/analytics_lab/issues/new?title=' +
+          encodeURIComponent("Ошибка в главе: " + c.title) + "&body=" +
+          encodeURIComponent("Раздел: " + t.title + "\nГлава: " + c.title + "\nСсылка: " +
+            (window.location.origin + window.location.pathname) + "#/theory/" + id + "/" + i +
+            "\n\nЧто не так:\n") + '">Сообщить об ошибке в главе</a></p>' +
         '<div class="ch-nav">' + prev + next + "</div>" +
         '<div class="mini" data-mini="' + i + '"><button class="btn small" data-mini-start="' + i + '">Проверить себя · 3 вопроса</button></div>' +
         "</section>";
@@ -280,8 +291,16 @@
       if (t.parentNode.classList.contains("table-wrap")) return;
       var box = document.createElement("div");
       box.className = "table-wrap";
+      box.tabIndex = 0;
+      box.setAttribute("role", "region");
+      box.setAttribute("aria-label", "Таблица, прокручивается");
       t.parentNode.insertBefore(box, t);
       box.appendChild(t);
+    });
+    Array.prototype.forEach.call(root.querySelectorAll(".table-wrap"), function (box) {
+      box.tabIndex = 0;
+      box.setAttribute("role", "region");
+      box.setAttribute("aria-label", "Таблица, прокручивается");
     });
   }
 
@@ -723,13 +742,13 @@
       "как меняется результат.</p>" + entryGrid(window.DEMOS, "#/demos/", "Открыть", true);
   }
 
-  function biExamPage() {
-    var bank = window.TOPICS.bi.quiz;
+  function examPage(cfg) {
+    var bank = cfg.bank;
     var state = null;
     var timer = null;
 
-    app.innerHTML = '<p><a href="#/theory/bi">&larr; к разделу BI</a></p>' +
-      '<h1>Сертификация BI</h1><p class="lead">20 вопросов, 15 минут. Проходной балл — 14 правильных ответов.</p>' +
+    app.innerHTML = '<p><a href="' + cfg.back + '">&larr; ' + cfg.backLabel + '</a></p>' +
+      '<h1>' + cfg.title + '</h1><p class="lead">' + cfg.lead + '</p>' +
       '<div id="examRoot"></div>';
     var root = document.getElementById("examRoot");
 
@@ -744,7 +763,7 @@
         qs: bank.map(function (q) {
           return { q: q.q, explain: q.explain, options: quizOptions(q) };
         }),
-        i: 0, picked: -1, score: 0, answers: [], left: 15 * 60, done: false
+        i: 0, picked: -1, score: 0, answers: [], left: (cfg.minutes || 15) * 60, done: false
       };
       timer = setInterval(function () {
         if (state.done) return;
@@ -766,7 +785,7 @@
     function draw() {
       if (state.done) {
         var pct = Math.round(state.score / state.qs.length * 100);
-        var pass = state.score >= 14;
+        var pass = state.score >= (cfg.pass || 14);
         var review = state.qs.map(function (q, i) {
           var a = state.answers[i];
           var correct = q.options.filter(function (o) { return o.ok; })[0];
@@ -776,9 +795,9 @@
             (a && a.ok ? "" : '<p class="meta">' + q.explain + "</p>") + "</div>";
         }).join("");
         root.innerHTML = '<div class="card center"><h2 style="margin-top:0">' + state.score + " из " + state.qs.length +
-          " (" + pct + "%)</h2><p class=\"lead center\">" + (pass ? "Сдано. Можно разбирать слабые места." : "Пока не сдано: нужно 14 правильных.") + "</p>" +
+          " (" + pct + "%)</h2><p class=\"lead center\">" + (pass ? "Сдано. Можно разбирать слабые места." : "Пока не сдано: нужно " + (cfg.pass || 14) + " правильных.") + "</p>" +
           '<div class="btn-row" style="justify-content:center"><button class="btn primary" id="retry">Пройти ещё раз</button>' +
-          '<a class="btn" href="#/theory/bi">К разделу BI</a></div></div>' +
+          '<a class="btn" href="' + cfg.back + '">' + cfg.backLabel + '</a></div></div>' +
           '<h2>Разбор</h2>' + review;
         document.getElementById("retry").addEventListener("click", start);
         return;
@@ -841,6 +860,37 @@
       "Shift+Enter — выполнить ячейку.</p><div id=\"pysandbox\"></div>";
     var fn = window.PYSANDBOX.mount(document.getElementById("pysandbox"));
     if (typeof fn === "function") cleanup = fn;
+    return null;
+  }
+
+  function notebookPage() {
+    app.innerHTML = '<p><a href="#/theory/python">&larr; к теории Python</a></p>' +
+      '<h1>Python-блокнот: заказы</h1>' +
+      '<p class="lead" style="margin-bottom:20px">Датасет <code>bi-orders.csv</code> уже лежит рядом: ' +
+      "прочитайте его стандартной библиотекой, посчитайте выручку и разрез по каналам. " +
+      "Нажмите «Загрузить Python», затем «Запустить всё».</p>" +
+      '<div id="notebook"></div>';
+    var root = document.getElementById("notebook");
+    var nbCleanup = null;
+    cleanup = function () { if (typeof nbCleanup === "function") nbCleanup(); };
+    fetch("data/bi-orders.csv").then(function (r) {
+      if (!r.ok) throw new Error("HTTP " + r.status);
+      return r.text();
+    }).then(function (csv) {
+      if (!document.getElementById("notebook")) return;
+      nbCleanup = window.PYSANDBOX.mount(root, {
+        keySuffix: "-bi",
+        files: { "bi-orders.csv": csv },
+        cells: [
+          'import csv\n\nrows = list(csv.DictReader(open("bi-orders.csv", encoding="utf-8")))\nprint("Строк в файле:", len(rows))\nprint(rows[0])',
+          'revenue = sum(float(r["revenue"]) for r in rows if r["returned"] == "0")\nprint(f"Выручка без возвратов: {revenue:,.0f} ₽")\nprint(f"Средний чек: {revenue / len(rows):,.0f} ₽")',
+          'from collections import Counter\nby_channel = Counter()\nfor r in rows:\n    if r["returned"] == "0":\n        by_channel[r["channel"]] += float(r["revenue"])\nfor ch, total in by_channel.most_common():\n    print(ch, f"{total:,.0f} ₽")'
+        ]
+      });
+    }).catch(function () {
+      if (root) root.innerHTML = '<p class="verdict bad">Не удалось загрузить data/bi-orders.csv. ' +
+        "Откройте сайт по http:// или https://, а не двойным щелчком по файлу.</p>";
+    });
     return null;
   }
 
@@ -978,6 +1028,256 @@
     }
   }
 
+  function projectPage() {
+    return '<h1>Сквозной проект</h1>' +
+      '<p class="lead">Один датасет и путь от выгрузки до вывода: SQL → Python → метрики → дашборд → решение. ' +
+      'Данные: <a href="data/bi-orders.csv" download>bi-orders.csv</a> — 28 заказов за январь–февраль 2026.</p>' +
+      '<p class="meta" id="projectProgress">Выполнено этапов: 0 из 5</p>' +
+      '<section class="project-stage" data-stage="1"><h2>1. Данные</h2>' +
+      '<p>Скачайте файл и проверьте: 28 строк, колонки order_date, city, channel, revenue, returned, order_id.</p>' +
+      '<label><input type="checkbox" id="p1"> Данные скачаны и проверены</label></section>' +
+      '<section class="project-stage" data-stage="2"><h2>2. SQL</h2>' +
+      '<p>Выручка без возвратов: <code>SELECT SUM(revenue) FROM orders WHERE returned = 0;</code></p>' +
+      '<div class="answer-row"><label class="sr-only" for="p2">Выручка</label><input type="number" id="p2" placeholder="Ответ"><button class="btn" data-check="2" data-answer="268100">Проверить</button></div></section>' +
+      '<section class="project-stage" data-stage="3"><h2>3. Python</h2>' +
+      '<p>Средний чек: <code>df[df.returned == 0].revenue.sum() / len(df)</code>.</p>' +
+      '<div class="answer-row"><label class="sr-only" for="p3">Средний чек</label><input type="number" id="p3" placeholder="Ответ"><button class="btn" data-check="3" data-answer="9575" data-tol="2">Проверить</button></div></section>' +
+      '<section class="project-stage" data-stage="4"><h2>4. Дашборд</h2>' +
+      '<p>Соберите экран по шаблону: <a href="data/dashboard-sales-template.md" download>sales-шаблон</a>.</p>' +
+      '<label><input type="checkbox" class="p4"> KPI выручки, заказов и среднего чека</label>' +
+      '<label><input type="checkbox" class="p4"> Динамика по неделям</label>' +
+      '<label><input type="checkbox" class="p4"> Разрез по городам или каналам</label>' +
+      '<label><input type="checkbox" class="p4"> Подписаны период и дата обновления</label></section>' +
+      '<section class="project-stage" data-stage="5"><h2>5. Вывод</h2>' +
+      '<p>Что корректно сказать по данным?</p>' +
+      '<div class="options"><button class="option" data-p5="0">Выручка 268 100 ₽ без возвратов, 28 заказов, средний чек 9 575 ₽</button>' +
+      '<button class="option" data-p5="1">Выручка 296 700 ₽, потому что возвраты тоже продажи</button>' +
+      '<button class="option" data-p5="2">Средний чек нельзя посчитать без гипотезы</button></div></section>';
+  }
+
+  function bindProject() {
+    var KEY = "analytics-lab-project-v1";
+    var done = {};
+    try { done = JSON.parse(localStorage.getItem(KEY) || "{}") || {}; } catch (e) {}
+    function save() {
+      try { localStorage.setItem(KEY, JSON.stringify(done)); } catch (e) {}
+      var n = Object.keys(done).length;
+      var el = document.getElementById("projectProgress");
+      if (el) el.textContent = "Выполнено этапов: " + n + " из 5";
+      Array.prototype.forEach.call(document.querySelectorAll(".project-stage"), function (s) {
+        s.classList.toggle("done", !!done[s.getAttribute("data-stage")]);
+      });
+    }
+    function mark(n) { done[n] = 1; save(); }
+    save();
+    var p1 = document.getElementById("p1");
+    if (p1) {
+      p1.checked = !!done["1"];
+      p1.addEventListener("change", function () { if (p1.checked) mark("1"); });
+    }
+    Array.prototype.forEach.call(document.querySelectorAll("[data-check]"), function (b) {
+      b.addEventListener("click", function () {
+        var n = b.getAttribute("data-check");
+        var input = document.getElementById("p" + n);
+        var ans = Number(b.getAttribute("data-answer"));
+        var tol = Number(b.getAttribute("data-tol") || 1);
+        if (Math.abs(Number(input.value) - ans) <= tol) {
+          b.textContent = "Верно";
+          mark(n);
+        } else {
+          b.textContent = "Ещё раз";
+        }
+      });
+    });
+    var boxes = document.querySelectorAll(".p4");
+    if (boxes.length) {
+      var all = Array.prototype.every.call(boxes, function (b) { return b.checked; });
+      if (all) done["4"] = 1;
+      Array.prototype.forEach.call(boxes, function (b) {
+        b.addEventListener("change", function () {
+          if (Array.prototype.every.call(boxes, function (x) { return x.checked; })) mark("4");
+        });
+      });
+    }
+    Array.prototype.forEach.call(document.querySelectorAll("[data-p5]"), function (b) {
+      b.addEventListener("click", function () {
+        var ok = b.getAttribute("data-p5") === "0";
+        b.classList.add(ok ? "right" : "wrong");
+        if (ok) mark("5");
+      });
+    });
+  }
+
+  function calcPage() {
+    function field(id, label, value, step) {
+      return '<label>' + label + '<input id="' + id + '" type="number" inputmode="decimal" step="' + (step || "any") + '" value="' + value + '"></label>';
+    }
+    return '<h1>Калькуляторы аналитика</h1>' +
+      '<p class="lead">Быстрые расчёты для планирования эксперимента и юнит-экономики. ' +
+      "Формулы приближённые: для маленьких выборок и редких событий проверяйте результат симуляцией.</p>" +
+      '<section class="card calc-card"><h2>Размер выборки для A/B</h2>' +
+      '<div class="calc-grid">' + field("csP1", "Конверсия A, %", 10) + field("csP2", "Конверсия B, %", 12) +
+      field("csPower", "Мощность", 0.8) + field("csAlpha", "Уровень значимости", 0.05) + "</div>" +
+      '<p class="calc-out" id="csOut" aria-live="polite"></p></section>' +
+      '<section class="card calc-card"><h2>Минимальный детектируемый эффект</h2>' +
+      '<div class="calc-grid">' + field("mdeBase", "Базовая конверсия, %", 10) +
+      field("mdeN", "Выборка на группу", 4000) + field("mdePower", "Мощность", 0.8) +
+      field("mdeAlpha", "Уровень значимости", 0.05) + "</div>" +
+      '<p class="calc-out" id="mdeOut2" aria-live="polite"></p></section>' +
+      '<section class="card calc-card"><h2>Длительность теста</h2>' +
+      '<div class="calc-grid">' + field("durN", "Нужно на группу", 4000) +
+      field("durTraffic", "Трафик в день, всего", 1200) + "</div>" +
+      '<p class="calc-out" id="durOut" aria-live="polite"></p></section>' +
+      '<section class="card calc-card"><h2>Доверительный интервал доли</h2>' +
+      '<div class="calc-grid">' + field("ciConv", "Конверсий", 120) + field("ciVisitors", "Визитов", 1000) + "</div>" +
+      '<p class="calc-out" id="ciOut" aria-live="polite"></p></section>' +
+      '<section class="card calc-card"><h2>LTV, CAC и окупаемость</h2>' +
+      '<div class="calc-grid">' + field("ueArpu", "Выручка с клиента в месяц, ₽", 900) +
+      field("ueCac", "CAC, ₽", 2400) + field("ueChurn", "Отток в месяц, %", 5) + "</div>" +
+      '<p class="calc-out" id="ueOut" aria-live="polite"></p></section>';
+  }
+
+  function bindCalc() {
+    function num(id) { return Number((document.getElementById(id) || {}).value); }
+    function fmt(n, digits) {
+      return Number(n).toLocaleString("ru-RU", { maximumFractionDigits: digits == null ? 0 : digits });
+    }
+    function zAlpha(a) { return a === 0.01 ? 2.575829 : 1.959964; }
+    function zPower(p) { return p === 0.9 ? 1.281552 : 0.841621; }
+    function size(p1, p2, power, alpha) {
+      var za = zAlpha(alpha), zp = zPower(power), d = Math.abs(p2 - p1);
+      if (!(p1 > 0 && p1 < 1 && p2 > 0 && p2 < 1) || d < 0.000001) return null;
+      return Math.ceil(Math.pow(za + zp, 2) * (p1 * (1 - p1) + p2 * (1 - p2)) / (d * d));
+    }
+    function sample() {
+      var p1 = num("csP1") / 100, p2 = num("csP2") / 100;
+      var n = size(p1, p2, num("csPower"), num("csAlpha"));
+      document.getElementById("csOut").textContent = n
+        ? "Нужно примерно " + fmt(n) + " наблюдений в каждой группе, всего " + fmt(2 * n) + "."
+        : "Введите две разные конверсии от 0 до 100%.";
+    }
+    function mde() {
+      var p1 = num("mdeBase") / 100, n = num("mdeN"), power = num("mdePower"), alpha = num("mdeAlpha");
+      if (!(p1 > 0 && p1 < 1) || !(n > 0)) { document.getElementById("mdeOut2").textContent = "Проверьте базовую конверсию и выборку."; return; }
+      var za = zAlpha(alpha), zp = zPower(power), lo = 0, hi = 1 - p1;
+      for (var i = 0; i < 60; i++) {
+        var mid = (lo + hi) / 2, p2 = p1 + mid;
+        var req = Math.pow(za + zp, 2) * (p1 * (1 - p1) + p2 * (1 - p2)) / (mid * mid);
+        if (req > n) lo = mid; else hi = mid;
+      }
+      var d = (lo + hi) / 2;
+      document.getElementById("mdeOut2").textContent = "При такой выборке тест увидит рост с " +
+        fmt(p1 * 100, 1) + "% примерно до " + fmt((p1 + d) * 100, 1) + "%: эффект от " + fmt(d * 100, 1) + " п.п.";
+    }
+    function duration() {
+      var n = num("durN"), traffic = num("durTraffic");
+      if (!(n > 0 && traffic > 0)) { document.getElementById("durOut").textContent = "Проверьте выборку и трафик."; return; }
+      var days = Math.ceil(2 * n / traffic);
+      document.getElementById("durOut").textContent = "Примерно " + fmt(days) + " дней, или " +
+        fmt(days / 7, 1) + " недель. Округляйте вверх и не останавливайте тест раньше срока.";
+    }
+    function interval() {
+      var c = num("ciConv"), n = num("ciVisitors");
+      if (!(c >= 0 && n > 0 && c <= n)) { document.getElementById("ciOut").textContent = "Конверсий должно быть от 0 до числа визитов."; return; }
+      var p = c / n, se = Math.sqrt(p * (1 - p) / n), moe = 1.959964 * se;
+      var lo = Math.max(0, p - moe), hi = Math.min(1, p + moe);
+      document.getElementById("ciOut").textContent = "Конверсия " + fmt(p * 100, 1) + "%, 95% ДИ: " +
+        fmt(lo * 100, 1) + "–" + fmt(hi * 100, 1) + "%. Ширина интервала: ±" + fmt(moe * 100, 1) + " п.п.";
+    }
+    function unit() {
+      var arpu = num("ueArpu"), cac = num("ueCac"), churn = num("ueChurn");
+      if (!(arpu > 0 && cac > 0 && churn > 0 && churn < 100)) {
+        document.getElementById("ueOut").textContent = "Проверьте выручку, CAC и отток (0–100%).";
+        return;
+      }
+      var ltv = arpu / (churn / 100), ratio = ltv / cac, payback = cac / arpu;
+      var verdict = ratio >= 3 ? "запас есть" : ratio >= 1 ? "на границе" : "экономика отрицательная";
+      document.getElementById("ueOut").textContent = "LTV ≈ " + fmt(ltv) + " ₽, LTV/CAC = " +
+        fmt(ratio, 2) + " (" + verdict + "), окупаемость CAC ≈ " + fmt(payback, 1) + " мес.";
+    }
+    var map = { csP1: sample, csP2: sample, csPower: sample, csAlpha: sample,
+      mdeBase: mde, mdeN: mde, mdePower: mde, mdeAlpha: mde,
+      durN: duration, durTraffic: duration, ciConv: interval, ciVisitors: interval,
+      ueArpu: unit, ueCac: unit, ueChurn: unit };
+    Object.keys(map).forEach(function (id) {
+      var el = document.getElementById(id);
+      if (el) { el.addEventListener("input", map[id]); el.addEventListener("change", map[id]); }
+    });
+    sample(); mde(); duration(); interval(); unit();
+  }
+
+  function changelogPage() {
+    var entries = [
+      ["v33", "Сквозной проект, повторение ошибок, калькуляторы и Python-блокнот",
+       ["Сквозной проект: данные → SQL → Python → дашборд → вывод.", "Интервальное повторение ошибок из тестов и мини-тестов.",
+        "Калькуляторы выборки, MDE, длительности, доверительного интервала и юнит-экономики.",
+        "Сертификация аналитика и Python-блокнот с датасетом заказов.", "Главы о байесовском A/B, CUPED и мобильных дашбордах."]],
+      ["v32", "BI-лабораторные и сертификация",
+       ["Шаблоны дашбордов, датасет bi-orders.csv, лабораторные по трём BI-инструментам.", "Экзамен BI и словарь терминов."]],
+      ["v31", "Power BI, Tableau и DataLens", ["Разборы инструментов и сравнение."]],
+      ["v30", "BI, закон больших чисел и игры", ["Новый раздел BI, глава о ЗБЧ, аукцион и ультиматум."]],
+      ["v1.0.0", "Первый релиз", ["Учебник, тесты, тренажёры, демонстрации и офлайн-архив."]]
+    ];
+    return "<h1>Что нового</h1><p class=\"lead\">Короткая история изменений. Полная версия — в " +
+      '<a href="https://github.com/chipsfirst/analytics_lab/blob/main/CHANGELOG.md">CHANGELOG.md</a>.</p>' +
+      entries.map(function (e) {
+        return '<section class="card"><h2>' + e[0] + " — " + esc(e[1]) + "</h2><ul>" +
+          e[2].map(function (x) { return "<li>" + esc(x) + "</li>"; }).join("") + "</ul></section>";
+      }).join("");
+  }
+
+  function reviewPage() {
+    return '<h1>Повторение ошибок</h1>' +
+      '<p class="lead">Вопросы, в которых вы ошибались в тестах и мини-тестах, возвращаются по интервальному ' +
+      "повторению. Ответили верно \u2014 интервал растёт; ошиблись \u2014 вопрос можно повторить сразу.</p>" +
+      '<div id="reviewList"></div>';
+  }
+
+  function bindReview() {
+    var list = document.getElementById("reviewList");
+    var due = window.PROGRESS.dueReviews();
+    if (!due.length) {
+      list.innerHTML = '<p class="meta">Повторять пока нечего. Ответите неверно в тесте \u2014 ' +
+        'вопрос появится здесь для повторения.</p><p><a class="btn" href="#/quiz">Пройти тест</a></p>';
+      return;
+    }
+    list.innerHTML = due.map(function (r) {
+      var t = window.TOPICS[r.topic], q = t && t.quiz && t.quiz[r.idx];
+      if (!t || !q) return "";
+      var opts = quizOptions(q);
+      return '<div class="card review-item" data-topic="' + r.topic + '" data-idx="' + r.idx + '">' +
+        '<p class="meta">' + esc(t.title) + "</p>" +
+        "<p><b>" + esc(q.q) + "</b></p>" +
+        '<div class="options">' + opts.map(function (o, k) {
+          return '<button class="option" data-k="' + k + '">' + String.fromCharCode(1040 + k) + ". " + esc(o.text) + "</button>";
+        }).join("") +
+        '</div><div class="explain" aria-live="polite" hidden></div></div>';
+    }).join("") + '<p class="meta">Показываю вопросы из всех разделов.</p>';
+    Array.prototype.forEach.call(list.querySelectorAll(".review-item"), function (it) {
+      var topic = it.getAttribute("data-topic");
+      var idx = Number(it.getAttribute("data-idx"));
+      var q = window.TOPICS[topic].quiz[idx];
+      var opts = quizOptions(q);
+      Array.prototype.forEach.call(it.querySelectorAll(".option"), function (opt) {
+        opt.addEventListener("click", function () {
+          if (it.getAttribute("data-done")) return;
+          it.setAttribute("data-done", "1");
+          var k = Number(opt.getAttribute("data-k"));
+          var ok = opts[k].ok;
+          window.PROGRESS.srsAnswer(topic, idx, ok);
+          Array.prototype.forEach.call(it.querySelectorAll(".option"), function (o, oi) {
+            o.disabled = true;
+            if (opts[oi].ok) o.classList.add("right");
+            else if (oi === k) o.classList.add("wrong");
+          });
+          var ex = it.querySelector(".explain");
+          ex.hidden = false;
+          ex.innerHTML = "<b>" + (ok ? "Верно" : "Неверно") + "</b> " + q.explain;
+        });
+      });
+    });
+  }
+
   function offlinePage() {
     var bundled = !!window.OFFLINE_BUILD;
     return "<h1>Офлайн-версия</h1>" +
@@ -1065,6 +1365,26 @@
     input.focus();
   }
 
+  function biExamPage() {
+    examPage({
+      bank: window.TOPICS.bi.quiz,
+      title: "Сертификация BI",
+      lead: "20 вопросов, 15 минут. Проходной балл — 14 правильных ответов.",
+      pass: 14, minutes: 15, back: "#/theory/bi", backLabel: "к разделу BI"
+    });
+  }
+
+  function analystExamPage() {
+    var bank = window.TOPICS.statistics.quiz.slice(0, 7)
+      .concat(window.TOPICS.probability.quiz.slice(0, 7), window.TOPICS.analytics.quiz.slice(0, 6));
+    examPage({
+      bank: bank,
+      title: "Сертификация аналитика",
+      lead: "20 вопросов по статистике, вероятности и аналитике, 15 минут. Проходной балл — 14 правильных ответов.",
+      pass: 14, minutes: 15, back: "#/theory/statistics", backLabel: "к разделу «Статистика»"
+    });
+  }
+
   // ---------- роутер ----------
 
   // Каждый маршрут описывает результат: html, побочный рендер или монтирование.
@@ -1093,7 +1413,13 @@
       if (id) return { mount: function () { return mountPage(window.DEMOS, id, "demo", "#/demos", "все демонстрации", "Демонстрация"); } };
       return { html: demosList() };
     }
+    if (seg === "project") return { html: projectPage(), after: bindProject };
+    if (seg === "review") return { html: reviewPage(), after: bindReview };
+    if (seg === "calc") return { html: calcPage(), after: bindCalc };
     if (seg === "bi-exam") return { mount: biExamPage };
+    if (seg === "analyst-exam") return { mount: analystExamPage };
+    if (seg === "notebook") return { mount: notebookPage };
+    if (seg === "changelog") return { html: changelogPage() };
     if (seg === "sandbox") return { mount: sandboxPage };
     if (seg === "pysandbox") return { mount: pySandboxPage };
     if (seg === "path") return { html: pathPage() };

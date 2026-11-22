@@ -7,14 +7,14 @@
 
   var KEY = "analytics-lab-progress-v1";
 
-  function empty() { return { chapters: {}, quizzes: {}, mini: {}, last: null }; }
+  function empty() { return { chapters: {}, quizzes: {}, mini: {}, srs: {}, last: null }; }
 
   function load() {
     try {
       var raw = window.localStorage.getItem(KEY);
       if (!raw) return empty();
       var p = JSON.parse(raw);
-      return { chapters: p.chapters || {}, quizzes: p.quizzes || {}, mini: p.mini || {}, last: p.last || null };
+      return { chapters: p.chapters || {}, quizzes: p.quizzes || {}, mini: p.mini || {}, srs: p.srs || {}, last: p.last || null };
     } catch (e) {
       return empty();
     }
@@ -30,6 +30,34 @@
     var n = 0;
     for (var k in data.chapters) if (k.indexOf(topic + ":") === 0) n++;
     return n;
+  }
+
+  var DAY = 24 * 60 * 60 * 1000;
+  function schedule(topic, idx, ok) {
+    var key = topic + ":" + idx;
+    var cur = data.srs[key] || { step: 0 };
+    var step = ok ? Math.min(cur.step + 1, 4) : 0;
+    var days = [0, 1, 3, 7, 14][step];
+    data.srs[key] = { due: Date.now() + days * DAY, step: step };
+    save();
+  }
+
+  function dueReviews() {
+    var now = Date.now(), out = [], seen = {};
+    Object.keys(data.srs).forEach(function (k) {
+      seen[k] = 1;
+      if (data.srs[k].due <= now) {
+        var parts = k.split(":");
+        out.push({ topic: parts[0], idx: Number(parts[1]), due: data.srs[k].due });
+      }
+    });
+    Object.keys(data.quizzes).forEach(function (topic) {
+      (data.quizzes[topic].review || []).forEach(function (idx) {
+        var k = topic + ":" + idx;
+        if (!seen[k]) out.push({ topic: topic, idx: idx, due: 0 });
+      });
+    });
+    return out;
   }
 
   window.PROGRESS = {
@@ -54,6 +82,7 @@
       cur.review.forEach(function (i) { review[i] = 1; });
       answers.forEach(function (a) { if (a.ok) delete review[a.idx]; else review[a.idx] = 1; });
 
+      answers.forEach(function (a) { schedule(topic, a.idx, a.ok); });
       data.quizzes[topic] = {
         best: Math.max(cur.best, score),
         total: answers.length,
@@ -64,6 +93,9 @@
       save();
       return data.quizzes[topic];
     },
+
+    srsAnswer: schedule,
+    dueReviews: dueReviews,
 
     recordMini: function (topic, correct, total) {
       var cur = data.mini[topic] || { correct: 0, total: 0, attempts: 0 };
@@ -93,6 +125,7 @@
         chapters: data.chapters,
         quizzes: data.quizzes,
         mini: data.mini,
+        srs: data.srs,
         last: data.last
       }, null, 2);
     },
@@ -114,6 +147,11 @@
             review: Array.isArray(q.review) ? q.review.map(Number).filter(isFinite) : []
           };
         });
+        var srs = {};
+        Object.keys(p.srs || {}).forEach(function (k) {
+          var x = p.srs[k] || {};
+          srs[k] = { due: Number(x.due) || 0, step: Math.max(0, Math.min(4, Number(x.step) || 0)) };
+        });
         var mini = {};
         Object.keys(p.mini || {}).forEach(function (k) {
           var m = p.mini[k] || {};
@@ -126,7 +164,7 @@
         var last = p.last && typeof p.last.id === "string" && isFinite(Number(p.last.i))
           ? { id: p.last.id, i: Number(p.last.i) }
           : null;
-        data = { chapters: chapters, quizzes: quizzes, mini: mini, last: last };
+        data = { chapters: chapters, quizzes: quizzes, mini: mini, srs: srs, last: last };
         save();
         return true;
       } catch (e) {
