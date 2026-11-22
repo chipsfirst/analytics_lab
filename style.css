@@ -223,7 +223,8 @@ table.matrix th:first-child { text-align: left; }
   font-size: 14px;
 }
 
-.reader { display: grid; grid-template-columns: 230px 1fr; gap: 36px; align-items: start; }
+.reader { display: grid; grid-template-columns: 230px minmax(0, 1fr); gap: 36px; align-items: start; }
+.reader > article { min-width: 0; }
 .toc { position: sticky; top: 84px; font-size: 14px; }
 .toc ol { margin: 8px 0 0; padding-left: 18px; color: var(--muted); }
 .toc li { margin-bottom: 6px; }
@@ -455,7 +456,7 @@ input:focus, select:focus, textarea:focus { border-color: var(--accent); }
 .track-steps li.read a::after { content: ""; display: inline-block; width: 6px; height: 6px; margin-left: 6px; border-radius: 50%; background: var(--ok); vertical-align: middle; }
 
 @media (max-width: 760px) {
-  .reader { grid-template-columns: 1fr; gap: 16px; }
+  .reader { grid-template-columns: minmax(0, 1fr); gap: 16px; }
   .toc { position: static; }
   h1 { font-size: 23px; }
   .top-inner { gap: 10px; padding: 10px 16px; }
