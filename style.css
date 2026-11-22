@@ -620,8 +620,8 @@ p a { text-decoration: underline; text-underline-offset: 2px; }
 
 /* Компактная главная: весь экран без прокрутки на ноутбуке. */
 .hero { padding: 0 0 6px; }
-.hero h1 { font-size: 26px; margin-bottom: 4px; }
-.hero .lead { margin-bottom: 2px; }
+.hero h1 { font-size: 26px; margin-bottom: 4px; text-wrap: balance; }
+.hero .lead { margin-bottom: 2px; max-width: none; text-wrap: pretty; }
 .hero .btn-row { margin-top: 6px; gap: 8px; }
 .hero .btn { margin: 4px 0; padding: 7px 12px; font-size: 13px; }
 .progress-card { margin: 6px 0 2px; padding: 10px 12px; }
