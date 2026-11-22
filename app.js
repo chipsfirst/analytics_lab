@@ -62,14 +62,14 @@
     return '<p class="meta">' + parts.join(" · ") + "</p>";
   }
 
-  function topicCard(id, cta) {
+  function topicCard(id, cta, linkable) {
     var t = window.TOPICS[id];
     var links = cta
       ? '<a class="btn primary" href="#/' + cta.kind + "/" + id + '">' + esc(cta.label) + "</a>"
       : '<a class="btn" href="#/theory/' + id + '">Учебник</a>' +
         '<a class="btn" href="#/quiz/' + id + '">Тест</a>' +
         '<a class="btn" href="#/trainer/' + id + '">Тренажёр</a>';
-    return '<div class="card">' +
+    return '<div class="card"' + (linkable ? ' data-href="#/theory/' + id + '"' : "") + ">" +
       "<h3>" + esc(t.title) + "</h3>" +
       "<p>" + esc(t.tag) + "</p>" +
       progressLine(id) +
@@ -117,7 +117,7 @@
       "</div>" +
       progressBlock() +
       "<h2>Разделы</h2>" +
-      '<div class="grid">' + topicIds().map(function (id) { return topicCard(id); }).join("") + "</div>" +
+      '<div class="grid">' + topicIds().map(function (id) { return topicCard(id, null, true); }).join("") + "</div>" +
       "<h2>Демонстрации</h2>" +
       entryGrid(window.DEMOS, "#/demos/", "Открыть") +
       "<h2>Игры</h2>" +
@@ -149,16 +149,8 @@
         c.html + "</section>";
     }).join("");
 
-    var tiles = t.chapters.map(function (c, i) {
-      var read = window.PROGRESS.isRead(id, i);
-      return '<a class="chapter-tile' + (read ? " read" : "") + '" href="#/theory/' + id + "/" + i + '">' +
-        '<span class="tile-num">' + (i + 1) + "</span>" +
-        '<span class="tile-title">' + esc(c.title) + "</span></a>";
-    }).join("");
-
     return '<p><a href="#/theory">&larr; все разделы</a></p>' +
       "<h1>" + esc(t.title) + "</h1><p class=\"lead\">" + esc(t.lead) + "</p>" +
-      '<div class="chapter-tiles">' + tiles + "</div>" +
       '<div class="reader reader-top"><aside class="toc"><b>Главы</b><ol>' + toc + "</ol>" +
       '<div class="btn-row"><a class="btn" href="#/quiz/' + id + '">Тест</a>' +
       '<a class="btn" href="#/trainer/' + id + '">Тренажёр</a></div>' +
@@ -665,6 +657,12 @@
       drawTheme();
     });
   }
+
+  app.addEventListener("click", function (e) {
+    var card = e.target.closest && e.target.closest(".card[data-href]");
+    if (!card || (e.target.closest && e.target.closest("a,button"))) return;
+    location.hash = card.getAttribute("data-href");
+  });
 
   function showUpdateToast() {
     if (document.getElementById("swToast")) return;

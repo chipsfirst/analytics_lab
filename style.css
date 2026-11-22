@@ -413,22 +413,7 @@ input:focus, select:focus, textarea:focus { border-color: var(--accent); }
 @keyframes nb-slide { from { margin-left: -35%; } to { margin-left: 100%; } }
 
 /* маршруты */
-.chapter-tiles { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 8px; margin: 14px 0 4px; }
-.chapter-tile {
-  display: flex;
-  gap: 8px;
-  align-items: baseline;
-  padding: 9px 12px;
-  border: 1px solid var(--line);
-  border-radius: 10px;
-  background: var(--panel);
-  color: var(--ink);
-  font-size: 13px;
-  transition: border-color .12s, transform .12s;
-}
-.chapter-tile:hover { border-color: var(--accent); text-decoration: none; transform: translateY(-1px); }
-.chapter-tile .tile-num { color: var(--muted); font-size: 12px; }
-.chapter-tile.read { border-color: var(--ok); }
+.card[data-href] { cursor: pointer; }
 .reader-top { margin-top: 28px; }
 .quiz-head { margin-top: 8px; }
 .lead.center { margin: 0 auto 12px; }
@@ -481,8 +466,8 @@ article h2 { border-left: 3px solid var(--accent); padding-left: 10px; }
 table tbody tr:nth-child(even) { background: var(--soft); }
 a { text-underline-offset: 2px; }
 @media (prefers-reduced-motion: reduce) {
-  .card, .chapter-tile { transition: none; }
-  .card:hover, .chapter-tile:hover { transform: none; }
+  .card { transition: none; }
+  .card:hover { transform: none; }
 }
 
 @media print {

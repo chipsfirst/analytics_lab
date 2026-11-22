@@ -23,7 +23,8 @@ window.TOPICS.python = {
 <p><b>Логика и числа.</b> <code>True</code> — это 1, <code>False</code> — 0, поэтому <code>True + True</code> равно 2. Обратное неверно: <code>bool("0")</code> даёт <code>True</code>, потому что строка непустая.</p>
 <div class="note"><b>Ловушка пустоты</b><code>bool()</code> возвращает <code>False</code> для <code>0</code>, <code>0.0</code>, <code>""</code>, <code>[]</code>, <code>{}</code>, <code>None</code>. Всё остальное — <code>True</code>, включая строку <code>"0"</code> и список <code>[0]</code>.</div>
 <p><b>Арифметика.</b> <code>//</code> — целочисленное деление, <code>%</code> — остаток, <code>**</code> — степень. <code>7 // 2</code> равно 3, <code>7 % 2</code> равно 1, <code>2 ** 10</code> равно 1024.</p>
-`
+
+<div class="example"><b>Пример.</b> type(42) — int, type("42") — str, поэтому "42" + 1 даёт ошибку, а int("42") + 1 = 43. Деление 7 / 2 = 3.5, целочисленное 7 // 2 = 3.</div>`
       },
       {
         title: "Строки",
@@ -59,7 +60,8 @@ len(a), sum(a)     # 4, 105
 <div class="formula">squares = [x ** 2 for x in range(5)]        # [0, 1, 4, 9, 16]
 even = [x for x in range(10) if x % 2 == 0] # [0, 2, 4, 6, 8]</div>
 <p>Для агрегатов есть <code>sum</code>, <code>min</code>, <code>max</code>, <code>sorted</code>. Среднее списка — <code>sum(a) / len(a)</code>.</p>
-`
+
+<div class="example"><b>Пример.</b> a = [10, 20, 30]; a[1] = 25 даёт [10, 25, 30]; a.append(40) — [10, 25, 30, 40]; sum(a) = 105, а 20 in a после замены — False.</div>`
       },
       {
         title: "Условия и логика",
@@ -116,7 +118,8 @@ df.groupby("city")["amount"].sum()
 df.merge(users, on="user_id", how="left")</div>
 <p><b>loc и iloc.</b> <code>loc</code> обращается по метке, <code>iloc</code> — по номеру строки: <code>df.loc[0, "amount"]</code>, <code>df.iloc[0, 2]</code>.</p>
 <p><b>Пропуски.</b> <code>df.isna().sum()</code> показывает их количество по столбцам, <code>df.dropna()</code> удаляет строки, <code>df.fillna(0)</code> заменяет. Любая агрегация в pandas по умолчанию игнорирует <code>NaN</code> — как и <code>AVG</code> в SQL.</p>
-`
+
+<div class="example"><b>Пример.</b> Сумма [10, 20, 30] в цикле — 60, та же сумма через sum() — 60. В pandas таблица продаж по городам: df.groupby("city")["amount"].sum() возвращает сумму по каждому городу одной строкой.</div>`
       }
     ],
     quiz: [
