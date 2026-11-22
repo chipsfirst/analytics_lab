@@ -11,6 +11,7 @@ require("./progress.js");
 require("./search.js");
 require("./demos.js");
 require("./sandbox.js");
+require("./pysandbox.js");
 
 var errors = [];
 var checks = 0;
@@ -152,6 +153,7 @@ Object.keys(window.DEMOS).forEach(function (id) {
   ok(d.title && d.tag && typeof d.mount === "function", "демо " + id + " неполное");
 });
 ok(typeof window.SANDBOX === "object" && typeof window.SANDBOX.mount === "function", "SANDBOX не загрузился");
+ok(typeof window.PYSANDBOX === "object" && typeof window.PYSANDBOX.mount === "function", "PYSANDBOX не загрузился");
 
 if (errors.length) {
   console.error("Провалено проверок: " + errors.length + " из " + checks);

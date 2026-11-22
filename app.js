@@ -154,6 +154,7 @@
       '<div class="btn-row"><a class="btn" href="#/quiz/' + id + '">Тест</a>' +
       '<a class="btn" href="#/trainer/' + id + '">Тренажёр</a></div>' +
       (id === "sql" ? '<div class="btn-row"><a class="btn" href="#/sandbox">Песочница SQL</a></div>' : "") +
+      (id === "python" ? '<div class="btn-row"><a class="btn" href="#/pysandbox">Песочница Python</a></div>' : "") +
       "</aside><article>" + body + "</article></div>";
   }
 
@@ -449,6 +450,16 @@
     return null;
   }
 
+  function pySandboxPage() {
+    app.innerHTML = '<p><a href="#/theory/python">&larr; к теории Python</a></p>' +
+      "<h1>Песочница Python</h1><p class=\"lead\" style=\"margin-bottom:20px\">Блокнот с ячейками: " +
+      "код выполняется в браузере, переменные сохраняются между запусками. " +
+      "Shift+Enter — выполнить ячейку.</p><div id=\"pysandbox\"></div>";
+    var fn = window.PYSANDBOX.mount(document.getElementById("pysandbox"));
+    if (typeof fn === "function") cleanup = fn;
+    return null;
+  }
+
   // ---------- поиск ----------
 
   var searchIndex = null;
@@ -524,6 +535,7 @@
     else if (p[0] === "demos" && p[1]) return mountPage(window.DEMOS, p[1], "demo", "#/demos", "все демонстрации", "Демонстрация");
     else if (p[0] === "demos") html = demosList();
     else if (p[0] === "sandbox") return sandboxPage();
+    else if (p[0] === "pysandbox") return pySandboxPage();
     else if (p[0] === "search") { html = searchPage(p[1]); after = function () { bindSearch(p[1]); }; }
     else html = "<h1>Страница не найдена</h1><p><a href=\"#/\">На главную</a></p>";
 

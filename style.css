@@ -376,6 +376,42 @@ input:focus, select:focus, textarea:focus { border-color: var(--accent); }
 
 .center { text-align: center; }
 
+/* песочница Python */
+.nb-bar { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin: 12px 0; }
+.nb-status { font-size: 13px; color: var(--muted); margin-left: auto; }
+.nb-status.bad { color: var(--bad); }
+.nb-cells { display: grid; gap: 10px; }
+.nb-cell { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; }
+.nb-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+.nb-num { font-size: 12px; color: var(--muted); }
+.nb-code {
+  width: 100%;
+  min-height: 74px;
+  font-family: var(--mono);
+  font-size: 13.5px;
+  line-height: 1.5;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 8px 10px;
+  background: var(--soft);
+  color: var(--ink);
+  resize: vertical;
+}
+.nb-out {
+  margin: 8px 0 0;
+  padding: 8px 10px;
+  background: var(--soft);
+  border-radius: 8px;
+  font-size: 13px;
+  white-space: pre-wrap;
+}
+.nb-out.empty { display: none; }
+.nb-out.err { color: var(--bad); background: var(--bad-soft); }
+.nb-progress { height: 6px; border-radius: 3px; background: var(--line); overflow: hidden; margin: 0 0 12px; }
+.nb-progress div { height: 100%; width: 35%; background: var(--accent); border-radius: 3px; animation: nb-slide 1.2s ease-in-out infinite; }
+.nb-progress.done { display: none; }
+@keyframes nb-slide { from { margin-left: -35%; } to { margin-left: 100%; } }
+
 @media (max-width: 760px) {
   .reader { grid-template-columns: 1fr; gap: 16px; }
   .toc { position: static; }
