@@ -127,7 +127,12 @@
       "<h2>Игры</h2>" +
       entryGrid(window.GAMES, "#/games/", "Играть") +
       '<div class="note"><b>Практика SQL</b>В разделе SQL есть <a href="#/sandbox">песочница</a>: ' +
-      "настоящая база в браузере, можно писать любые запросы.</div>";
+      "настоящая база в браузере, можно писать любые запросы.</div>" +
+      (window.OFFLINE_BUILD
+        ? '<div class="note"><b>Офлайн</b>Вы открыли автономную версию сайта. Установить как приложение можно с сайта; ' +
+          'подробности — в разделе <a href="#/offline">офлайн-версия</a>.</div>'
+        : '<div class="note"><b>Офлайн</b>Скачайте <a href="analytics-lab-offline.zip" download>архив сайта</a> ' +
+          'или установите его как приложение — подробности в разделе <a href="#/offline">офлайн-версия</a>.</div>');
   }
 
   function listPage(kind, title, lead, label) {
@@ -581,6 +586,27 @@
       }).join("") + "</div>";
   }
 
+  function offlinePage() {
+    var bundled = !!window.OFFLINE_BUILD;
+    return "<h1>Офлайн-версия</h1>" +
+      '<p class="lead">Сайт работает без интернета двумя способами: установить как приложение или скачать архив и запустить локально.</p>' +
+      (bundled
+        ? '<div class="note"><b>Вы в архиве</b>Это и есть офлайн-версия: файлы уже распакованы, интернет для глав, тестов и тренажёров не нужен.</div>'
+        : '<div class="card"><h3>Архив сайта</h3>' +
+          "<p>Все главы, тесты, тренажёры, игры, демонстрации и песочница SQL. Распакуйте и запустите start.command (macOS/Linux) " +
+          "или start.bat (Windows).</p>" +
+          '<div class="links"><a class="btn primary" href="analytics-lab-offline.zip" download>Скачать ZIP</a></div></div>') +
+      "<h2>Как запустить</h2><ol>" +
+      "<li>Распакуйте архив.</li>" +
+      "<li>macOS/Linux: <code>sh start.command</code>; Windows: <code>start.bat</code>.</li>" +
+      "<li>Браузер откроет <code>http://localhost:8000</code>.</li></ol>" +
+      '<div class="note"><b>Что нужно знать</b>Песочнице SQL нужен локальный сервер из архива: под file:// браузер не отдаёт wasm-файл. ' +
+      "Песочница Python при первом запуске скачивает ядро Pyodide (~10 МБ) с CDN, поэтому ей нужен интернет.</div>" +
+      "<h2>Установка как приложение</h2>" +
+      "<p>Откройте сайт по https и выберите «Установить приложение» в меню браузера. После первого открытия разделы, тесты и тренажёры " +
+      "доступны офлайн; прогресс хранится в браузере.</p>";
+  }
+
   function cheatSheetPage() {
     var rows = window.CHEATSHEET || [];
     return "<h1>Какой критерий выбрать</h1>" +
@@ -673,6 +699,7 @@
     if (seg === "pysandbox") return { mount: pySandboxPage };
     if (seg === "path") return { html: pathPage() };
     if (seg === "cheatsheet") return { html: cheatSheetPage() };
+    if (seg === "offline") return { html: offlinePage() };
     if (seg === "search") return { html: searchPage(id), after: function () { bindSearch(id); } };
     return { html: '<h1>Страница не найдена</h1><p><a href="#/">На главную</a></p>' };
   }
