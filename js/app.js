@@ -162,9 +162,9 @@
     var pct = total ? Math.round(read / total * 100) : 0;
     return '<div class="card" data-topic="' + id + '"' + (linkable ? ' data-href="#/theory/' + id + '"' : "") + ">" +
       "<h3>" + icon(meta.icon) + esc(t.title) + "</h3>" +
+      '<div class="topic-bar" aria-hidden="true"><div style="width:' + pct + '%"></div></div>' +
       "<p>" + esc(t.tag) + "</p>" +
       progressLine(id) +
-      '<div class="topic-bar" aria-hidden="true"><div style="width:' + pct + '%"></div></div>' +
       '<div class="links">' + links + "</div></div>";
   }
 
