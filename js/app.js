@@ -18,12 +18,10 @@
 
   var NAV = [
     ["#/", "Главная"],
-    ["#/theory", "Теория"],
-    ["#/glossary", "Словарь"],
-    ["#/quiz", "Тесты"],
-    ["#/trainer", "Тренажёры"],
+    ["#/textbook", "Учебник"],
     ["#/games", "Игры"],
-    ["#/demos", "Демо"]
+    ["#/demos", "Демо"],
+    ["#/glossary", "Словарь"]
   ];
 
   function shuffle(a) {
@@ -137,7 +135,11 @@
   function renderNav() {
     var cur = "#/" + path().join("/");
     nav.innerHTML = NAV.map(function (n) {
-      var active = n[0] === "#/" ? cur === "#/" : cur.indexOf(n[0]) === 0;
+      var active = n[0] === "#/"
+        ? cur === "#/"
+        : n[0] === "#/textbook"
+          ? /^#\/(textbook|theory|quiz|trainer)/.test(cur)
+          : cur.indexOf(n[0]) === 0;
       return '<a href="' + n[0] + '"' + (active ? ' class="active" aria-current="page"' : "") + ">" + n[1] + "</a>";
     }).join("");
   }
@@ -156,7 +158,7 @@
     var meta = TOPIC_META[id] || {};
     var links = cta
       ? '<a class="btn primary" href="#/' + cta.kind + "/" + id + '">' + esc(cta.label) + "</a>"
-      : '<a class="btn" href="#/theory/' + id + '">Учебник</a>' +
+      : '<a class="btn" href="#/theory/' + id + '">Теория</a>' +
         '<a class="btn" href="#/quiz/' + id + '">Тест</a>' +
         '<a class="btn" href="#/trainer/' + id + '">Тренажёр</a>';
     var total = t.chapters.length;
@@ -217,7 +219,7 @@
       '<p class="lead">Практикум по аналитике данных: статистика, SQL, Python, BI и эксперименты.<br>' +
       "Короткая теория, тесты и тренажёры. Прогресс хранится в браузере.</p>" +
       '<div class="home-actions">' +
-      '<a class="home-action primary" href="#/theory"><b>Начать с теории</b><span>' +
+      '<a class="home-action primary" href="#/textbook"><b>Открыть учебник</b><span>' +
         topicCount + " разделов, " + chapterCount + " глав</span></a>" +
       '<a class="home-action" href="#/path"><b>Маршрут обучения</b><span>Три трека под цель</span></a>' +
       '<a class="home-action" href="#/trainer"><b>Тренажёры</b><span>Задачи с автопроверкой</span></a>' +
@@ -242,6 +244,15 @@
     return "<h1>" + esc(title) + "</h1><p class=\"lead\">" + lead + "</p>" +
       '<div class="grid">' + topicIds().map(function (id) {
         return topicCard(id, { kind: kind, label: label });
+      }).join("") + "</div>";
+  }
+
+  function textbookPage() {
+    return "<h1>Учебник</h1>" +
+      '<p class="lead">Теория, тесты и тренажёры по каждому разделу — в одном месте. ' +
+      "Начните с главы, проверьте себя тестом и закрепите расчёт в тренажёре.</p>" +
+      '<div class="grid">' + topicIds().map(function (id) {
+        return topicCard(id, null, true);
       }).join("") + "</div>";
   }
 
@@ -275,7 +286,7 @@
     }).join("");
 
     return '<div class="topic-page" data-topic="' + id + '">' +
-      '<p><a href="#/theory">&larr; все разделы</a></p>' +
+      '<p><a href="#/textbook">&larr; все разделы</a></p>' +
       "<h1>" + icon(meta.icon) + esc(t.title) + "</h1><p class=\"lead\">" + esc(t.lead) + "</p>" +
       '<div class="reader reader-top"><aside class="toc"><b>Главы</b><ol>' + toc + "</ol>" +
       '<div class="btn-row"><a class="btn" href="#/quiz/' + id + '">Тест</a>' +
@@ -1395,6 +1406,7 @@
 
     if (!seg) return { html: home() };
 
+    if (seg === "textbook") return { html: textbookPage() };
     if (seg === "theory") {
       if (id && window.TOPICS[id]) return { html: theory(id, p[2]) };
       return { html: listPage("theory", "Теория", "Все разделы: формулы, примеры и разборы.", "Открыть раздел") };
