@@ -2,7 +2,7 @@
   --bg: #f5f6f8;
   --panel: #ffffff;
   --ink: #171a20;
-  --muted: #6b7280;
+  --muted: #4b5563;
   --line: #e2e5ea;
   --accent: #2f5bd7;
   --accent-soft: #e9efff;
@@ -20,7 +20,7 @@
   --bg: #0f1216;
   --panel: #171b21;
   --ink: #e6e8ec;
-  --muted: #9aa3af;
+  --muted: #aab4c2;
   --line: #262c35;
   --accent: #8fb0ff;
   --accent-soft: #1b2540;
@@ -31,6 +31,32 @@
   --bad-soft: #2b1615;
   --soft: #141820;
 }
+
+
+
+/* акценты разделов */
+[data-topic="analytics"] { --topic: #2f5bd7; }
+[data-topic="statistics"] { --topic: #7c3aed; }
+[data-topic="gametheory"] { --topic: #b45309; }
+[data-topic="probability"] { --topic: #0f766e; }
+[data-topic="sql"] { --topic: #15803d; }
+[data-topic="excel"] { --topic: #0e7490; }
+[data-topic="python"] { --topic: #a16207; }
+[data-topic="regression"] { --topic: #c2410c; }
+[data-topic="classification"] { --topic: #be185d; }
+[data-topic="ml"] { --topic: #4338ca; }
+[data-topic="useful"] { --topic: #475569; }
+:root[data-theme="dark"] [data-topic="analytics"] { --topic: #8fb0ff; }
+:root[data-theme="dark"] [data-topic="statistics"] { --topic: #c4b5fd; }
+:root[data-theme="dark"] [data-topic="gametheory"] { --topic: #fbbf24; }
+:root[data-theme="dark"] [data-topic="probability"] { --topic: #5eead4; }
+:root[data-theme="dark"] [data-topic="sql"] { --topic: #86efac; }
+:root[data-theme="dark"] [data-topic="excel"] { --topic: #67e8f9; }
+:root[data-theme="dark"] [data-topic="python"] { --topic: #fde047; }
+:root[data-theme="dark"] [data-topic="regression"] { --topic: #fdba74; }
+:root[data-theme="dark"] [data-topic="classification"] { --topic: #f9a8d4; }
+:root[data-theme="dark"] [data-topic="ml"] { --topic: #a5b4fc; }
+:root[data-theme="dark"] [data-topic="useful"] { --topic: #cbd5e1; }
 
 * { box-sizing: border-box; }
 
@@ -207,6 +233,7 @@ table.matrix th:first-child { text-align: left; }
 
 .note {
   background: var(--accent-soft);
+  border-left: 3px solid var(--topic, var(--accent));
   border-radius: 10px;
   padding: 10px 14px;
   margin: 12px 0;
@@ -217,6 +244,7 @@ table.matrix th:first-child { text-align: left; }
 .example {
   background: var(--soft);
   border: 1px dashed var(--line);
+  border-left: 3px solid var(--topic, var(--accent));
   border-radius: 10px;
   padding: 12px 16px;
   margin: 14px 0;
@@ -229,8 +257,8 @@ table.matrix th:first-child { text-align: left; }
 .toc ol { margin: 8px 0 0; padding-left: 18px; color: var(--muted); }
 .toc li { margin-bottom: 6px; }
 .toc a { color: var(--muted); }
-.toc a:hover { color: var(--accent); }
-.toc a.active { color: var(--accent); font-weight: 600; }
+.toc a:hover { color: var(--topic, var(--accent)); }
+.toc a.active { color: var(--topic, var(--accent)); font-weight: 600; }
 .toc li.read a { color: var(--ink); }
 .toc li.read a::after {
   content: "";
@@ -416,6 +444,9 @@ input:focus, select:focus, textarea:focus { border-color: var(--accent); }
 
 /* маршруты */
 .card[data-href] { cursor: pointer; }
+.card[data-topic] { border-top: 3px solid var(--topic); }
+.card[data-topic]:hover { border-color: var(--topic); }
+.card[data-topic] h3 .ico { color: var(--topic); }
 .ch-nav { display: flex; justify-content: space-between; gap: 8px; margin: 18px 0 0; }
 .ch-nav a { max-width: 48%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .mini { margin: 10px 0 0; }
@@ -476,7 +507,10 @@ body { background: radial-gradient(1100px 520px at 15% -10%, rgba(47, 91, 215, .
 .card { transition: border-color .15s, transform .15s, box-shadow .15s; }
 .card:hover { border-color: var(--accent); box-shadow: 0 8px 22px rgba(23, 26, 32, .08); transform: translateY(-2px); }
 .btn.primary { box-shadow: 0 2px 10px rgba(47, 91, 215, .22); }
-article h2 { border-left: 3px solid var(--accent); padding-left: 10px; }
+article h2 { border-left: 3px solid var(--topic, var(--accent)); padding-left: 10px; }
+.topic-page h1 .ico { width: 26px; height: 26px; vertical-align: -4px; }
+.ch-head h2 .ico { width: 19px; height: 19px; margin-right: 7px; vertical-align: -2px; color: var(--topic); }
+.ico { width: 18px; height: 18px; margin-right: 6px; vertical-align: -3px; color: var(--topic, var(--accent)); }
 table tbody tr:nth-child(even) { background: var(--soft); }
 a { text-underline-offset: 2px; }
 @media (prefers-reduced-motion: reduce) {

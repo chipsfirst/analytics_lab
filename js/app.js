@@ -47,6 +47,61 @@
     }));
   }
 
+  var TOPIC_META = {
+    analytics: { icon: "target" },
+    statistics: { icon: "sigma" },
+    gametheory: { icon: "scale" },
+    probability: { icon: "dice" },
+    sql: { icon: "database" },
+    excel: { icon: "table" },
+    python: { icon: "code" },
+    regression: { icon: "trend" },
+    classification: { icon: "tag" },
+    ml: { icon: "network" },
+    useful: { icon: "note" }
+  };
+
+  var ICONS = {
+    target: '<circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3"/>',
+    sigma: '<path d="M18 5H7l5 7-5 7h11"/>',
+    scale: '<path d="M12 4v16M5 8h14M7 8l-3 6h6zM17 8l-3 6h6z"/>',
+    dice: '<rect x="4" y="4" width="16" height="16" rx="3"/><circle cx="9" cy="9" r=".8"/><circle cx="15" cy="15" r=".8"/><circle cx="15" cy="9" r=".8"/><circle cx="9" cy="15" r=".8"/>',
+    database: '<ellipse cx="12" cy="6" rx="7" ry="3"/><path d="M5 6v6c0 1.7 3.1 3 7 3s7-1.3 7-3V6"/><path d="M5 12v6c0 1.7 3.1 3 7 3s7-1.3 7-3v-6"/>',
+    table: '<rect x="4" y="5" width="16" height="14" rx="2"/><path d="M4 10h16M10 5v14"/>',
+    code: '<path d="M9 8l-4 4 4 4M15 8l4 4-4 4"/>',
+    trend: '<path d="M4 19V5M4 19h16"/><path d="M7 15l4-4 3 2 5-6"/>',
+    tag: '<path d="M4 12V5h7l8 8-7 7-8-8z"/><circle cx="8" cy="9" r="1.2"/>',
+    network: '<circle cx="6" cy="7" r="2"/><circle cx="18" cy="7" r="2"/><circle cx="12" cy="17" r="2"/><path d="M8 8l3 7M16 8l-3 7M8 7h8"/>',
+    note: '<path d="M6 4h9l4 4v12H6z"/><path d="M9 11h7M9 15h5"/>',
+    chart: '<path d="M5 19V5M5 19h15"/><rect x="8" y="12" width="3" height="5"/><rect x="13" y="9" width="3" height="8"/>',
+    link: '<path d="M10 14a4 4 0 005.7 0l2.3-2.3a4 4 0 00-5.7-5.7L11 7.3"/><path d="M14 10a4 4 0 00-5.7 0l-2.3 2.3a4 4 0 005.7 5.7L13 16.7"/>',
+    flask: '<path d="M9 3h6M10 3v6l-5 9a2 2 0 001.8 3h10.4A2 2 0 0019 18l-5-9V3"/><path d="M7.5 15h9"/>',
+    book: '<path d="M5 5.5A2.5 2.5 0 017.5 3H19v16H7.5A2.5 2.5 0 005 21.5z"/><path d="M5 18.5A2.5 2.5 0 017.5 16H19"/>'
+  };
+
+  function icon(name) {
+    return '<svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" ' +
+      'stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">' +
+      (ICONS[name] || ICONS.book) + "</svg>";
+  }
+
+  function chapterIcon(title) {
+    var s = String(title).toLowerCase();
+    if (/корреляц|связ/.test(s)) return "link";
+    if (/регресс|предсказ|нелинейн/.test(s)) return "trend";
+    if (/кластер|дерев|лес|компонент|ансамбл|фактор/.test(s)) return "network";
+    if (/байес|бернулли|вероятн|распредел|случайн|комбинатор|пуассон/.test(s)) return "dice";
+    if (/sql|запрос|соедин|подзапрос|оконн|агрегат|таблиц|фильтрац/.test(s)) return "database";
+    if (/excel|формул|сводн|впр|ссылки/.test(s)) return "table";
+    if (/python|строк|списк|цикл|данные и их типы/.test(s)) return "code";
+    if (/гипотез|критери|мощност|доверит|ошибк|бутстрап|перестанов|дисперс|оценк/.test(s)) return "flask";
+    if (/игр|равновес|стратег|доминир/.test(s)) return "scale";
+    if (/метрик|конверс|когорт|a\/b|эксперимент|валидност/.test(s)) return "target";
+    if (/визуализ|график|диаграм|чек-лист/.test(s)) return "chart";
+    if (/заметк|вниман|spss/.test(s)) return "note";
+    return null;
+  }
+
   function topicIds() { return Object.keys(window.TOPICS); }
 
   function path() {
@@ -72,13 +127,14 @@
 
   function topicCard(id, cta, linkable) {
     var t = window.TOPICS[id];
+    var meta = TOPIC_META[id] || {};
     var links = cta
       ? '<a class="btn primary" href="#/' + cta.kind + "/" + id + '">' + esc(cta.label) + "</a>"
       : '<a class="btn" href="#/theory/' + id + '">Учебник</a>' +
         '<a class="btn" href="#/quiz/' + id + '">Тест</a>' +
         '<a class="btn" href="#/trainer/' + id + '">Тренажёр</a>';
-    return '<div class="card"' + (linkable ? ' data-href="#/theory/' + id + '"' : "") + ">" +
-      "<h3>" + esc(t.title) + "</h3>" +
+    return '<div class="card" data-topic="' + id + '"' + (linkable ? ' data-href="#/theory/' + id + '"' : "") + ">" +
+      "<h3>" + icon(meta.icon) + esc(t.title) + "</h3>" +
       "<p>" + esc(t.tag) + "</p>" +
       progressLine(id) +
       '<div class="links">' + links + "</div></div>";
@@ -151,6 +207,7 @@
 
   function theory(id, chapterIdx) {
     var t = window.TOPICS[id];
+    var meta = TOPIC_META[id] || {};
     var toc = t.chapters.map(function (c, i) {
       return '<li' + (window.PROGRESS.isRead(id, i) ? ' class="read"' : "") + ">" +
         '<a href="#/theory/' + id + "/" + i + '" data-ch="' + i + '">' + esc(c.title) + "</a></li>";
@@ -161,7 +218,7 @@
       var prev = i > 0 ? '<a class="btn small" href="#/theory/' + id + "/" + (i - 1) + '" data-ch="' + (i - 1) + '">&larr; ' + esc(t.chapters[i - 1].title) + "</a>" : "<span></span>";
       var next = i < t.chapters.length - 1 ? '<a class="btn small" href="#/theory/' + id + "/" + (i + 1) + '" data-ch="' + (i + 1) + '">' + esc(t.chapters[i + 1].title) + " &rarr;</a>" : "<span></span>";
       return '<section id="ch-' + i + '">' +
-        '<div class="ch-head"><h2>' + (i + 1) + ". " + esc(c.title) + "</h2>" +
+        '<div class="ch-head"><h2>' + icon(chapterIcon(c.title) || meta.icon) + (i + 1) + ". " + esc(c.title) + "</h2>" +
         '<button class="btn small' + (read ? " is-read" : "") + '" data-read="' + i + '" aria-pressed="' + read + '">' +
         (read ? "Прочитано" : "Отметить прочитанной") + "</button></div>" +
         c.html +
@@ -170,15 +227,16 @@
         "</section>";
     }).join("");
 
-    return '<p><a href="#/theory">&larr; все разделы</a></p>' +
-      "<h1>" + esc(t.title) + "</h1><p class=\"lead\">" + esc(t.lead) + "</p>" +
+    return '<div class="topic-page" data-topic="' + id + '">' +
+      '<p><a href="#/theory">&larr; все разделы</a></p>' +
+      "<h1>" + icon(meta.icon) + esc(t.title) + "</h1><p class=\"lead\">" + esc(t.lead) + "</p>" +
       '<div class="reader reader-top"><aside class="toc"><b>Главы</b><ol>' + toc + "</ol>" +
       '<div class="btn-row"><a class="btn" href="#/quiz/' + id + '">Тест</a>' +
       '<a class="btn" href="#/trainer/' + id + '">Тренажёр</a></div>' +
       (id === "sql" ? '<div class="btn-row"><a class="btn" href="#/sandbox">Песочница SQL</a></div>' : "") +
       (id === "python" ? '<div class="btn-row"><a class="btn" href="#/pysandbox">Песочница Python</a></div>' : "") +
       (id === "statistics" ? '<div class="btn-row"><a class="btn" href="#/cheatsheet">Какой критерий выбрать</a></div>' : "") +
-      "</aside><article>" + body + "</article></div>";
+      "</aside><article>" + body + "</article></div></div>";
   }
 
   function wrapTables(root) {
