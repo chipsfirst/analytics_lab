@@ -51,5 +51,69 @@ window.TRACKS = [
       ["ml", 1],
       ["ml", 2]
     ]
+  },
+  {
+    id: "data",
+    title: "Данные и BI",
+    tag: "От сырого CSV до витрины и дашборда",
+    steps: [
+      ["data", 0],
+      ["data", 1],
+      ["data", 2],
+      ["data", 3],
+      ["data", 4],
+      ["data", 5],
+      ["sql", 0],
+      ["sql", 1],
+      ["sql", 2],
+      ["sql", 4],
+      ["sql", 6],
+      ["excel", 0],
+      ["excel", 1],
+      ["excel", 3],
+      ["bi", 0],
+      ["bi", 1],
+      ["bi", 4]
+    ]
+  },
+  {
+    id: "experiments",
+    title: "Эксперименты и причинность",
+    tag: "Гипотезы, A/B-тесты и корректная оценка эффекта",
+    steps: [
+      ["probability", 0],
+      ["probability", 2],
+      ["probability", 4],
+      ["statistics", 5],
+      ["statistics", 8],
+      ["statistics", 9],
+      ["statistics", 10],
+      ["analytics", 1],
+      ["causal", 0],
+      ["causal", 1],
+      ["causal", 2],
+      ["causal", 3],
+      ["causal", 4]
+    ]
+  },
+  {
+    id: "models",
+    title: "Модели и прогноз",
+    tag: "Регрессия, классификация, ML и временные ряды",
+    steps: [
+      ["regression", 0],
+      ["regression", 1],
+      ["regression", 5],
+      ["regression", 6],
+      ["classification", 0],
+      ["classification", 1],
+      ["classification", 5],
+      ["ml", 0],
+      ["ml", 2],
+      ["ml", 5],
+      ["timeseries", 0],
+      ["timeseries", 1],
+      ["timeseries", 3]
+    ]
   }
 ];

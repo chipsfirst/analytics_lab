@@ -7,6 +7,7 @@
 
   var files = [
     "js/data.js",
+    "js/topics/data.js",
     "js/topics/analytics.js",
     "js/topics/statistics.js",
     "js/topics/gametheory.js",
@@ -17,9 +18,14 @@
     "js/topics/regression.js",
     "js/topics/classification.js",
     "js/topics/ml.js",
+    "js/topics/timeseries.js",
+    "js/topics/causal.js",
+    "js/topics/bi.js",
+    "js/topics/ethics.js",
     "js/topics/useful.js",
     "js/core/tracks.js",
     "js/core/cheatsheet.js",
+    "js/core/glossary.js",
     "js/features/trainers.js",
     "js/features/games.js",
     "js/core/progress.js",

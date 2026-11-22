@@ -58,6 +58,9 @@
     regression: { icon: "trend" },
     classification: { icon: "tag" },
     ml: { icon: "network" },
+    timeseries: { icon: "wave" },
+    causal: { icon: "link" },
+    ethics: { icon: "shield" },
     useful: { icon: "note" },
     bi: { icon: "chart" }
   };
@@ -78,7 +81,9 @@
     layers: '<path d="M12 3l9 5-9 5-9-5 9-5z"/><path d="M3 12l9 5 9-5M3 16l9 5 9-5"/>',
     link: '<path d="M10 14a4 4 0 005.7 0l2.3-2.3a4 4 0 00-5.7-5.7L11 7.3"/><path d="M14 10a4 4 0 00-5.7 0l-2.3 2.3a4 4 0 005.7 5.7L13 16.7"/>',
     flask: '<path d="M9 3h6M10 3v6l-5 9a2 2 0 001.8 3h10.4A2 2 0 0019 18l-5-9V3"/><path d="M7.5 15h9"/>',
-    book: '<path d="M5 5.5A2.5 2.5 0 017.5 3H19v16H7.5A2.5 2.5 0 005 21.5z"/><path d="M5 18.5A2.5 2.5 0 017.5 16H19"/>'
+    book: '<path d="M5 5.5A2.5 2.5 0 017.5 3H19v16H7.5A2.5 2.5 0 005 21.5z"/><path d="M5 18.5A2.5 2.5 0 017.5 16H19"/>',
+    wave: '<path d="M3 15c3-7 6-7 9 0s6 7 9 0"/>',
+    shield: '<path d="M12 3l7 3v6c0 4-3 7-7 9-4-2-7-5-7-9V6z"/><path d="M9 12l2 2 4-4"/>'
   };
 
   function icon(name) {
@@ -128,7 +133,11 @@
     return null;
   }
 
-  function topicIds() { return Object.keys(window.TOPICS); }
+  function topicIds() {
+    var order = window.TOPIC_ORDER || Object.keys(window.TOPICS);
+    return order.filter(function (id) { return !!window.TOPICS[id]; })
+      .concat(Object.keys(window.TOPICS).filter(function (id) { return order.indexOf(id) < 0; }));
+  }
 
   function path() {
     return location.hash.replace(/^#\/?/, "").split("/").filter(Boolean);
@@ -596,6 +605,7 @@
     var html = '<p><a href="#/quiz">&larr; все тесты</a></p>' +
       "<h1>" + esc(t.title) + (quiz.reviewMode ? " · ошибки" : "") + "</h1>" +
       '<div class="progress"><span>Вопрос ' + (quiz.i + 1) + " из " + quiz.qs.length +
+      " · всего в банке: " + window.TOPICS[quiz.id].quiz.length +
       "</span><span>Верно: " + quiz.score + "</span></div>" +
       '<p class="q-text">' + q.q + "</p>" +
       '<div class="options">' + q.options.map(function (o, k) {
@@ -658,6 +668,9 @@
   function newTask() {
     var gens = window.TRAINERS[trainer.id];
     trainer.task = gens[Math.floor(Math.random() * gens.length)]();
+    if (trainer.task.answer.type === "choice") {
+      trainer.task.answer.options = shuffle(trainer.task.answer.options);
+    }
     trainer.checked = false;
     trainer.value = "";
     trainer.ok = null;
@@ -671,6 +684,7 @@
     var html = '<p><a href="#/trainer">&larr; все тренажёры</a></p>' +
       "<h1>" + esc(t.title) + "</h1>" +
       '<div class="progress"><span>Задача ' + (trainer.total + 1) +
+      " · всего типов: " + window.TRAINERS[trainer.id].length +
       "</span><span>Верно: " + trainer.correct + " из " + trainer.total + "</span></div>" +
       '<div class="card">' + task.prompt;
 
@@ -916,7 +930,7 @@
   function pathPage() {
     var tracks = window.TRACKS || [];
     return "<h1>Маршрут обучения</h1>" +
-      '<p class="lead">Три последовательности: с чего начать, что читать перед экспериментами и как перейти к Python. ' +
+      '<p class="lead">Шесть маршрутов: с чего начать, как укрепить статистику, перейти к Python, собрать данные и дашборд, разобраться с экспериментами и моделями. ' +
       "Прогресс считается по прочитанным главам.</p>" +
       '<div class="grid">' + tracks.map(function (t) {
         var total = t.steps.length;
@@ -1533,13 +1547,14 @@
     var datasets = [
       ["ab-test.csv", "A/B-тест", "1 200 пользователей, группы A и B, конверсия и выручка.", "user_id, group, converted, revenue"],
       ["churn.csv", "Отток", "600 клиентов: срок, платеж, обращения в поддержку, факт оттока.", "customer_id, tenure_months, monthly_charges, support_calls, churned"],
-      ["marketing.csv", "Маркетинг", "90 дней по трём каналам: расходы, клики, конверсии, выручка.", "date, channel, spend, clicks, conversions, revenue"]
+      ["marketing.csv", "Маркетинг", "90 дней по трём каналам: расходы, клики, конверсии, выручка.", "date, channel, spend, clicks, conversions, revenue"],
+      ["dirty-customers.csv", "Грязные данные", "24 строки: дубли, пропуски, разные форматы дат, городов и сумм.", "customer_id, name, email, city, signup_date, amount, status"]
     ];
     var tasks = [
       ["ab1", "A/B-тест", "Сколько всего пользователей в файле?", "SELECT COUNT(*) FROM ab;", 1200, 0.5],
       ["ab2", "A/B-тест", "Сколько конверсий в группе B?", "SELECT SUM(converted) FROM ab WHERE group = 'B';", 87, 0.5],
       ["ab3", "A/B-тест", "Конверсия группы B, %", "100.0 * AVG(converted) для группы B", 14.5, 0.1],
-      ["ab4", "A/B-тест", "Выручка на пользователя в группе B, ₽", "SUM(revenue) / COUNT(*) для группы B", 145.0, 1],
+      ["ab4", "A/B-тест", "Выручка на пользователя в группе B, ₽", "SUM(revenue) / COUNT(*) для группы B", 145.5, 0.1],
       ["ch1", "Отток", "Сколько клиентов в файле?", "SELECT COUNT(*) FROM churn;", 600, 0.5],
       ["ch2", "Отток", "Доля оттока, %", "100.0 * AVG(churned)", 21.3, 0.1],
       ["ch3", "Отток", "Средний срок ушедших клиентов, месяцев", "AVG(tenure_months) WHERE churned = 1", 22.4, 0.2],
@@ -1547,7 +1562,10 @@
       ["mk1", "Маркетинг", "Сколько строк в файле?", "SELECT COUNT(*) FROM marketing;", 90, 0.5],
       ["mk2", "Маркетинг", "Общий ROAS (выручка / расходы)", "SUM(revenue) / SUM(spend)", 9.85, 0.05],
       ["mk3", "Маркетинг", "ROAS канала Email", "SUM(revenue) / SUM(spend) для Email", 40.79, 0.1],
-      ["mk4", "Маркетинг", "CAC по всем каналам, ₽", "SUM(spend) / SUM(conversions)", 126.0, 1]
+      ["mk4", "Маркетинг", "CAC по всем каналам, ₽", "SUM(spend) / SUM(conversions)", 126.0, 1],
+      ["dr1", "Грязные данные", "Сколько уникальных клиентов (различных customer_id)?", "COUNT(DISTINCT customer_id)", 22, 0.5],
+      ["dr2", "Грязные данные", "Сколько строк без email?", "COUNT(*) WHERE email пустой", 3, 0.5],
+      ["dr3", "Грязные данные", "Сколько уникальных клиентов из Москвы после нормализации города?", "TRIM(LOWER(city)) = 'москва', затем COUNT(DISTINCT customer_id)", 10, 0.5]
     ];
     function task(t) {
       return '<div class="card dl-task" data-task="' + t[0] + '"><p class="meta">' + esc(t[1]) + "</p>" +
@@ -1558,13 +1576,13 @@
         '<p class="meta"><code>' + esc(t[3]) + "</code></p></div>";
     }
     return "<h1>Практика на данных</h1>" +
-      '<p class="lead">Три учебных датасета и 12 задач с автопроверкой. Скачайте CSV, считайте в SQL, Python или таблице и введите ответ. ' +
+      '<p class="lead">Четыре учебных датасета и ' + tasks.length + ' задач с автопроверкой. Скачайте CSV, считайте в SQL, Python или таблице и введите ответ. ' +
       "Числа с запятой тоже принимаются.</p>" +
       '<div class="grid">' + datasets.map(function (d) {
         return '<div class="card"><h3><a href="data/' + d[0] + '" download>' + esc(d[1]) + "</a></h3>" +
           "<p>" + esc(d[2]) + "</p><p class=\"meta\">" + esc(d[3]) + "</p></div>";
       }).join("") + "</div>" +
-      '<h2>Задачи</h2><p class="meta" id="dlProgress">Решено: 0 из 12</p>' +
+      '<h2>Задачи</h2><p class="meta" id="dlProgress">Решено: 0 из ' + tasks.length + '</p>' +
       '<div class="grid">' + tasks.map(task).join("") + "</div>" +
       '<h2>Собери дашборд</h2><p class="lead">Три решения из брифа: выберите вариант и получите разбор.</p>' +
       '<div class="grid">' +
@@ -1595,7 +1613,8 @@
       try { localStorage.setItem(KEY, JSON.stringify(done)); } catch (e) {}
       var n = Object.keys(done).length;
       var el = document.getElementById("dlProgress");
-      if (el) el.textContent = "Решено: " + n + " из 12";
+      var total = document.querySelectorAll(".dl-task").length;
+      if (el) el.textContent = "Решено: " + n + " из " + total;
     }
     save();
     Array.prototype.forEach.call(document.querySelectorAll("[data-dl]"), function (btn) {

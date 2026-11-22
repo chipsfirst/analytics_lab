@@ -1,0 +1,25 @@
+customer_id,name,email,city,signup_date,amount,status
+1001,Анна,anna@example.ru,Москва,2026-01-05,"1 200,50",active
+1002,Борис,boris@example.ru,Санкт-Петербург,05.01.2026,980,Active
+1003,Вера,vera@example.ru,москва,2026-01-07,"1 450,00",active
+1004,Глеб,,Москва,07.01.2026,0,churned
+1005,Дина,dina@example.ru,Казань,2026-01-09,"760,50",active
+1006,Егор,egor@example.ru, Москва ,2026-01-10,-500,active
+1007,Жанна,,Санкт-Петербург,11.01.2026,2100,active
+1008,Илья,ilya@example.ru,Новосибирск,2026-01-12,640,Active
+1009,Кира,kira@example.ru,Москва,2026-01-13,"1 100,00",active
+1010,Лев,lev@example.ru,Казань,14.01.2026,870,churned
+1011,Мария,maria@example.ru,москва,2026-01-15,1300,active
+1012,Никита,,Екатеринбург,16.01.2026,450,active
+1013,Ольга,olga@example.ru,Москва,2026-01-17,"990,50",Active
+1014,Пётр,petr@example.ru,Санкт-Петербург,18.01.2026,1500,active
+1015,Рита,rita@example.ru,Казань,2026-01-19,720,active
+1016,Семён,semen@example.ru,Москва,20.01.2026,"1 050,00",churned
+1017,Тимур,timur@example.ru,Новосибирск,2026-01-21,830,active
+1018,Ульяна,ulyana@example.ru,москва,22.01.2026,1180,Active
+1019,Фёдор,fedor@example.ru,Екатеринбург,2026-01-23,560,active
+1020,Элина,elina@example.ru,Москва,24.01.2026,1440,active
+1021,Юрий,yuri@example.ru,Казань,2026-01-25,690,churned
+1022,Яна,yana@example.ru,Санкт-Петербург,26.01.2026,1010,active
+1003,Вера,vera@example.ru,Москва,2026-01-07,1450,active
+1010,Лев,lev@example.ru,Казань,14.01.2026,870,churned

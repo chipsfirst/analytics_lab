@@ -921,6 +921,33 @@
     };
   }
 
+
+  function tRidgeChoice() {
+    return {
+      prompt: "Что делает Ridge-регрессия при увеличении λ?",
+      solution: "Ridge добавляет штраф λ·Σb². Чем больше λ, тем сильнее коэффициенты стягиваются к нулю; слишком большая λ приводит к недообучению.",
+      answer: { type: "choice", options: [
+        { text: "Сильнее уменьшает коэффициенты", ok: true },
+        { text: "Обнуляет все коэффициенты сразу", ok: false },
+        { text: "Увеличивает коэффициенты", ok: false },
+        { text: "Отключает свободный член", ok: false }
+      ] }
+    };
+  }
+
+  function tLeakageChoice() {
+    return {
+      prompt: "Какой признак скорее всего даст утечку target при прогнозе покупки?",
+      solution: "Сумма оплаты появляется только после покупки и содержит информацию о целевой переменной. В момент прогноза её ещё нет.",
+      answer: { type: "choice", options: [
+        { text: "Сумма оплаты за текущий заказ", ok: true },
+        { text: "Число визитов за прошлую неделю", ok: false },
+        { text: "Город клиента", ok: false },
+        { text: "Возраст аккаунта на сегодня", ok: false }
+      ] }
+    };
+  }
+
   function tClfPrecision() {
     var tp = rndInt(5, 40), fp = rndInt(5, 40);
     var ans = tp / (tp + fp) * 100;
@@ -1058,6 +1085,147 @@
     };
   }
 
+
+  function tCalibrationChoice() {
+    return {
+      prompt: "Модель выдаёт скор 0,8, но положительных среди таких записей только 50%. Что это значит?",
+      solution: "Скор не откалиброван: заявленная вероятность не совпадает с фактической частотой. Ранжирование может быть хорошим, но для решения о риске нужна калибровка.",
+      answer: { type: "choice", options: [
+        { text: "Вероятности не откалиброваны", ok: true },
+        { text: "AUC обязательно равен 0,5", ok: false },
+        { text: "Порог нужно поставить 0,5", ok: false },
+        { text: "Модель нельзя использовать для ранжирования", ok: false }
+      ] }
+    };
+  }
+
+  function tMacroF1() {
+    var a = rndStep(40, 90, 10) / 100;
+    var b = rndStep(30, 80, 10) / 100;
+    var c = rndStep(20, 70, 10) / 100;
+    var ans = (a + b + c) / 3;
+    return {
+      prompt: "F1 по трём классам: <b>" + fmt(a, 1) + "</b>, <b>" + fmt(b, 1) + "</b>, <b>" +
+        fmt(c, 1) + "</b>. Чему равен macro-F1?",
+      solution: "Macro-F1 — среднее по классам: (" + fmt(a, 1) + " + " + fmt(b, 1) + " + " + fmt(c, 1) +
+        ") / 3 = " + fmt(ans, 3) + ".",
+      answer: num(ans, 0.02, 3)
+    };
+  }
+
+
+  function tSmaCalc() {
+    var a = rndInt(60, 150), b = rndInt(60, 150), c = rndInt(60, 150);
+    var ans = (a + b + c) / 3;
+    return {
+      prompt: "Последние три дня продажи были <b>" + a + "</b>, <b>" + b + "</b> и <b>" + c +
+        "</b>. Чему равна скользящая средняя с окном 3?",
+      solution: "SMA = (" + a + " + " + b + " + " + c + ") / 3 = " + fmt(ans, 2) + ".",
+      answer: num(ans, 0.05)
+    };
+  }
+
+  function tNaiveForecast() {
+    var vals = [rndInt(40, 90), rndInt(60, 120), rndInt(50, 140)];
+    return {
+      prompt: "Продажи за три дня: <b>" + vals.join(", ") + "</b>. Какой прогноз даст наивный метод на следующий день?",
+      solution: "Наивный прогноз повторяет последнее известное значение: " + vals[2] + ".",
+      answer: num(vals[2], 0.001)
+    };
+  }
+
+  function tMapeForecast() {
+    var a1 = rndStep(80, 140, 10), a2 = rndStep(100, 180, 10);
+    var f1 = a1 + rndStep(-20, 20, 10), f2 = a2 + rndStep(-30, 30, 10);
+    if (f1 <= 0) f1 = a1 + 10;
+    if (f2 <= 0) f2 = a2 + 10;
+    var ans = ((Math.abs(f1 - a1) / a1 + Math.abs(f2 - a2) / a2) / 2) * 100;
+    return {
+      prompt: "Факт: <b>" + a1 + "</b> и <b>" + a2 + "</b>; прогноз: <b>" + f1 + "</b> и <b>" + f2 +
+        "</b>. Чему равен MAPE в процентах?",
+      solution: "MAPE = среднее относительных ошибок: (|" + f1 + " − " + a1 + "|/" + a1 + " + |" +
+        f2 + " − " + a2 + "|/" + a2 + ") / 2 × 100% = " + fmt(ans, 2) + "%.",
+      answer: num(ans, 0.05)
+    };
+  }
+
+  function tAteCalc() {
+    var t = rndStep(40, 80, 5), c = t - rndStep(5, 20, 5);
+    var ans = (t - c) / 100;
+    return {
+      prompt: "Средняя конверсия в группе воздействия — <b>" + t + "%</b>, в контрольной — <b>" +
+        c + "%</b>. Чему равен ATE в процентных пунктах?",
+      solution: "ATE = E[Y|T=1] − E[Y|T=0] = " + t + "% − " + c + "% = " + fmt(ans * 100, 0) + " п.п.",
+      answer: num(ans * 100, 0.01)
+    };
+  }
+
+  function tDiffInDiff() {
+    var t0 = rndStep(80, 120, 10), t1 = t0 + rndStep(10, 40, 10);
+    var c0 = rndStep(70, 110, 10), c1 = c0 + rndStep(5, 30, 10);
+    var ans = (t1 - t0) - (c1 - c0);
+    return {
+      prompt: "До/после: воздействие <b>" + t0 + " → " + t1 + "</b>, контроль <b>" + c0 + " → " + c1 +
+        "</b>. Чему равен эффект diff-in-diff?",
+      solution: "DiD = (" + t1 + " − " + t0 + ") − (" + c1 + " − " + c0 + ") = " +
+        (t1 - t0) + " − " + (c1 - c0) + " = " + ans + ".",
+      answer: num(ans, 0.01)
+    };
+  }
+
+  function tConfounder() {
+    return {
+      prompt: "Изучаем эффект скидки на повторную покупку. Какой признак вероятнее всего конфаундер?",
+      solution: "Доход клиента влияет и на вероятность получить скидку, и на покупку. Факт покупки — исход, а канал оплаты — скорее следствие.",
+      answer: { type: "choice", options: [
+        { text: "Доход клиента", ok: true },
+        { text: "Факт повторной покупки", ok: false },
+        { text: "Номер заказа", ok: false },
+        { text: "Цвет кнопки", ok: false }
+      ] }
+    };
+  }
+
+
+  function tConsentChoice() {
+    return {
+      prompt: "Какие данные нужны для отчёта по конверсии лендинга?",
+      solution: "Для конверсии достаточно идентификатора, события и времени; имя, телефон и адрес не нужны — это лишний риск.",
+      answer: { type: "choice", options: [
+        { text: "Идентификатор, событие и время", ok: true },
+        { text: "Имя, телефон и адрес", ok: false },
+        { text: "Паспортные данные", ok: false },
+        { text: "Всё, что удалось собрать", ok: false }
+      ] }
+    };
+  }
+
+  function tAnonChoice() {
+    return {
+      prompt: "Чем псевдонимизация отличается от обезличивания?",
+      solution: "При псевдонимизации остаётся ключ, по которому можно восстановить связь с человеком; обезличивание стремится исключить такую возможность.",
+      answer: { type: "choice", options: [
+        { text: "Псевдонимизацию можно обратить по ключу", ok: true },
+        { text: "Псевдонимизация всегда необратима", ok: false },
+        { text: "Обезличивание меняет только заголовки", ok: false },
+        { text: "Это одно и то же", ok: false }
+      ] }
+    };
+  }
+
+  function tEthicsChoice() {
+    return {
+      prompt: "Тест повысил удержание, но выросли жалобы и отписки. Что делать?",
+      solution: "Этичная оценка смотрит на вред и обратимость, а не только на рост метрики: нужно разобрать жалобы и риски, прежде чем масштабировать.",
+      answer: { type: "choice", options: [
+        { text: "Разобрать жалобы и риски до масштабирования", ok: true },
+        { text: "Масштабировать, раз метрика выросла", ok: false },
+        { text: "Скрыть жалобы от команды", ok: false },
+        { text: "Отключить сбор обратной связи", ok: false }
+      ] }
+    };
+  }
+
   function tVizChoice() {
     var cases = [
       { q: "показать, как менялась выручка по месяцам", right: "Линейный график", wrong: ["Круговая диаграмма", "Ящик с усами", "Диаграмма рассеяния"] },
@@ -1092,6 +1260,43 @@
     return {
       prompt: "К какому типу относится заметка: " + c.q + "?",
       solution: "Тип определяется назначением: «" + c.right + "» — так эта запись и должна храниться.",
+      answer: { type: "choice", options: opts }
+    };
+  }
+
+
+  function tReportFirst() {
+    var cases = [
+      { q: "выручка выросла на 20%, но период — неполный месяц", right: "Проверить период и базу сравнения", wrong: ["Сразу строить прогноз", "Сменить цвет графика", "Удалить выбросы"] },
+      { q: "конверсия выросла с 2% до 4%", right: "Проверить числитель, знаменатель и абсолютный прирост", wrong: ["Считать, что рост ровно 2%", "Сразу внедрять", "Смотреть только на p-value"] },
+      { q: "в отчёте показан средний чек, но не указано, входят ли возвраты", right: "Уточнить определение метрики", wrong: ["Доверять цифре", "Удалить метрику", "Считать медиану без данных"] },
+      { q: "клиенты стали покупать чаще, но средний чек упал", right: "Проверить, как изменилась общая выручка и её составляющие", wrong: ["Заключить, что стало лучше", "Заключить, что стало хуже", "Игнорировать оба показателя"] }
+    ];
+    var c = cases[rndInt(0, cases.length - 1)];
+    var opts = [{ text: c.right, ok: true }].concat(c.wrong.map(function (t) { return { text: t, ok: false }; }));
+    var k = rndInt(0, opts.length - 1);
+    opts = opts.slice(k).concat(opts.slice(0, k));
+    return {
+      prompt: "Отчёт: " + c.q + ". Что проверить первым?",
+      solution: "Сначала проверяют вопрос, период, определение и базу: «" + c.right + "». Иначе арифметика будет верной, а вывод — нет.",
+      answer: { type: "choice", options: opts }
+    };
+  }
+
+  function tPortfolioProof() {
+    var cases = [
+      { q: "дашборд с красивыми графиками без исходных данных", right: "Недостаточно: нет воспроизводимости и хода работы", wrong: ["Идеально для портфолио", "Достаточно, если графиков много", "Главное — цветовая палитра"] },
+      { q: "ноутбук с SQL, проверками качества и README", right: "Сильный артефакт: виден ход работы и ограничения", wrong: ["Слишком простой", "Не нужен без дашборда", "Нельзя показывать"] },
+      { q: "отрицательный результат A/B-теста с интервалом и выводом", right: "Ценный проект: показан дизайн и честный вывод", wrong: ["Неудача, лучше скрыть", "Не считается проектом", "Нужно переделать до значимости"] },
+      { q: "скриншот графика без подписи источника", right: "Слабый артефакт: нельзя проверить данные и решение", wrong: ["Достаточно для найма", "Лучше ноутбука", "Главное — аккуратность"] }
+    ];
+    var c = cases[rndInt(0, cases.length - 1)];
+    var opts = [{ text: c.right, ok: true }].concat(c.wrong.map(function (t) { return { text: t, ok: false }; }));
+    var k = rndInt(0, opts.length - 1);
+    opts = opts.slice(k).concat(opts.slice(0, k));
+    return {
+      prompt: "Что можно сказать о портфолио: " + c.q + "?",
+      solution: "Оценивается проверяемость: «" + c.right + "». Исходники, README и ограничения важнее финальной картинки.",
       answer: { type: "choice", options: opts }
     };
   }
@@ -1274,10 +1479,13 @@
     sql: [tSqlWhere, tSqlDistinct, tSqlGroupHaving, tSqlOrderLimit, tSqlNull, tSqlJoin, tSqlWindow, tSqlAvgNull],
     excel: [tXlSumIf, tXlCountIf, tXlIf, tXlVlookup, tXlPct, tXlAbs],
     python: [tPySlice, tPyType, tPyConvert, tPyPrec, tPyRange, tPyBool, tPyFind],
-    regression: [tRegPredict, tRegRmse, tRegDummies],
-    classification: [tClfPrecision, tClfRecall, tClfThreshold, tClfOdds],
+    regression: [tRegPredict, tRegRmse, tRegDummies, tRidgeChoice, tLeakageChoice],
+    classification: [tClfPrecision, tClfRecall, tClfThreshold, tClfOdds, tCalibrationChoice, tMacroF1],
     ml: [tKnnClass, tForestVote, tKmeansAssign],
-    useful: [tVizChoice, tNoteType],
-    bi: [tBiConversion, tBiChartChoice, tDaxChoice, tLodChoice]
+    useful: [tVizChoice, tNoteType, tReportFirst, tPortfolioProof],
+    ethics: [tConsentChoice, tAnonChoice, tEthicsChoice],
+    bi: [tBiConversion, tBiChartChoice, tDaxChoice, tLodChoice],
+    timeseries: [tSmaCalc, tNaiveForecast, tMapeForecast],
+    causal: [tAteCalc, tDiffInDiff, tConfounder]
   };
 })();

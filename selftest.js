@@ -3,8 +3,9 @@
 
 global.window = global;
 require("./js/data.js");
-["analytics", "statistics", "gametheory", "probability", "data", "sql", "excel", "python", "regression", "classification", "ml", "useful", "bi"]
-  .forEach(function (id) { require("./js/topics/" + id + ".js"); });
+(window.TOPIC_ORDER || []).forEach(function (id) {
+  require("./js/topics/" + id + ".js");
+});
 require("./js/features/trainers.js");
 require("./js/features/games.js");
 require("./js/core/progress.js");
@@ -26,7 +27,8 @@ function ok(cond, msg) {
 
 // --- структура контента ---
 var topicIds = Object.keys(window.TOPICS);
-ok(topicIds.length === 13, "ожидалось 13 разделов, найдено " + topicIds.length);
+ok(topicIds.length === 16, "ожидалось 16 разделов, найдено " + topicIds.length);
+ok((window.TOPIC_ORDER || []).join() === topicIds.join(), "порядок TOPIC_ORDER не совпадает с порядком загрузки разделов");
 
 topicIds.forEach(function (id) {
   var t = window.TOPICS[id];
@@ -41,6 +43,22 @@ topicIds.forEach(function (id) {
     ok(q.correct === 0, id + " q" + i + ": правильный вариант должен быть первым");
     ok(q.explain && q.explain.length > 10, id + " q" + i + ": нет разбора");
     ok(new Set(q.options).size === q.options.length, id + " q" + i + ": дубли вариантов");
+  });
+});
+
+var totalChapters = topicIds.reduce(function (n, id) { return n + window.TOPICS[id].chapters.length; }, 0);
+var totalQuiz = topicIds.reduce(function (n, id) { return n + window.TOPICS[id].quiz.length; }, 0);
+var totalTrainers = topicIds.reduce(function (n, id) { return n + (window.TRAINERS[id] || []).length; }, 0);
+ok(totalChapters === 121, "глав: " + totalChapters);
+ok(totalQuiz === 243, "вопросов: " + totalQuiz);
+ok(totalTrainers === 86, "тренажёров: " + totalTrainers);
+
+var seenQuestions = Object.create(null);
+topicIds.forEach(function (id) {
+  window.TOPICS[id].quiz.forEach(function (q, i) {
+    var key = q.q.toLowerCase().replace(/\s+/g, " ").trim();
+    ok(!seenQuestions[key], id + " q" + i + ": дубль вопроса «" + q.q.slice(0, 50) + "»");
+    seenQuestions[key] = true;
   });
 });
 
@@ -69,7 +87,7 @@ topicIds.forEach(function (id) {
   });
 });
 
-ok(Array.isArray(window.TRACKS) && window.TRACKS.length === 3, "маршруты: ожидалось 3");
+ok(Array.isArray(window.TRACKS) && window.TRACKS.length === 6, "маршруты: ожидалось 6");
 window.TRACKS.forEach(function (t) {
   ok(t.title && t.tag && t.steps.length >= 6, "маршрут " + t.id + " неполный");
   t.steps.forEach(function (s) {
@@ -82,7 +100,7 @@ window.CHEATSHEET.forEach(function (r, i) {
   ok(r.task && r.main && r.check, "шпаргалка: строка " + i + " неполная");
 });
 
-ok(Object.keys(window.TRAINERS).length === 13, "тренажёры есть не для всех разделов");
+ok(Object.keys(window.TRAINERS).length === 16, "тренажёры есть не для всех разделов");
 topicIds.forEach(function (id) {
   ok(window.TRAINERS[id] && window.TRAINERS[id].length > 0, id + ": нет тренажёров");
 });
@@ -195,6 +213,81 @@ Object.keys(window.DEMOS).forEach(function (id) {
 });
 ok(typeof window.SANDBOX === "object" && typeof window.SANDBOX.mount === "function", "SANDBOX не загрузился");
 ok(typeof window.PYSANDBOX === "object" && typeof window.PYSANDBOX.mount === "function", "PYSANDBOX не загрузился");
+
+// --- датасеты: проверяем только в Node, браузерный прогон их пропускает ---
+if (typeof process !== "undefined" && process.versions && process.versions.node) {
+  var fs = require("fs");
+  function parseCsvLine(line) {
+    var cells = [], cur = "", quoted = false;
+    for (var i = 0; i < line.length; i++) {
+      var ch = line[i];
+      if (quoted) {
+        if (ch === '"' && line[i + 1] === '"') { cur += '"'; i++; }
+        else if (ch === '"') quoted = false;
+        else cur += ch;
+      } else if (ch === '"') quoted = true;
+      else if (ch === ",") { cells.push(cur); cur = ""; }
+      else cur += ch;
+    }
+    cells.push(cur);
+    return cells;
+  }
+  function csv(name) {
+    var lines = fs.readFileSync("data/" + name, "utf8").trim().split(/\r?\n/);
+    var head = parseCsvLine(lines.shift());
+    return lines.map(function (line) {
+      var cells = parseCsvLine(line), row = {};
+      head.forEach(function (h, i) { row[h] = cells[i]; });
+      return row;
+    });
+  }
+  function complete(rows) {
+    return rows.every(function (r) {
+      return Object.keys(r).every(function (k) { return r[k] !== ""; });
+    });
+  }
+  var ab = csv("ab-test.csv");
+  ok(ab.length === 1200 && complete(ab), "ab-test: строки/пропуски");
+  ok(new Set(ab.map(function (r) { return r.user_id; })).size === 1200, "ab-test: user_id не уникален");
+  ok(ab.filter(function (r) { return r.group === "A"; }).length === 600, "ab-test: группа A");
+  ok(ab.filter(function (r) { return r.group === "B" && r.converted === "1"; }).length === 87, "ab-test: конверсии B");
+
+  var co = csv("case-orders.csv");
+  ok(co.length === 800 && complete(co), "case-orders: строки/пропуски");
+  ok(co.filter(function (r) { return r.group === "A" && Number(r.orders) > 0; }).length === 43, "case-orders: покупатели A");
+  ok(co.filter(function (r) { return r.group === "B" && Number(r.orders) > 0; }).length === 53, "case-orders: покупатели B");
+
+  var ch = csv("churn.csv");
+  ok(ch.length === 600 && complete(ch), "churn: строки/пропуски");
+  ok(ch.filter(function (r) { return r.churned === "1"; }).length === 128, "churn: ушедшие");
+  ok(ch.filter(function (r) { return r.churned === "1"; })
+    .reduce(function (n, r) { return n + Number(r.monthly_charges || 0); }, 0) === 125320, "churn: выручка под риском");
+
+  var mk = csv("marketing.csv");
+  ok(mk.length === 90 && complete(mk), "marketing: строки/пропуски");
+  var mkSpend = mk.reduce(function (n, r) { return n + Number(r.spend); }, 0);
+  var mkRev = mk.reduce(function (n, r) { return n + Number(r.revenue); }, 0);
+  var mkMail = mk.filter(function (r) { return r.channel === "Email"; });
+  var mailRoas = mkMail.reduce(function (n, r) { return n + Number(r.revenue); }, 0) / mkMail.reduce(function (n, r) { return n + Number(r.spend); }, 0);
+  ok(Math.abs(mkRev / mkSpend - 9.85) < 0.01, "marketing: ROAS");
+  ok(Math.abs(mailRoas - 40.79) < 0.01, "marketing: Email ROAS");
+
+  var bi = csv("bi-orders.csv");
+  ok(bi.length === 28 && complete(bi), "bi-orders: строки/пропуски");
+  var net = bi.filter(function (r) { return r.returned === "0"; })
+    .reduce(function (n, r) { return n + Number(r.revenue); }, 0);
+  ok(bi.filter(function (r) { return r.returned === "1"; }).length === 3, "bi-orders: возвраты");
+  ok(net === 268100, "bi-orders: выручка без возвратов");
+  ok(Math.round(net / 28) === 9575 && Math.round(net / 25) === 10724, "bi-orders: AOV");
+
+  var dirty = csv("dirty-customers.csv");
+  ok(dirty.length === 24, "dirty-customers: строки");
+  ok(new Set(dirty.map(function (r) { return r.customer_id; })).size === 22, "dirty-customers: уникальные клиенты");
+  ok(dirty.filter(function (r) { return !r.email || !r.email.trim(); }).length === 3, "dirty-customers: пропуски email");
+  ok(dirty[0].amount === "1 200,50" && dirty[0].status === "active", "dirty-customers: кавычки и запятая в сумме");
+  ok(new Set(dirty.filter(function (r) { return r.city.trim().toLowerCase() === "москва"; })
+    .map(function (r) { return r.customer_id; })).size === 10, "dirty-customers: Москва");
+}
 
 if (errors.length) {
   console.error("Провалено проверок: " + errors.length + " из " + checks);
