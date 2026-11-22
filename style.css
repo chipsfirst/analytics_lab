@@ -453,3 +453,14 @@ input:focus, select:focus, textarea:focus { border-color: var(--accent); }
   .search input { width: 100%; }
   main { padding: 18px 16px 40px; }
 }
+
+@media print {
+  .top, .foot, .toc, .btn, .btn-row, .nb-bar, .sw-toast, .search, .links, .demo-controls { display: none !important; }
+  body { background: #fff; color: #000; font-size: 11pt; }
+  main { max-width: none; padding: 0; }
+  .reader { display: block; }
+  article section { page-break-inside: avoid; }
+  article section + section { page-break-before: always; border-top: none; margin-top: 0; }
+  .formula, .note, .example, table { page-break-inside: avoid; }
+  a { color: #000; text-decoration: underline; }
+}

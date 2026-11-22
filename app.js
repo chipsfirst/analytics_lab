@@ -267,7 +267,10 @@
         '<a class="btn" href="#/trainer/' + quiz.id + '">К тренажёру</a></div></div>';
 
       var reuse = document.getElementById("again");
-      if (reuse) reuse.addEventListener("click", function () { startQuiz(quiz.id); renderQuiz(); });
+      if (reuse) {
+        reuse.addEventListener("click", function () { startQuiz(quiz.id); renderQuiz(); });
+        reuse.focus();
+      }
 
       var rev = document.getElementById("review");
       if (rev) rev.addEventListener("click", function () { startQuiz(quiz.id, review); renderQuiz(); });
@@ -310,12 +313,16 @@
         if (ok) quiz.score++;
         quiz.answers.push({ idx: quiz.qs[quiz.i].srcIndex, ok: ok });
         renderQuiz();
+        var nx = document.getElementById("next");
+        if (nx) nx.focus();
       });
     });
 
     var next = document.getElementById("next");
     if (next) next.addEventListener("click", function () {
       quiz.i++; quiz.picked = -1; renderQuiz();
+      var first = app.querySelector(".option");
+      if (first) first.focus();
     });
 
     setKeys(function (e) {
@@ -550,41 +557,68 @@
 
   // ---------- роутер ----------
 
+  // Каждый маршрут описывает результат: html, побочный рендер или монтирование.
+  function routeFor(p) {
+    var seg = p[0], id = p[1];
+
+    if (!seg) return { html: home() };
+
+    if (seg === "theory") {
+      if (id && window.TOPICS[id]) return { html: theory(id, p[2]) };
+      return { html: listPage("theory", "Теория", "Все разделы: формулы, примеры и разборы.", "Открыть раздел") };
+    }
+    if (seg === "quiz") {
+      if (id && window.TOPICS[id]) return { quiz: id };
+      return { html: listPage("quiz", "Тесты", "Восемь случайных вопросов из банка раздела, с разбором каждого ответа.", "Пройти тест") };
+    }
+    if (seg === "trainer") {
+      if (id && window.TOPICS[id]) return { trainer: id };
+      return { html: listPage("trainer", "Тренажёры", "Задачи генерируются заново: считать придётся каждый раз, а не запоминать ответы.", "Тренироваться") };
+    }
+    if (seg === "games") {
+      if (id) return { mount: function () { return mountPage(window.GAMES, id, "game", "#/games", "все игры", "Игра"); } };
+      return { html: gamesList() };
+    }
+    if (seg === "demos") {
+      if (id) return { mount: function () { return mountPage(window.DEMOS, id, "demo", "#/demos", "все демонстрации", "Демонстрация"); } };
+      return { html: demosList() };
+    }
+    if (seg === "sandbox") return { mount: sandboxPage };
+    if (seg === "pysandbox") return { mount: pySandboxPage };
+    if (seg === "path") return { html: pathPage() };
+    if (seg === "cheatsheet") return { html: cheatSheetPage() };
+    if (seg === "search") return { html: searchPage(id), after: function () { bindSearch(id); } };
+    return { html: '<h1>Страница не найдена</h1><p><a href="#/">На главную</a></p>' };
+  }
+
   function render() {
     if (cleanup) { try { cleanup(); } catch (e) {} cleanup = null; }
     setKeys(null);
     var p = path();
     renderNav();
     window.scrollTo(0, 0);
-    var html = null;
-    var after = null;
 
-    if (p.length === 0) html = home();
-    else if (p[0] === "theory" && p[1] && window.TOPICS[p[1]]) html = theory(p[1], p[2]);
-    else if (p[0] === "theory") html = listPage("theory", "Теория", "Все разделы: формулы, примеры и разборы.", "Открыть раздел");
-    else if (p[0] === "quiz" && p[1] && window.TOPICS[p[1]]) {
-      if (!quiz || quiz.id !== p[1]) startQuiz(p[1]);
+    var r = routeFor(p);
+
+    if (r.quiz) {
+      if (!quiz || quiz.id !== r.quiz) startQuiz(r.quiz);
       renderQuiz();
       return;
-    } else if (p[0] === "quiz") html = listPage("quiz", "Тесты", "Восемь случайных вопросов из банка раздела, с разбором каждого ответа.", "Пройти тест");
-    else if (p[0] === "trainer" && p[1] && window.TOPICS[p[1]]) {
-      if (!trainer || trainer.id !== p[1]) {
-        trainer = { id: p[1], correct: 0, total: 0 };
+    }
+
+    if (r.trainer) {
+      if (!trainer || trainer.id !== r.trainer) {
+        trainer = { id: r.trainer, correct: 0, total: 0 };
         newTask();
       }
       renderTrainer();
       return;
-    } else if (p[0] === "trainer") html = listPage("trainer", "Тренажёры", "Задачи генерируются заново: считать придётся каждый раз, а не запоминать ответы.", "Тренироваться");
-    else if (p[0] === "games" && p[1]) return mountPage(window.GAMES, p[1], "game", "#/games", "все игры", "Игра");
-    else if (p[0] === "games") html = gamesList();
-    else if (p[0] === "demos" && p[1]) return mountPage(window.DEMOS, p[1], "demo", "#/demos", "все демонстрации", "Демонстрация");
-    else if (p[0] === "demos") html = demosList();
-    else if (p[0] === "sandbox") return sandboxPage();
-    else if (p[0] === "pysandbox") return pySandboxPage();
-    else if (p[0] === "path") html = pathPage();
-    else if (p[0] === "cheatsheet") html = cheatSheetPage();
-    else if (p[0] === "search") { html = searchPage(p[1]); after = function () { bindSearch(p[1]); }; }
-    else html = "<h1>Страница не найдена</h1><p><a href=\"#/\">На главную</a></p>";
+    }
+
+    if (r.mount) return r.mount();
+
+    var html = r.html;
+    var after = r.after || null;
 
     if (html !== null) {
       app.innerHTML = html;
