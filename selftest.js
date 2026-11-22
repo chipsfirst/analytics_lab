@@ -27,7 +27,7 @@ function ok(cond, msg) {
 
 // --- структура контента ---
 var topicIds = Object.keys(window.TOPICS);
-ok(topicIds.length === 16, "ожидалось 16 разделов, найдено " + topicIds.length);
+ok(topicIds.length === 17, "ожидалось 17 разделов, найдено " + topicIds.length);
 ok((window.TOPIC_ORDER || []).join() === topicIds.join(), "порядок TOPIC_ORDER не совпадает с порядком загрузки разделов");
 
 topicIds.forEach(function (id) {
@@ -49,9 +49,9 @@ topicIds.forEach(function (id) {
 var totalChapters = topicIds.reduce(function (n, id) { return n + window.TOPICS[id].chapters.length; }, 0);
 var totalQuiz = topicIds.reduce(function (n, id) { return n + window.TOPICS[id].quiz.length; }, 0);
 var totalTrainers = topicIds.reduce(function (n, id) { return n + (window.TRAINERS[id] || []).length; }, 0);
-ok(totalChapters === 132, "глав: " + totalChapters);
-ok(totalQuiz === 265, "вопросов: " + totalQuiz);
-ok(totalTrainers === 86, "тренажёров: " + totalTrainers);
+ok(totalChapters === 138, "глав: " + totalChapters);
+ok(totalQuiz === 277, "вопросов: " + totalQuiz);
+ok(totalTrainers === 89, "тренажёров: " + totalTrainers);
 
 var seenQuestions = Object.create(null);
 topicIds.forEach(function (id) {
@@ -87,7 +87,9 @@ topicIds.forEach(function (id) {
   });
 });
 
-ok(Array.isArray(window.TRACKS) && window.TRACKS.length === 6, "маршруты: ожидалось 6");
+ok(Array.isArray(window.TRACKS) && window.TRACKS.length === 7, "маршруты: ожидалось 7");
+ok(window.TOPICS.production && window.TOPICS.production.chapters.length === 6 && window.TOPICS.production.quiz.length === 12, "production: 6 глав / 12 вопросов");
+ok((window.TRAINERS.production || []).length === 3, "production: тренажёры");
 window.TRACKS.forEach(function (t) {
   ok(t.title && t.tag && t.steps.length >= 6, "маршрут " + t.id + " неполный");
   t.steps.forEach(function (s) {
@@ -100,7 +102,7 @@ window.CHEATSHEET.forEach(function (r, i) {
   ok(r.task && r.main && r.check, "шпаргалка: строка " + i + " неполная");
 });
 
-ok(Object.keys(window.TRAINERS).length === 16, "тренажёры есть не для всех разделов");
+ok(Object.keys(window.TRAINERS).length === 17, "тренажёры есть не для всех разделов");
 topicIds.forEach(function (id) {
   ok(window.TRAINERS[id] && window.TRAINERS[id].length > 0, id + ": нет тренажёров");
 });
@@ -318,6 +320,23 @@ if (typeof process !== "undefined" && process.versions && process.versions.node)
     if (minCac === null || cac < minCac) minCac = cac;
   });
   ok(Math.abs(minCac - 177.37) < 0.01, "retail-marketing: минимальный CAC");
+
+  var su = csv("sub-users.csv");
+  ok(su.length === 3000 && new Set(su.map(function (r) { return r.user_id; })).size === 3000, "sub-users: строки/ключи");
+
+  var ss = csv("sub-subscriptions.csv");
+  ok(ss.length === 3604 && new Set(ss.map(function (r) { return r.subscription_id; })).size === 3604, "sub-subscriptions: строки/ключи");
+
+  var sp = csv("sub-payments.csv");
+  ok(sp.length === 20672, "sub-payments: строки");
+  var paySeen = {}, payUnique = [];
+  sp.forEach(function (r) { if (!paySeen[r.payment_id]) { paySeen[r.payment_id] = 1; payUnique.push(r); } });
+  ok(payUnique.length === 20657 && sp.length - payUnique.length === 15, "sub-payments: дубли");
+  ok(payUnique.filter(function (r) { return !r.user_id; }).length === 120, "sub-payments: пропуски user_id");
+
+  var st = csv("sub-tickets.csv");
+  ok(st.length === 2000, "sub-tickets: строки");
+  ok(st.filter(function (r) { return !r.satisfaction; }).length === 158, "sub-tickets: пропуски satisfaction");
 }
 
 if (errors.length) {

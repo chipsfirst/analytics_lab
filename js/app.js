@@ -62,7 +62,8 @@
     causal: { icon: "link" },
     ethics: { icon: "shield" },
     useful: { icon: "note" },
-    bi: { icon: "chart" }
+    bi: { icon: "chart" },
+    production: { icon: "gear" }
   };
 
   var ICONS = {
@@ -82,6 +83,7 @@
     link: '<path d="M10 14a4 4 0 005.7 0l2.3-2.3a4 4 0 00-5.7-5.7L11 7.3"/><path d="M14 10a4 4 0 00-5.7 0l-2.3 2.3a4 4 0 005.7 5.7L13 16.7"/>',
     flask: '<path d="M9 3h6M10 3v6l-5 9a2 2 0 001.8 3h10.4A2 2 0 0019 18l-5-9V3"/><path d="M7.5 15h9"/>',
     book: '<path d="M5 5.5A2.5 2.5 0 017.5 3H19v16H7.5A2.5 2.5 0 005 21.5z"/><path d="M5 18.5A2.5 2.5 0 017.5 16H19"/>',
+    gear: '<circle cx="12" cy="12" r="3"/><path d="M12 3v3M12 18v3M4.2 7.5l2.6 1.5M17.2 15l2.6 1.5M4.2 16.5l2.6-1.5M17.2 9l2.6-1.5"/>',
     wave: '<path d="M3 15c3-7 6-7 9 0s6 7 9 0"/>',
     shield: '<path d="M12 3l7 3v6c0 4-3 7-7 9-4-2-7-5-7-9V6z"/><path d="M9 12l2 2 4-4"/>'
   };
@@ -240,12 +242,13 @@
       '<a class="home-action primary" href="#/textbook"><b>Открыть учебник</b><span>' +
         topicCount + " " + plural(topicCount, "раздел", "раздела", "разделов") + ", " +
         chapterCount + " " + plural(chapterCount, "глава", "главы", "глав") + "</span></a>" +
-      '<a class="home-action" href="#/path"><b>Маршрут обучения</b><span>Шесть треков под цель</span></a>' +
+      '<a class="home-action" href="#/path"><b>Маршрут обучения</b><span>Семь треков под цель</span></a>' +
       '<a class="home-action" href="#/trainer"><b>Тренажёры</b><span>Задачи с автопроверкой</span></a>' +
       "</div>" +
       '<div class="home-tools"><span>Инструменты:</span>' +
       '<a href="#/project">Сквозной проект</a>' +
       '<a href="#/capstone">Большой проект</a>' +
+      '<a href="#/open-project">Открытый проект</a>' +
       '<a href="#/datalab">Практика на данных</a>' +
       '<a href="#/cases">Кейсы</a>' +
       '<a href="#/prompt-lab">Тренажёр промптов</a>' +
@@ -939,26 +942,31 @@
   function pathPage() {
     var tracks = window.TRACKS || [];
     return "<h1>Маршрут обучения</h1>" +
-      '<p class="lead">Шесть маршрутов: с чего начать, как укрепить статистику, перейти к Python, собрать данные и дашборд, разобраться с экспериментами и моделями. ' +
-      "Прогресс считается по прочитанным главам.</p>" +
+      '<p class="lead">Семь маршрутов: с чего начать, как укрепить статистику, перейти к Python, собрать данные и дашборд, разобраться с экспериментами, моделями и рабочим контуром аналитики. ' +
+      "Прогресс считается по прочитанным главам, финальная практика — отдельным шагом.</p>" +
       '<div class="grid">' + tracks.map(function (t) {
         var total = t.steps.length;
         var done = t.steps.filter(function (s) { return window.PROGRESS.isRead(s[0], s[1]); }).length;
+        var allDone = total > 0 && done === total;
         var next = t.steps.filter(function (s) { return !window.PROGRESS.isRead(s[0], s[1]); })[0] || t.steps[0];
-        var href = "#/theory/" + next[0] + "/" + next[1];
+        var href = allDone && t.final && t.final.length ? t.final[0].href : "#/theory/" + next[0] + "/" + next[1];
+        var label = allDone && t.final && t.final.length ? "К практике" : (done ? "Продолжить" : "Начать");
         var steps = t.steps.map(function (s) {
           var c = window.TOPICS[s[0]].chapters[s[1]];
           var read = window.PROGRESS.isRead(s[0], s[1]);
           return '<li' + (read ? ' class="read"' : "") + ">" +
             '<a href="#/theory/' + s[0] + "/" + s[1] + '">' + esc(c.title) + "</a></li>";
         }).join("");
+        var finals = (t.final || []).map(function (f) {
+          return '<li class="practice"><a href="' + f.href + '">' + esc(f.title) + "</a>" +
+            '<span class="meta"> ' + esc(f.note) + "</span></li>";
+        }).join("");
         return '<div class="card"><h3>' + esc(t.title) + "</h3>" +
           "<p>" + esc(t.tag) + "</p>" +
           '<p class="meta">Пройдено: ' + done + " из " + total + "</p>" +
           '<div class="track-bar"><div style="width:' + Math.round(done / total * 100) + '%"></div></div>' +
-          '<div class="links"><a class="btn primary" href="' + href + '">' +
-          (done ? "Продолжить" : "Начать") + "</a></div>" +
-          '<ol class="track-steps">' + steps + "</ol></div>";
+          '<div class="links"><a class="btn primary" href="' + href + '">' + label + "</a></div>" +
+          '<ol class="track-steps">' + steps + finals + "</ol></div>";
       }).join("") + "</div>";
   }
 
@@ -1231,6 +1239,121 @@
         } else {
           btn.textContent = "Ещё раз";
         }
+      });
+    });
+  }
+
+  function openProjectPage() {
+    var files = [
+      ["sub-users.csv", "Пользователи", "3 000", "user_id, signup_date, city, channel, age_group"],
+      ["sub-subscriptions.csv", "Подписки", "3 604", "subscription_id, user_id, plan, start_date, end_date, status, monthly_price"],
+      ["sub-payments.csv", "Платежи", "20 672", "payment_id, user_id, subscription_id, payment_date, amount, status, method"],
+      ["sub-tickets.csv", "Обращения", "2 000", "ticket_id, user_id, created_at, category, priority, resolved_at, satisfaction"]
+    ];
+    var checks = [
+      ["quality", "Проверил дубли, пропуски, даты и покрытие периода"],
+      ["metrics", "Посчитал MRR, ARPU, отток, failed payments и возвраты"],
+      ["segments", "Сравнил каналы или тарифы и объяснил различие"],
+      ["hypotheses", "Сформулировал две проверяемые гипотезы с метрикой"],
+      ["memo", "Написал записку с решением, риском и следующим шагом"],
+      ["repro", "Оставил SQL/Python-код, который повторяет расчёт"]
+    ];
+    function fileCard(f) {
+      return '<div class="card"><h3><a href="data/' + f[0] + '" download>' + esc(f[1]) + "</a></h3>" +
+        '<p class="meta">' + esc(f[2]) + " строк</p><p class=\"meta\"><code>" + esc(f[3]) + "</code></p></div>";
+    }
+    function check(c) {
+      return '<label class="open-check"><input type="checkbox" data-open-check="' + c[0] + '"> ' + esc(c[1]) + "</label>";
+    }
+    return "<h1>Открытый проект: подписка</h1>" +
+      '<p class="lead">Здесь нет готовых вопросов и автопроверки. Есть бриф, грязные данные и рубрика. ' +
+      "Нужно провести анализ, принять решение и защитить его перед заказчиком.</p>" +
+      '<div class="card"><h2>Бриф</h2>' +
+      "<p>Сервис «Пульс» продаёт подписку на тренировки. Выручка за девять месяцев — 13,0 млн ₽, " +
+      "но MRR последние месяцы почти не растёт, а маркетинг просит увеличить бюджет.</p>" +
+      "<p>Нужно понять, где сервис теряет деньги, и предложить одно решение на ближайший квартал. " +
+      "Данные выгружены из трёх систем: пользователи, подписки и платежи, плюс обращения в поддержку. " +
+      "Часть записей намеренно испорчена.</p>" +
+      '<p class="meta">Период: январь–сентябрь 2026. Все данные синтетические. ' +
+      "Правильного ответа нет: оценивается ход анализа, допущения и качество решения.</p></div>" +
+      '<h2>Файлы</h2><div class="grid">' + files.map(fileCard).join("") + "</div>" +
+      '<div class="table-wrap"><table><thead><tr><th>Таблица</th><th>Зерно</th><th>Что проверить</th></tr></thead><tbody>' +
+      "<tr><td>users</td><td>пользователь</td><td>уникальность user_id, диапазон регистрации, каналы</td></tr>" +
+      "<tr><td>subscriptions</td><td>подписка</td><td>пересечения периодов, статусы, end_date, тариф</td></tr>" +
+      "<tr><td>payments</td><td>платёж</td><td>дубли payment_id, пропуски user_id, даты до регистрации и после конца подписки, форматы дат</td></tr>" +
+      "<tr><td>tickets</td><td>обращение</td><td>пропуски satisfaction, незакрытые тикеты, категории</td></tr>" +
+      "</tbody></table></div>" +
+      '<h2>Что сдать</h2><div class="grid">' +
+      '<div class="card"><h3>1. Качество данных</h3><p>Найдите дубли, пропуски и аномалии. ' +
+      "Покажите, как каждый дефект влияет на метрику, а не просто перечислите строки.</p></div>" +
+      '<div class="card"><h3>2. Метрики</h3><p>MRR, ARPU, отток за 90 дней, доля failed payments, возвраты, ' +
+      "нагрузка поддержки. Для каждой метрики — формула и период.</p></div>" +
+      '<div class="card"><h3>3. Сегменты</h3><p>Сравните каналы, тарифы или когорты. ' +
+      "Найдите хотя бы одно различие, которое меняет решение.</p></div>" +
+      '<div class="card"><h3>4. Гипотезы</h3><p>Две проверяемые гипотезы: что меняем, какую метрику двигаем, ' +
+      "какой эффект считаем достаточным и как проверим.</p></div>" +
+      '<div class="card"><h3>5. Записка</h3><p>Одна страница для CMO: решение, три цифры, риск и следующий шаг. ' +
+      "Без пересказа всех графиков.</p></div>" +
+      '<div class="card"><h3>6. Воспроизводимость</h3><p>SQL- или Python-код, который повторяет расчёт. ' +
+      "Достаточно одного файла с комментариями, где что считается.</p></div>" +
+      "</div>" +
+      '<h2>Рубрика</h2><div class="table-wrap"><table><thead><tr><th>Критерий</th><th>0</th><th>1</th><th>2</th></tr></thead><tbody>' +
+      "<tr><td>Качество данных</td><td>Дефекты не замечены</td><td>Перечислены, но без влияния</td><td>Найдены, посчитаны и связаны с метрикой</td></tr>" +
+      "<tr><td>Метрики</td><td>Формулы неверны</td><td>Считает верно, но без определений</td><td>Верно, с определениями, периодом и оговорками</td></tr>" +
+      "<tr><td>Сегменты</td><td>Нет разреза</td><td>Один разрез без вывода</td><td>Несколько разрезов и объяснение различия</td></tr>" +
+      "<tr><td>Гипотезы</td><td>Не проверяемые</td><td>Проверяемые, но без метрики</td><td>Метрика, эффект и дизайн проверки</td></tr>" +
+      "<tr><td>Коммуникация</td><td>Нет записки</td><td>Есть цифры, нет решения</td><td>Решение, риск и следующий шаг на одной странице</td></tr>" +
+      "</tbody></table></div>" +
+      '<p class="meta">Максимум 10 баллов. 8 и больше — уровень, который не стыдно показать на собеседовании.</p>' +
+      '<details class="card open-example"><summary><b>Пример сильной сдачи</b> — посмотреть записку и разбор</summary>' +
+      '<p class="meta">Цифры ниже посчитаны по этим файлам. Это один из допустимых ответов, а не эталон: важнее ход рассуждения.</p>' +
+      "<p><b>Кому:</b> CMO. <b>От:</b> аналитик. <b>Решение:</b> не увеличивать бюджет равномерно. " +
+      "Сначала вернуть деньги на failed payments, затем перестроить онбординг referral-пользователей.</p>" +
+      "<p><b>Что в данных.</b> В payments 20 672 строки, после дедупликации — 20 657. " +
+      "15 дублей payment_id, 120 платежей без user_id, 5 дат до регистрации и 30 после окончания подписки. " +
+      "Дубли и пропуски — меньше 1% строк, но даты вне жизненного цикла подписки нельзя молча отбрасывать: " +
+      "они меняют когортный анализ.</p>" +
+      "<p><b>Экономика.</b> MRR на 30.09.2026 — 1 678 120 ₽, активных подписок 2 388, " +
+      "активных пользователей 2 120, ARPU — 791,57 ₽. За 90 дней отток 19,9%. " +
+      "Из 20 657 платежей 1 244 failed (6,0%) и 444 возврата (2,1%). " +
+      "Выручка по оплаченным — 13,3 млн ₽, возвраты — 0,31 млн ₽.</p>" +
+      "<p><b>Сегменты.</b> В когорте января–марта 2026 доля активных на 30.09: paid_search — 71,3%, " +
+      "social — 70,8%, email — 66,7%, referral — 64,8%. Разрыв referral и paid_search — 6,5 п.п.: " +
+      "гипотеза о слабом онбординге referral выглядит правдоподобнее, чем «плохой трафик».</p>" +
+      "<p><b>Две гипотезы.</b> 1) Ретраи failed payments и смена метода оплаты вернут не менее 25% " +
+      "несостоявшихся списаний; метрика — recovered revenue, дизайн — пилот на 2 недели с контролем. " +
+      "2) Онбординг referral-пользователей повысит их 90-дневное удержание до уровня paid_search; " +
+      "метрика — доля активных на 30-й и 90-й день, дизайн — A/B на новых referral-пользователях.</p>" +
+      "<p><b>Риск.</b> Статусы подписок и определения оттока могут расходиться с финансовой отчётностью; " +
+      "сегменты наблюдательные, а не причинные. Перед внедрением нужно сверить net revenue с бухгалтерией " +
+      "и проверить, не сезонный ли это спад.</p>" +
+      "<p><b>Следующий шаг.</b> Двухнедельный пилот по failed payments: считаем recovered revenue, " +
+      "стоимость ретраев и число жалоб. Если эффект устойчив — масштабируем и только потом перекладываем бюджет.</p>" +
+      "<p><b>Почему это хорошо:</b> есть определения метрик, влияние дефектов, сегментный разрез, " +
+      "две проверяемые гипотезы, риск и одно конкретное решение. <b>Что доработать:</b> разрез по тарифам " +
+      "и способам оплаты, проверка сезонности и сверка с финансовой отчётностью.</p>" +
+      "</details>" +
+      '<div class="card"><h2>Чек-лист сдачи</h2><div class="open-checks">' + checks.map(check).join("") + "</div>" +
+      '<p class="meta" id="openProgress">Готово: 0 из ' + checks.length + "</p></div>";
+  }
+
+  function bindOpenProject() {
+    var KEY = "analytics-lab-open-project-v1";
+    var done = {};
+    try { done = JSON.parse(localStorage.getItem(KEY) || "{}") || {}; } catch (e) {}
+    function save() {
+      try { localStorage.setItem(KEY, JSON.stringify(done)); } catch (e) {}
+      var total = document.querySelectorAll("[data-open-check]").length;
+      var el = document.getElementById("openProgress");
+      if (el) el.textContent = "Готово: " + Object.keys(done).length + " из " + total;
+    }
+    save();
+    Array.prototype.forEach.call(document.querySelectorAll("[data-open-check]"), function (box) {
+      var id = box.getAttribute("data-open-check");
+      box.checked = !!done[id];
+      box.addEventListener("change", function () {
+        if (box.checked) done[id] = 1; else delete done[id];
+        save();
       });
     });
   }
@@ -1938,6 +2061,7 @@
     }
     if (seg === "project") return { html: projectPage(), after: bindProject };
     if (seg === "capstone") return { html: capstonePage(), after: bindCapstone };
+    if (seg === "open-project") return { html: openProjectPage(), after: bindOpenProject };
     if (seg === "datalab") return { html: datalabPage(), after: bindDatalab };
     if (seg === "cases") return { html: casesPage() };
     if (seg === "prompt-lab") return { html: promptLabPage(), after: bindPromptLab };

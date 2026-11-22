@@ -1470,6 +1470,58 @@
     };
   }
 
+  function tProdLayer() {
+    var cases = [
+      { q: "копию источника без изменений", right: "raw", wrong: ["core", "marts", "BI-дашборд"] },
+      { q: "очищенные переиспользуемые заказы и клиентов", right: "core", wrong: ["raw", "staging", "marts"] },
+      { q: "витрину под конкретный отчёт", right: "marts", wrong: ["raw", "core", "Excel"] }
+    ];
+    var c = cases[rndInt(0, cases.length - 1)];
+    var opts = [{ text: c.right, ok: true }].concat(c.wrong.map(function (t) { return { text: t, ok: false }; }));
+    var k = rndInt(0, opts.length - 1);
+    opts = opts.slice(k).concat(opts.slice(0, k));
+    return {
+      prompt: "В каком слое хранить " + c.q + "?",
+      solution: "Слой определяется ролью данных: raw — сырьё, core — очищенные сущности, marts — витрины под задачу.",
+      answer: { type: "choice", options: opts }
+    };
+  }
+
+  function tProdDbtTest() {
+    var cases = [
+      { q: "order_id должен быть уникальным", right: "unique", wrong: ["not_null", "accepted_values", "relationships"] },
+      { q: "user_id не должен быть пустым", right: "not_null", wrong: ["unique", "relationships", "accepted_values"] },
+      { q: "статус входит в paid, cancelled или refunded", right: "accepted_values", wrong: ["unique", "not_null", "relationships"] },
+      { q: "user_id существует в dim_users", right: "relationships", wrong: ["unique", "accepted_values", "not_null"] }
+    ];
+    var c = cases[rndInt(0, cases.length - 1)];
+    var opts = [{ text: c.right, ok: true }].concat(c.wrong.map(function (t) { return { text: t, ok: false }; }));
+    var k = rndInt(0, opts.length - 1);
+    opts = opts.slice(k).concat(opts.slice(0, k));
+    return {
+      prompt: "Какой тест dbt проверит: " + c.q + "?",
+      solution: "Тест выбирают по смыслу ограничения: уникальность, обязательность, допустимые значения или ссылочная целостность.",
+      answer: { type: "choice", options: opts }
+    };
+  }
+
+  function tProdFreshness() {
+    var cases = [
+      { q: "витрина показывает вчерашние данные", right: "Проверить время последней успешной загрузки и SLA", wrong: ["Перезапустить все задачи подряд", "Очистить кеш браузера", "Изменить определение метрики"] },
+      { q: "повторный запуск удвоил выручку", right: "Сделать задачу идемпотентной", wrong: ["Добавить ещё один ретрай", "Удалить историю", "Отключить тесты"] },
+      { q: "счёт за хранилище вырос вдвое", right: "Проверить partition pruning и SELECT *", wrong: ["Увеличить число дашбордов", "Запускать чаще", "Отключить кластеризацию"] }
+    ];
+    var c = cases[rndInt(0, cases.length - 1)];
+    var opts = [{ text: c.right, ok: true }].concat(c.wrong.map(function (t) { return { text: t, ok: false }; }));
+    var k = rndInt(0, opts.length - 1);
+    opts = opts.slice(k).concat(opts.slice(0, k));
+    return {
+      prompt: "Что делать: " + c.q + "?",
+      solution: "Сначала диагностика причины, затем точечное исправление. Массовый перезапуск и отключение проверок только маскируют проблему.",
+      answer: { type: "choice", options: opts }
+    };
+  }
+
   window.TRAINERS = {
     analytics: [tCtr, tFunnel, tRomi, tLtvCac, tAbLift, tRetention],
     statistics: [tMean, tMedian, tVariance, tSd, tZ, tSe, tMad, tTrimMean, tIqr, tPoisson],
@@ -1485,6 +1537,7 @@
     useful: [tVizChoice, tNoteType, tReportFirst, tPortfolioProof],
     ethics: [tConsentChoice, tAnonChoice, tEthicsChoice],
     bi: [tBiConversion, tBiChartChoice, tDaxChoice, tLodChoice],
+    production: [tProdLayer, tProdDbtTest, tProdFreshness],
     timeseries: [tSmaCalc, tNaiveForecast, tMapeForecast],
     causal: [tAteCalc, tDiffInDiff, tConfounder]
   };

@@ -28,6 +28,7 @@ FILES = [
     "js/topics/useful.js",
     "js/topics/ethics.js",
     "js/topics/bi.js",
+    "js/topics/production.js",
     "js/core/tracks.js",
     "js/core/cheatsheet.js",
     "js/core/glossary.js",
@@ -55,6 +56,10 @@ FILES = [
     "data/retail-orders.csv",
     "data/retail-events.csv",
     "data/retail-marketing.csv",
+    "data/sub-users.csv",
+    "data/sub-subscriptions.csv",
+    "data/sub-payments.csv",
+    "data/sub-tickets.csv",
     "data/dashboard-sales-template.svg",
     "data/dashboard-product-template.svg",
     "data/dashboard-sales-template.md",
@@ -79,7 +84,7 @@ http-сервер: под file:// браузер не отдаёт wasm-файл
 
 Что работает без интернета
 --------------------------
-- 132 главы, 265 вопросов, 86 тренажёров, игры, демонстрации, маршруты, шпаргалка;
+- 138 глав, 277 вопросов, 89 тренажёров, игры, демонстрации, маршруты, шпаргалка;
 - прогресс в localStorage, экспорт и импорт прогресса;
 - песочница SQL (через локальный сервер из архива).
 

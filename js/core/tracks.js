@@ -16,7 +16,15 @@ window.TRACKS = [
       ["statistics", 0],
       ["statistics", 5],
       ["statistics", 7],
-      ["statistics", 11]
+      ["statistics", 11],
+      ["ethics", 0],
+      ["ethics", 1],
+      ["data", 4],
+      ["useful", 7]
+    ],
+    final: [
+      { title: "Большой проект: розница", href: "#/capstone", note: "6 задач с автопроверкой" },
+      { title: "Открытый проект: подписка", href: "#/open-project", note: "без готовых ответов, с рубрикой" }
     ]
   },
   {
@@ -47,6 +55,7 @@ window.TRACKS = [
       ["python", 2],
       ["python", 3],
       ["python", 4],
+      ["python", 5],
       ["ml", 0],
       ["ml", 1],
       ["ml", 2]
@@ -55,7 +64,7 @@ window.TRACKS = [
   {
     id: "data",
     title: "Данные и BI",
-    tag: "От сырого CSV до витрины и дашборда",
+    tag: "От сырого CSV до витрины, семантического слоя и дашборда",
     steps: [
       ["data", 0],
       ["data", 1],
@@ -67,13 +76,18 @@ window.TRACKS = [
       ["sql", 1],
       ["sql", 2],
       ["sql", 4],
-      ["sql", 6],
+      ["sql", 7],
       ["excel", 0],
       ["excel", 1],
       ["excel", 3],
       ["bi", 0],
       ["bi", 1],
-      ["bi", 4]
+      ["bi", 4],
+      ["production", 0],
+      ["production", 2]
+    ],
+    final: [
+      { title: "Открытый проект: подписка", href: "#/open-project", note: "собрать витрину и записку" }
     ]
   },
   {
@@ -93,7 +107,11 @@ window.TRACKS = [
       ["causal", 1],
       ["causal", 2],
       ["causal", 3],
-      ["causal", 4]
+      ["causal", 4],
+      ["causal", 5],
+      ["causal", 6],
+      ["causal", 7],
+      ["ethics", 4]
     ]
   },
   {
@@ -113,7 +131,29 @@ window.TRACKS = [
       ["ml", 5],
       ["timeseries", 0],
       ["timeseries", 1],
-      ["timeseries", 3]
+      ["timeseries", 3],
+      ["timeseries", 5],
+      ["timeseries", 6],
+      ["timeseries", 7]
+    ]
+  },
+  {
+    id: "production",
+    title: "Аналитика в проде",
+    tag: "Хранилище, dbt, BI, оркестрация, ревью и мониторинг",
+    steps: [
+      ["production", 0],
+      ["production", 1],
+      ["production", 2],
+      ["production", 3],
+      ["production", 4],
+      ["production", 5],
+      ["sql", 7],
+      ["data", 5],
+      ["bi", 12]
+    ],
+    final: [
+      { title: "Открытый проект: подписка", href: "#/open-project", note: "проверить качество и защитить решение" }
     ]
   }
 ];

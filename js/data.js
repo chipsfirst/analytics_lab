@@ -18,6 +18,7 @@ window.TOPIC_ORDER = [
   "timeseries",
   "causal",
   "bi",
+  "production",
   "ethics",
   "useful"
 ];

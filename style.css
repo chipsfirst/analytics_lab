@@ -51,6 +51,7 @@
 [data-topic="ethics"] { --topic: #334155; }
 [data-topic="useful"] { --topic: #475569; }
 [data-topic="bi"] { --topic: #86198f; }
+[data-topic="production"] { --topic: #475569; }
 :root[data-theme="dark"] [data-topic="analytics"] { --topic: #8fb0ff; }
 :root[data-theme="dark"] [data-topic="statistics"] { --topic: #c4b5fd; }
 :root[data-theme="dark"] [data-topic="gametheory"] { --topic: #fbbf24; }
@@ -67,6 +68,7 @@
 :root[data-theme="dark"] [data-topic="ethics"] { --topic: #94a3b8; }
 :root[data-theme="dark"] [data-topic="useful"] { --topic: #cbd5e1; }
 :root[data-theme="dark"] [data-topic="bi"] { --topic: #f0abfc; }
+:root[data-theme="dark"] [data-topic="production"] { --topic: #cbd5e1; }
 
 * { box-sizing: border-box; }
 
