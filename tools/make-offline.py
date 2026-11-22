@@ -51,6 +51,10 @@ FILES = [
     "data/case-orders.csv",
     "data/bi-orders.csv",
     "data/dirty-customers.csv",
+    "data/retail-users.csv",
+    "data/retail-orders.csv",
+    "data/retail-events.csv",
+    "data/retail-marketing.csv",
     "data/dashboard-sales-template.svg",
     "data/dashboard-product-template.svg",
     "data/dashboard-sales-template.md",
@@ -75,7 +79,7 @@ http-сервер: под file:// браузер не отдаёт wasm-файл
 
 Что работает без интернета
 --------------------------
-- 121 глава, 243 вопроса, 86 тренажёров, игры, демонстрации, маршруты, шпаргалка;
+- 132 главы, 265 вопросов, 86 тренажёров, игры, демонстрации, маршруты, шпаргалка;
 - прогресс в localStorage, экспорт и импорт прогресса;
 - песочница SQL (через локальный сервер из архива).
 

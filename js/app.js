@@ -220,6 +220,13 @@
       '<button class="btn" id="resetProgress">Сбросить прогресс</button></div></div>';
   }
 
+  function plural(n, one, few, many) {
+    var n10 = n % 10, n100 = n % 100;
+    if (n10 === 1 && n100 !== 11) return one;
+    if (n10 >= 2 && n10 <= 4 && (n100 < 12 || n100 > 14)) return few;
+    return many;
+  }
+
   function home() {
     var topicCount = Object.keys(window.TOPICS).length;
     var chapterCount = Object.keys(window.TOPICS).reduce(function (n, id) {
@@ -231,12 +238,14 @@
       "Короткая теория, тесты и тренажёры. Прогресс хранится в браузере.</p>" +
       '<div class="home-actions">' +
       '<a class="home-action primary" href="#/textbook"><b>Открыть учебник</b><span>' +
-        topicCount + " разделов, " + chapterCount + " глав</span></a>" +
-      '<a class="home-action" href="#/path"><b>Маршрут обучения</b><span>Три трека под цель</span></a>' +
+        topicCount + " " + plural(topicCount, "раздел", "раздела", "разделов") + ", " +
+        chapterCount + " " + plural(chapterCount, "глава", "главы", "глав") + "</span></a>" +
+      '<a class="home-action" href="#/path"><b>Маршрут обучения</b><span>Шесть треков под цель</span></a>' +
       '<a class="home-action" href="#/trainer"><b>Тренажёры</b><span>Задачи с автопроверкой</span></a>' +
       "</div>" +
       '<div class="home-tools"><span>Инструменты:</span>' +
       '<a href="#/project">Сквозной проект</a>' +
+      '<a href="#/capstone">Большой проект</a>' +
       '<a href="#/datalab">Практика на данных</a>' +
       '<a href="#/cases">Кейсы</a>' +
       '<a href="#/prompt-lab">Тренажёр промптов</a>' +
@@ -1141,6 +1150,91 @@
     });
   }
 
+  function capstonePage() {
+    var tasks = [
+      ["k1", "Качество", "Сколько уникальных заказов после удаления дублей order_id?", "COUNT(DISTINCT order_id)", 10000, 0.5],
+      ["k2", "Метрики", "Выручка по оплаченным заказам, ₽", "SUM(amount) WHERE status = 'paid' после дедупликации", 21984503, 1],
+      ["k3", "Метрики", "Средний чек по оплаченным заказам, ₽", "Выручка / число оплаченных заказов", 2754.61, 0.5],
+      ["k4", "Качество", "Доля уникальных заказов без user_id, %", "100 * COUNT(*) с пустым user_id / все заказы", 3.34, 0.05],
+      ["k5", "Воронка", "Конверсия из просмотра в покупку по событиям, %", "уникальные покупатели / уникальные зрители × 100", 3.66, 0.1],
+      ["k6", "Каналы", "CAC канала с минимальной стоимостью привлечения, ₽", "min(SUM(spend) / SUM(signups)) по каналам", 177.37, 0.5]
+    ];
+    var files = [
+      ["retail-users.csv", "Пользователи", "2 000", "user_id, signup_date, city, channel, age_group"],
+      ["retail-orders.csv", "Заказы", "10 020", "order_id, user_id, order_date, status, amount, promo"],
+      ["retail-events.csv", "События", "15 000", "event_id, user_id, event_time, event_type"],
+      ["retail-marketing.csv", "Маркетинг", "270", "date, channel, spend, clicks, signups"]
+    ];
+    function task(t) {
+      return '<div class="card dl-task" data-cap-task="' + t[0] + '"><p class="meta">' + esc(t[1]) + "</p>" +
+        "<h3>" + esc(t[2]) + "</h3>" +
+        '<div class="answer-row"><label class="sr-only" for="cap-' + t[0] + '">Ответ</label>' +
+        '<input type="text" inputmode="decimal" id="cap-' + t[0] + '" placeholder="Ответ">' +
+        '<button class="btn" data-cap="' + t[0] + '" data-answer="' + t[4] + '" data-tol="' + t[5] + '">Проверить</button></div>' +
+        '<p class="meta"><code>' + esc(t[3]) + "</code></p></div>";
+    }
+    return "<h1>Большой проект: розница</h1>" +
+      '<p class="lead">Четыре связанные таблицы, 27 тысяч строк и сырые данные. ' +
+      "Задача — не посчитать одну цифру, а собрать картину, проверить качество и предложить решение заказчику.</p>" +
+      '<div class="card"><h2>Бриф</h2>' +
+      "<p>Маркетинг просит решить, куда перенести 20% бюджета между каналами. " +
+      "Данные выгружены из трёх систем, часть заказов задвоена, у некоторых нет пользователя. " +
+      "Нужны: проверка качества, выручка и средний чек, воронка, CAC по каналам и короткая записка с решением.</p>" +
+      '<p class="meta">Ограничение: синтетические данные. Считайте, что это выгрузка за январь–март 2026.</p></div>' +
+      '<h2>Файлы</h2><div class="grid">' + files.map(function (f) {
+        return '<div class="card"><h3><a href="data/' + f[0] + '" download>' + esc(f[1]) + "</a></h3>" +
+          '<p class="meta">' + esc(f[2]) + ' строк</p><p class="meta"><code>' + esc(f[3]) + "</code></p></div>";
+      }).join("") + "</div>" +
+      '<div class="table-wrap"><table><thead><tr><th>Таблица</th><th>Зерно</th><th>Что проверить</th></tr></thead><tbody>' +
+      "<tr><td>users</td><td>пользователь</td><td>уникальность user_id, диапазон дат</td></tr>" +
+      "<tr><td>orders</td><td>заказ</td><td>дубли order_id, пропуски user_id, статусы, возвраты</td></tr>" +
+      "<tr><td>events</td><td>событие</td><td>типы событий, уникальные пользователи, окно</td></tr>" +
+      "<tr><td>marketing</td><td>день × канал</td><td>сумма расходов, знаменатель CAC</td></tr>" +
+      "</tbody></table></div>" +
+      '<h2>Задачи</h2><p class="meta" id="capProgress">Решено: 0 из ' + tasks.length + "</p>" +
+      '<div class="grid">' + tasks.map(task).join("") + "</div>" +
+      '<div class="card"><h2>Как сдать</h2><ol>' +
+      "<li>Проверка качества: дубли, пропуски, сироты, период, статусы.</li>" +
+      "<li>Метрики: выручка, число оплаченных, средний чек, воронка.</li>" +
+      "<li>Каналы: CAC, вклад в заказы, ограничения атрибуции.</li>" +
+      "<li>Решение: куда перенести бюджет, что проверить до запуска, какие данные нужны ещё.</li>" +
+      "<li>Записка на 5–7 предложений: цифра, вывод, риск, следующий шаг.</li>" +
+      '</ol><p class="meta">Проверяйте себя по этим пунктам: ответ без допущений и ограничений считается неполным.</p></div>';
+  }
+
+  function bindCapstone() {
+    var KEY = "analytics-lab-capstone-v1";
+    var done = {};
+    try { done = JSON.parse(localStorage.getItem(KEY) || "{}") || {}; } catch (e) {}
+    function save() {
+      try { localStorage.setItem(KEY, JSON.stringify(done)); } catch (e) {}
+      var el = document.getElementById("capProgress");
+      var total = document.querySelectorAll("[data-cap]").length;
+      if (el) el.textContent = "Решено: " + Object.keys(done).length + " из " + total;
+      Array.prototype.forEach.call(document.querySelectorAll("[data-cap-task]"), function (card) {
+        card.classList.toggle("done", !!done[card.getAttribute("data-cap-task")]);
+      });
+    }
+    save();
+    Array.prototype.forEach.call(document.querySelectorAll("[data-cap]"), function (btn) {
+      var id = btn.getAttribute("data-cap");
+      if (done[id]) btn.textContent = "Верно";
+      btn.addEventListener("click", function () {
+        var input = document.getElementById("cap-" + id);
+        var value = Number(String(input.value || "").replace(",", "."));
+        var answer = Number(btn.getAttribute("data-answer"));
+        var tol = Number(btn.getAttribute("data-tol") || 0.01);
+        if (input.value !== "" && Math.abs(value - answer) <= tol + 0.000001) {
+          done[id] = 1;
+          btn.textContent = "Верно";
+          save();
+        } else {
+          btn.textContent = "Ещё раз";
+        }
+      });
+    });
+  }
+
   function calcPage() {
     function field(id, label, value, step) {
       return '<label>' + label + '<input id="' + id + '" type="number" inputmode="decimal" step="' + (step || "any") + '" value="' + value + '"></label>';
@@ -1843,6 +1937,7 @@
       return { html: demosList() };
     }
     if (seg === "project") return { html: projectPage(), after: bindProject };
+    if (seg === "capstone") return { html: capstonePage(), after: bindCapstone };
     if (seg === "datalab") return { html: datalabPage(), after: bindDatalab };
     if (seg === "cases") return { html: casesPage() };
     if (seg === "prompt-lab") return { html: promptLabPage(), after: bindPromptLab };

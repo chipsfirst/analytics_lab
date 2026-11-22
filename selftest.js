@@ -49,8 +49,8 @@ topicIds.forEach(function (id) {
 var totalChapters = topicIds.reduce(function (n, id) { return n + window.TOPICS[id].chapters.length; }, 0);
 var totalQuiz = topicIds.reduce(function (n, id) { return n + window.TOPICS[id].quiz.length; }, 0);
 var totalTrainers = topicIds.reduce(function (n, id) { return n + (window.TRAINERS[id] || []).length; }, 0);
-ok(totalChapters === 121, "глав: " + totalChapters);
-ok(totalQuiz === 243, "вопросов: " + totalQuiz);
+ok(totalChapters === 132, "глав: " + totalChapters);
+ok(totalQuiz === 265, "вопросов: " + totalQuiz);
 ok(totalTrainers === 86, "тренажёров: " + totalTrainers);
 
 var seenQuestions = Object.create(null);
@@ -287,6 +287,37 @@ if (typeof process !== "undefined" && process.versions && process.versions.node)
   ok(dirty[0].amount === "1 200,50" && dirty[0].status === "active", "dirty-customers: кавычки и запятая в сумме");
   ok(new Set(dirty.filter(function (r) { return r.city.trim().toLowerCase() === "москва"; })
     .map(function (r) { return r.customer_id; })).size === 10, "dirty-customers: Москва");
+
+  var ru = csv("retail-users.csv");
+  ok(ru.length === 2000 && new Set(ru.map(function (r) { return r.user_id; })).size === 2000, "retail-users: строки/ключи");
+
+  var ro = csv("retail-orders.csv");
+  ok(ro.length === 10020, "retail-orders: строки");
+  var orderMap = {};
+  ro.forEach(function (r) { orderMap[r.order_id] = r; });
+  ok(Object.keys(orderMap).length === 10000, "retail-orders: уникальные заказы");
+  var paid = Object.keys(orderMap).map(function (k) { return orderMap[k]; })
+    .filter(function (r) { return r.status === "paid"; });
+  ok(paid.length === 7981, "retail-orders: оплаченные");
+  ok(paid.reduce(function (n, r) { return n + Number(r.amount); }, 0) === 21984503, "retail-orders: выручка");
+  ok(Object.keys(orderMap).filter(function (k) { return !orderMap[k].user_id; }).length === 334, "retail-orders: пропуски user_id");
+
+  var re = csv("retail-events.csv");
+  ok(re.length === 15000, "retail-events: строки");
+  var viewers = new Set(re.filter(function (r) { return r.event_type === "view"; }).map(function (r) { return r.user_id; }));
+  var buyers = new Set(re.filter(function (r) { return r.event_type === "purchase"; }).map(function (r) { return r.user_id; }));
+  ok(Math.abs(100 * buyers.size / viewers.size - 3.66) < 0.01, "retail-events: конверсия");
+
+  var rm = csv("retail-marketing.csv");
+  ok(rm.length === 270, "retail-marketing: строки");
+  var minCac = null;
+  ["paid_search", "social", "email"].forEach(function (ch) {
+    var rows = rm.filter(function (r) { return r.channel === ch; });
+    var cac = rows.reduce(function (n, r) { return n + Number(r.spend); }, 0) /
+      rows.reduce(function (n, r) { return n + Number(r.signups); }, 0);
+    if (minCac === null || cac < minCac) minCac = cac;
+  });
+  ok(Math.abs(minCac - 177.37) < 0.01, "retail-marketing: минимальный CAC");
 }
 
 if (errors.length) {
