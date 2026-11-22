@@ -1187,12 +1187,90 @@
     };
   }
 
+  function tDupKey() {
+    return {
+      prompt: "В таблице 10 строк, но уникальных order_id только 9. Что сделать сначала?",
+      solution: "Проверить, откуда дубликат: повторная загрузка, несколько позиций или ошибка ключа. Удалять строки можно только после объяснения причины.",
+      answer: { type: "choice", options: [
+        { text: "Проверить источник и причину дубликата", ok: true },
+        { text: "Удалить первую попавшуюся строку", ok: false },
+        { text: "Оставить как есть", ok: false },
+        { text: "Умножить суммы на 0,9", ok: false }
+      ] }
+    };
+  }
+
+  function tGrainJoin() {
+    return {
+      prompt: "10 заказов соединили с 30 позициями по order_id. Сколько строк получится?",
+      solution: "JOIN 1:N даёт 30 строк: каждая позиция повторяет заказ. Сумма по заказам после этого задвоится, поэтому позиции сначала агрегируют.",
+      answer: { type: "choice", options: [
+        { text: "30", ok: true },
+        { text: "10", ok: false },
+        { text: "40", ok: false },
+        { text: "3", ok: false }
+      ] }
+    };
+  }
+
+  function tMissingMNAR() {
+    return {
+      prompt: "Пропуски в доходе есть только у тех, кто отказался отвечать. Какой это тип пропуска?",
+      solution: "MNAR: вероятность пропуска зависит от самого ненаблюдаемого значения. Заполнять медианой вслепую нельзя — это исказит вывод.",
+      answer: { type: "choice", options: [
+        { text: "MNAR", ok: true },
+        { text: "MCAR", ok: false },
+        { text: "MAR", ok: false },
+        { text: "Обычный шум", ok: false }
+      ] }
+    };
+  }
+
+  function tScaleChoice() {
+    return {
+      prompt: "Какой метод требует стандартизации признаков перед обучением?",
+      solution: "kNN использует расстояния, поэтому крупная шкала одного признака подавляет остальные. Деревья и леса к масштабу устойчивы.",
+      answer: { type: "choice", options: [
+        { text: "k ближайших соседей", ok: true },
+        { text: "Решающее дерево", ok: false },
+        { text: "Случайный лес", ok: false },
+        { text: "Ни один из них", ok: false }
+      ] }
+    };
+  }
+
+  function tFreshness() {
+    return {
+      prompt: "Дашборд обновляется ежедневно, но показывает данные недельной давности. Какой тест это поймает?",
+      solution: "Нужна проверка свежести: максимальная дата в витрине и время последней успешной загрузки. Без неё старые данные выглядят актуальными.",
+      answer: { type: "choice", options: [
+        { text: "Проверка максимальной даты и времени загрузки", ok: true },
+        { text: "Проверка цветовой палитры", ok: false },
+        { text: "Проверка числа столбцов", ok: false },
+        { text: "Проверка названия отчёта", ok: false }
+      ] }
+    };
+  }
+
+  function tIdempotent() {
+    return {
+      prompt: "Ночной ETL случайно запустили дважды за один день. Что должно произойти в хорошем пайплайне?",
+      solution: "Повторный запуск должен быть идемпотентным: перезаписать партицию за тот же период, а не добавить её ещё раз. Иначе суммы удвоятся.",
+      answer: { type: "choice", options: [
+        { text: "Данные за день перезапишутся, дублей не будет", ok: true },
+        { text: "Все суммы удвоятся", ok: false },
+        { text: "Пайплайн удалит историю", ok: false },
+        { text: "Ничего не изменится, но данные останутся старыми", ok: false }
+      ] }
+    };
+  }
+
   window.TRAINERS = {
     analytics: [tCtr, tFunnel, tRomi, tLtvCac, tAbLift, tRetention],
     statistics: [tMean, tMedian, tVariance, tSd, tZ, tSe, tMad, tTrimMean, tIqr, tPoisson],
     probability: [tComb, tUnion, tBayes, tBinom, tDice, tAtLeastOne],
     gametheory: [tNash, tDominant, tMaximin, tMixed],
-    data: [tMissingChoice, tDataType],
+    data: [tMissingChoice, tDataType, tDupKey, tGrainJoin, tMissingMNAR, tScaleChoice, tFreshness, tIdempotent],
     sql: [tSqlWhere, tSqlDistinct, tSqlGroupHaving, tSqlOrderLimit, tSqlNull, tSqlJoin, tSqlWindow, tSqlAvgNull],
     excel: [tXlSumIf, tXlCountIf, tXlIf, tXlVlookup, tXlPct, tXlAbs],
     python: [tPySlice, tPyType, tPyConvert, tPyPrec, tPyRange, tPyBool, tPyFind],
