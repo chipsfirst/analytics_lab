@@ -7,6 +7,7 @@
   var quiz = null;
   var trainer = null;
   var keyHandler = null;
+  var tocObserver = null;
 
   // один обработчик клавиатуры на всю страницу: тесты меняют карточку целиком
   function setKeys(fn) {
@@ -103,6 +104,9 @@
         s.quizBest + " / " + s.quizTotal + "</div></div>" +
       "</div>" +
       '<div class="btn-row"><a class="btn" href="' + continueHref() + '">Продолжить</a>' +
+      '<button class="btn" id="exportProgress">Экспорт прогресса</button>' +
+      '<button class="btn" id="importProgress">Импорт</button>' +
+      '<input type="file" id="importFile" accept=".json,application/json" hidden>' +
       '<button class="btn" id="resetProgress">Сбросить прогресс</button></div></div>';
   }
 
@@ -142,11 +146,16 @@
 
     var body = t.chapters.map(function (c, i) {
       var read = window.PROGRESS.isRead(id, i);
+      var prev = i > 0 ? '<a class="btn small" href="#/theory/' + id + "/" + (i - 1) + '" data-ch="' + (i - 1) + '">&larr; ' + esc(t.chapters[i - 1].title) + "</a>" : "<span></span>";
+      var next = i < t.chapters.length - 1 ? '<a class="btn small" href="#/theory/' + id + "/" + (i + 1) + '" data-ch="' + (i + 1) + '">' + esc(t.chapters[i + 1].title) + " &rarr;</a>" : "<span></span>";
       return '<section id="ch-' + i + '">' +
         '<div class="ch-head"><h2>' + (i + 1) + ". " + esc(c.title) + "</h2>" +
         '<button class="btn small' + (read ? " is-read" : "") + '" data-read="' + i + '" aria-pressed="' + read + '">' +
         (read ? "Прочитано" : "Отметить прочитанной") + "</button></div>" +
-        c.html + "</section>";
+        c.html +
+        '<div class="ch-nav">' + prev + next + "</div>" +
+        '<div class="mini" data-mini="' + i + '"><button class="btn small" data-mini-start="' + i + '">Проверить себя · 3 вопроса</button></div>' +
+        "</section>";
     }).join("");
 
     return '<p><a href="#/theory">&larr; все разделы</a></p>' +
@@ -192,6 +201,83 @@
         try { history.replaceState(null, "", "#/theory/" + p[1] + "/" + i); } catch (err) {}
       });
     });
+
+    if (tocObserver) { tocObserver.disconnect(); tocObserver = null; }
+    var tocLinks = app.querySelectorAll("aside.toc a[data-ch]");
+    var sections = app.querySelectorAll("article section[id^='ch-']");
+    if (tocLinks.length && sections.length && "IntersectionObserver" in window) {
+      tocObserver = new IntersectionObserver(function (entries) {
+        entries.forEach(function (en) {
+          if (!en.isIntersecting) return;
+          var idx = en.target.id.replace("ch-", "");
+          Array.prototype.forEach.call(tocLinks, function (a) {
+            a.classList.toggle("active", a.getAttribute("data-ch") === idx);
+          });
+        });
+      }, { rootMargin: "-15% 0px -75% 0px" });
+      Array.prototype.forEach.call(sections, function (s) { tocObserver.observe(s); });
+    }
+
+    Array.prototype.forEach.call(app.querySelectorAll("[data-mini-start]"), function (b) {
+      b.addEventListener("click", function () {
+        var box = b.parentNode;
+        var bank = window.TOPICS[p[1]].quiz;
+        var picks = shuffle(bank.map(function (_, k) { return k; })).slice(0, 3);
+        box.innerHTML = picks.map(function (n, qi) {
+          var q = bank[n];
+          return '<div class="mini-q" data-q="' + qi + '"><p class="q-text"><b>' + (qi + 1) + ".</b> " + q.q + "</p>" +
+            '<div class="options">' + q.options.map(function (o, k) {
+              return '<button class="option" data-k="' + k + '">' + String.fromCharCode(1040 + k) + ". " + esc(o.text) + "</button>";
+            }).join("") + '</div><div class="explain" aria-live="polite" hidden></div></div>';
+        }).join("");
+        Array.prototype.forEach.call(box.querySelectorAll(".mini-q"), function (qEl) {
+          var q = bank[picks[Number(qEl.getAttribute("data-q"))]];
+          Array.prototype.forEach.call(qEl.querySelectorAll(".option"), function (opt) {
+            opt.addEventListener("click", function () {
+              if (qEl.getAttribute("data-done")) return;
+              qEl.setAttribute("data-done", "1");
+              var k = Number(opt.getAttribute("data-k"));
+              var ok = q.options[k].ok;
+              Array.prototype.forEach.call(qEl.querySelectorAll(".option"), function (o, oi) {
+                o.disabled = true;
+                if (q.options[oi].ok) o.classList.add("right");
+                else if (oi === k) o.classList.add("wrong");
+              });
+              var ex = qEl.querySelector(".explain");
+              ex.hidden = false;
+              ex.innerHTML = "<b>" + (ok ? "Верно" : "Неверно") + "</b>" + q.explain;
+            });
+          });
+        });
+      });
+    });
+
+    var calc = document.getElementById("mdeCalc");
+    if (calc) {
+      var calcOut = document.getElementById("mdeOut");
+      var calcSize = function () {
+        var p1 = Number(document.getElementById("mdeP1").value) / 100;
+        var p2 = Number(document.getElementById("mdeP2").value) / 100;
+        var power = Number(document.getElementById("mdePower").value);
+        var alpha = Number(document.getElementById("mdeAlpha").value);
+        var za = alpha === 0.01 ? 2.575829 : 1.959964;
+        var zp = power === 0.9 ? 1.281552 : 0.841621;
+        var d = Math.abs(p2 - p1);
+        if (!(p1 > 0 && p1 < 1 && p2 > 0 && p2 < 1) || d < 0.000001) {
+          calcOut.textContent = "Введите две разные конверсии от 0 до 100%.";
+          return;
+        }
+        var n = Math.ceil(Math.pow(za + zp, 2) * (p1 * (1 - p1) + p2 * (1 - p2)) / (d * d));
+        calcOut.textContent = "Нужно ≈ " + n.toLocaleString("ru-RU") + " наблюдений в каждой группе, всего " +
+          (2 * n).toLocaleString("ru-RU") + ".";
+      };
+      ["mdeP1", "mdeP2", "mdePower", "mdeAlpha"].forEach(function (id) {
+        var el = document.getElementById(id);
+        el.addEventListener("input", calcSize);
+        el.addEventListener("change", calcSize);
+      });
+      calcSize();
+    }
 
     Array.prototype.forEach.call(app.querySelectorAll("button[data-read]"), function (b) {
       b.addEventListener("click", function () {
@@ -256,7 +342,7 @@
       app.innerHTML = '<p><a href="#/quiz">&larr; все тесты</a></p>' +
         '<div class="card center"><h2 class="quiz-head">' + esc(t.title) +
         (quiz.reviewMode ? " · работа над ошибками" : "") + "</h2>" +
-        '<p class="lead center">Правильных ответов: <b>' + quiz.score + " из " + quiz.qs.length +
+        '<p class="lead center" role="status">Правильных ответов: <b>' + quiz.score + " из " + quiz.qs.length +
         "</b> (" + pct + "%)</p>" +
         '<p class="meta">Лучший результат: ' + stats.best + " из " + stats.total +
         (isRecord && !quiz.reviewMode ? " — это рекорд" : "") + "</p>" +
@@ -631,6 +717,37 @@
           render();
         }
       });
+      var exportBtn = document.getElementById("exportProgress");
+      if (exportBtn) exportBtn.addEventListener("click", function () {
+        var blob = new Blob([window.PROGRESS.exportData()], { type: "application/json" });
+        var a = document.createElement("a");
+        a.href = URL.createObjectURL(blob);
+        a.download = "analytics-lab-progress.json";
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        setTimeout(function () { URL.revokeObjectURL(a.href); }, 1000);
+      });
+      var importBtn = document.getElementById("importProgress");
+      var importFile = document.getElementById("importFile");
+      if (importBtn && importFile) {
+        importBtn.addEventListener("click", function () { importFile.click(); });
+        importFile.addEventListener("change", function () {
+          var f = importFile.files && importFile.files[0];
+          if (!f) return;
+          var reader = new FileReader();
+          reader.onload = function () {
+            if (window.PROGRESS.importData(String(reader.result))) {
+              searchIndex = null;
+              render();
+            } else {
+              alert("Не удалось прочитать файл прогресса.");
+            }
+          };
+          reader.readAsText(f);
+          importFile.value = "";
+        });
+      }
       if (after) after();
     }
   }
@@ -644,8 +761,14 @@
     });
   }
 
-  var themeBtn = document.getElementById("themeBtn");
-  if (themeBtn) {
+  var skipLink = document.querySelector(".skip");
+  if (skipLink) skipLink.addEventListener("click", function (e) {
+    e.preventDefault();
+    app.focus();
+    app.scrollIntoView();
+  });
+
+  var themeBtn = document.getElementById("themeBtn");  if (themeBtn) {
     var drawTheme = function () {
       themeBtn.textContent = document.documentElement.dataset.theme === "dark" ? "Светлая" : "Тёмная";
     };

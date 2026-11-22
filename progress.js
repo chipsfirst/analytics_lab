@@ -67,6 +67,44 @@
 
     clear: function () { data = empty(); save(); },
 
+    exportData: function () {
+      return JSON.stringify({
+        app: "analytics-lab",
+        v: 1,
+        chapters: data.chapters,
+        quizzes: data.quizzes,
+        last: data.last
+      }, null, 2);
+    },
+
+    importData: function (text) {
+      try {
+        var p = JSON.parse(text);
+        if (!p || typeof p !== "object" || !p.chapters || typeof p.chapters !== "object") return false;
+        var chapters = {};
+        Object.keys(p.chapters).forEach(function (k) { chapters[k] = 1; });
+        var quizzes = {};
+        Object.keys(p.quizzes || {}).forEach(function (k) {
+          var q = p.quizzes[k] || {};
+          quizzes[k] = {
+            best: Number(q.best) || 0,
+            total: Number(q.total) || 0,
+            attempts: Number(q.attempts) || 0,
+            lastScore: Number(q.lastScore) || 0,
+            review: Array.isArray(q.review) ? q.review.map(Number).filter(isFinite) : []
+          };
+        });
+        var last = p.last && typeof p.last.id === "string" && isFinite(Number(p.last.i))
+          ? { id: p.last.id, i: Number(p.last.i) }
+          : null;
+        data = { chapters: chapters, quizzes: quizzes, last: last };
+        save();
+        return true;
+      } catch (e) {
+        return false;
+      }
+    },
+
     // последняя открытая глава: к ней ведёт кнопка «Продолжить»
     setLast: function (topic, i) { data.last = { id: topic, i: i }; save(); },
 

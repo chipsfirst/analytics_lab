@@ -1,6 +1,6 @@
 // Кеш оболочки приложения. При изменении файлов поднимите версию —
 // иначе браузер продолжит отдавать старую копию.
-const VERSION = "v18";
+const VERSION = "v19";
 const CACHE = "analytics-lab-" + VERSION;
 
 const ASSETS = [
@@ -33,6 +33,9 @@ const ASSETS = [
   "pyworker.js",
   "manifest.webmanifest",
   "icon.svg",
+  "icon-180.png",
+  "icon-192.png",
+  "icon-512.png",
   "vendor/sql-wasm.js",
   "vendor/sql-wasm.wasm"
 ];

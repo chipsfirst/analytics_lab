@@ -17,9 +17,11 @@
 </script>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icon-180.png">
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
+<a class="skip" href="#app">К содержанию</a>
 <header class="top">
   <div class="top-inner">
     <a class="brand" href="#/">Аналитика<span>-лаб</span></a>
@@ -31,7 +33,7 @@
     <button class="btn small theme-btn" id="themeBtn" type="button" aria-label="Переключить тему">Тема</button>
   </div>
 </header>
-<main id="app"></main>
+<main id="app" tabindex="-1"></main>
 <footer class="foot">
   <div class="foot-inner">
     Статический сайт без сборки. Прогресс хранится в браузере, наружу ничего не уходит.

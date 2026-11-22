@@ -40,12 +40,13 @@
 
     root.innerHTML =
       '<div class="nb-bar">' +
-        '<button class="btn primary" id="nbRunAll">Запустить всё</button>' +
+        '<button class="btn primary" id="nbStart">Загрузить Python</button>' +
+        '<button class="btn" id="nbRunAll">Запустить всё</button>' +
         '<button class="btn" id="nbAdd">+ ячейка</button>' +
         '<button class="btn" id="nbClear">Очистить</button>' +
         '<button class="btn" id="nbRetry" hidden>Повторить</button>' +
         '<button class="btn" id="nbStop" hidden>Остановить</button>' +
-        '<span class="nb-status" id="nbStatus">Загрузка Python…</span>' +
+        '<span class="nb-status" id="nbStatus">Python не загружен</span>' +
       "</div>" +
       '<div class="nb-progress" id="nbProgress"><div></div></div>' +
       '<div class="nb-cells" id="nbCells"></div>' +
@@ -58,6 +59,9 @@
     var bar = root.querySelector("#nbProgress");
     var retry = root.querySelector("#nbRetry");
     var stop = root.querySelector("#nbStop");
+    var startBtn = root.querySelector("#nbStart");
+    var pendingRun = null;
+    var pendingAll = false;
 
     function setStatus(text, bad) {
       status.textContent = text;
@@ -86,7 +90,8 @@
 
     function run(index) {
       if (fatal) return;
-      if (!ready) { setStatus("Python ещё загружается…"); return; }
+      if (!worker) { pendingRun = index; startWorker(); return; }
+      if (!ready) { pendingRun = index; setStatus("Python ещё загружается…"); return; }
       if (running) return;
       var code = cells[index];
       running = true;
@@ -98,7 +103,9 @@
     }
 
     function runAll() {
-      if (!ready || running) return;
+      if (!worker) { pendingAll = true; startWorker(); return; }
+      if (!ready) { pendingAll = true; setStatus("Python ещё загружается…"); return; }
+      if (running) return;
       var i = 0;
       (function next() {
         while (i < cells.length && !cells[i].trim()) i++;
@@ -163,6 +170,7 @@
       ready = false;
       fatal = false;
       running = false;
+      if (startBtn) startBtn.hidden = true;
       if (bar) bar.classList.remove("done");
       if (retry) retry.hidden = true;
       setStatus("Загрузка Python…");
@@ -191,6 +199,14 @@
           if (retry) retry.hidden = true;
           if (stop) stop.hidden = false;
           setStatus("Python готов");
+          if (pendingRun !== null) {
+            var pr = pendingRun;
+            pendingRun = null;
+            run(pr);
+          } else if (pendingAll) {
+            pendingAll = false;
+            runAll();
+          }
           return;
         }
         if (msg.type === "fatal") {
@@ -232,6 +248,7 @@
     }
 
     if (retry) retry.addEventListener("click", startWorker);
+    if (startBtn) startBtn.addEventListener("click", startWorker);
 
     if (stop) stop.addEventListener("click", function () {
       if (worker) { try { worker.terminate(); } catch (e) {} }
@@ -243,8 +260,6 @@
       stop.hidden = true;
       startWorker();
     });
-
-    startWorker();
 
     return function cleanup() {
       try { worker.terminate(); } catch (e) {}

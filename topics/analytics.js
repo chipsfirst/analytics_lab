@@ -47,6 +47,18 @@ window.TOPICS.analytics = {
 </ul>
 <p>Статистическая значимость не равна практической. При n = 10⁶ выигрыш в 0,01% будет значимым. Решение принимают по MDE — минимальному эффекту, который окупает внедрение.</p>
 <div class="example"><b>Пример.</b> База 10%, по 4 000 наблюдений на группу. Прирост до 11% даёт z ≈ 1,5 и p ≈ 0,13 — не значимо; до 12% — z ≈ 3,0 и p ≈ 0,003 — значимо. Поэтому тест, рассчитанный на MDE 2 п.п., не запускают ради гипотезы «а вдруг +0,5».</div>
+<div class="calc" id="mdeCalc">
+<b>Калькулятор размера выборки</b>
+<div class="calc-row">
+<label>Базовая конверсия, %<input type="number" id="mdeP1" value="10" min="0.1" max="99" step="0.1"></label>
+<label>Ожидаемая конверсия, %<input type="number" id="mdeP2" value="12" min="0.1" max="99" step="0.1"></label>
+</div>
+<div class="calc-row">
+<label>Мощность<select id="mdePower"><option value="0.8">80%</option><option value="0.9">90%</option></select></label>
+<label>Уровень значимости α<select id="mdeAlpha"><option value="0.05">0,05</option><option value="0.01">0,01</option></select></label>
+</div>
+<div class="calc-out" id="mdeOut" aria-live="polite"></div>
+</div>
 `
       },
       {
