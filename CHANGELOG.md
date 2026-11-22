@@ -1,5 +1,15 @@
 # Что нового
 
+## 0.6.2
+
+- dbt: добавлены `sources` и freshness по `_loaded_at`; staging читает `source('raw', ...)`, `dbt source freshness` проходит 4/4.
+- Витрины: `mart_monthly_revenue` и `mart_payment_summary` разрезаны по каналам; `mart_subscription_health` получил `status`, `is_active` теперь учитывает статус.
+- Дашборд переведён с сырых CSV на `mart_*`; MRR 1 678 120 ₽, отток 19,9%, active users 2 120, failed 1 235, возвраты 306 090 ₽.
+- Исправлен знаменатель оттока: активные на 01.07 по датам, а не по текущему статусу.
+- README: Python 3.12 вместо 3.10+, добавлены `dbt source freshness` и `export-marts.py`.
+- Проверено: `PASS=57 WARN=0 ERROR=0`, freshness 4/4, selftest 211 498, 0 ошибок.
+
+
 ## 0.6.1
 
 - Починен `dbt build`: в `stg_subscriptions` и `stg_tickets` даты приводятся к varchar перед разбором, а `accepted_values`/`relationships` переведены на `arguments`.

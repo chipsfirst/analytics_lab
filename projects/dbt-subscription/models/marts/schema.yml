@@ -22,13 +22,31 @@ models:
     columns:
       - name: subscription_id
         tests: [unique, not_null]
+      - name: status
+        tests:
+          - accepted_values:
+              arguments:
+                values: ['active', 'cancelled']
 
   - name: mart_monthly_revenue
     columns:
-      - name: month
+      - name: month_channel
         tests: [unique, not_null]
+      - name: month
+        tests: [not_null]
+      - name: channel
+        tests: [not_null]
 
   - name: mart_channel_cohort
     columns:
       - name: channel
         tests: [unique, not_null]
+
+  - name: mart_payment_summary
+    columns:
+      - name: status_channel
+        tests: [unique, not_null]
+      - name: status
+        tests: [not_null]
+      - name: channel
+        tests: [not_null]

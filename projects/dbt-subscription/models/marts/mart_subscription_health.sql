@@ -7,11 +7,13 @@ select
     s.user_id,
     u.channel,
     s.plan,
+    s.status,
     s.monthly_price,
     s.start_date,
     s.end_date,
     case
-        when s.start_date <= a.as_of_date
+        when s.status = 'active'
+         and s.start_date <= a.as_of_date
          and (s.end_date is null or s.end_date > a.as_of_date)
         then true
         else false

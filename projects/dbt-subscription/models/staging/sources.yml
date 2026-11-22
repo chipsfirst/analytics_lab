@@ -1,0 +1,26 @@
+version: 2
+
+sources:
+  - name: raw
+    schema: main_raw
+    tables:
+      - name: sub_users
+        loaded_at_field: _loaded_at
+        freshness:
+          warn_after: {count: 60, period: day}
+          error_after: {count: 120, period: day}
+      - name: sub_subscriptions
+        loaded_at_field: _loaded_at
+        freshness:
+          warn_after: {count: 60, period: day}
+          error_after: {count: 120, period: day}
+      - name: sub_payments
+        loaded_at_field: _loaded_at
+        freshness:
+          warn_after: {count: 60, period: day}
+          error_after: {count: 120, period: day}
+      - name: sub_tickets
+        loaded_at_field: _loaded_at
+        freshness:
+          warn_after: {count: 60, period: day}
+          error_after: {count: 120, period: day}

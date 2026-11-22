@@ -1,0 +1,13 @@
+status,channel,status_channel,payments,amount
+paid,social,paid|social,4478,3165720
+failed,social,failed|social,292,205080
+failed,email,failed|email,289,203110
+paid,paid_search,paid|paid_search,6413,4471870
+paid,email,paid|email,4027,2767230
+refunded,referral,refunded|referral,90,63100
+failed,paid_search,failed|paid_search,405,285950
+refunded,social,refunded|social,87,60630
+refunded,email,refunded|email,95,64050
+paid,referral,paid|referral,3943,2826570
+failed,referral,failed|referral,249,181010
+refunded,paid_search,refunded|paid_search,169,118310

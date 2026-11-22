@@ -1,6 +1,6 @@
 # dbt-проект: аналитика подписки
 
-Учебный, но рабочий dbt-проект для сервиса «Пульс». Четыре источника, staging, marts, тесты и CI. Данные синтетические.
+Учебный, но рабочий dbt-проект для сервиса «Пульс». Четыре источника, staging, marts, тесты, freshness и CI. Данные синтетические. Нужен Python 3.12: на 3.14 установка `dbt-duckdb` не собирается.
 
 ## Быстрый старт
 
@@ -11,6 +11,7 @@ pip install -r requirements.txt
 cp profiles.yml.example profiles.yml
 dbt seed --profiles-dir .
 dbt build --profiles-dir .
+dbt source freshness --profiles-dir .
 ```
 
 `seeds/` уже содержит четыре CSV. В репозитории сайта они не хранятся: zip собирается из `data/sub-*.csv`.
@@ -21,7 +22,7 @@ dbt build --profiles-dir .
 |---|---|---|
 | seeds | `sub_users`, `sub_subscriptions`, `sub_payments`, `sub_tickets` | сырые выгрузки |
 | staging | `stg_users`, `stg_subscriptions`, `stg_payments`, `stg_tickets` | типы, даты, дедупликация |
-| marts | `dim_users`, `fct_payments`, `mart_subscription_health`, `mart_monthly_revenue`, `mart_channel_cohort` | витрины для BI |
+| marts | `dim_users`, `fct_payments`, `mart_subscription_health`, `mart_monthly_revenue`, `mart_channel_cohort`, `mart_payment_summary` | витрины для BI |
 
 `stg_payments`:
 - поддерживает оба формата дат: ISO и `ДД.ММ.ГГГГ`;
@@ -30,6 +31,8 @@ dbt build --profiles-dir .
 - сохраняет статусы `paid`, `failed`, `refunded`.
 
 `fct_payments` добавляет канал, тариф и флаг `is_valid_lifecycle`: платежи до регистрации или после окончания подписки остаются в модели, но не попадают в выручку.
+
+`sources.yml` фиксирует сырые таблицы и freshness по `_loaded_at` (warn 60 дней, error 120). `dbt source freshness` проверяет, что выгрузка не устарела.
 
 ## Проверки
 
@@ -42,7 +45,7 @@ dbt test --profiles-dir .
 
 ## Дашборд
 
-`dashboard/kpi.sql` — запросы для MRR, ARPU, оттока, failed payments и когорт. `dashboard/README.md` — что вынести на первый экран и как проверять цифры.
+`dashboard/kpi.sql` — запросы для MRR, ARPU, оттока, failed payments и когорт. `dashboard/README.md` — что вынести на первый экран и как проверять цифры. Статический дашборд сайта читает `data/mart_*.csv`, которые выгружает `tools/export-marts.py` из DuckDB.
 
 ## Что сдать
 

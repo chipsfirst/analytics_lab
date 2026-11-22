@@ -4,5 +4,5 @@ select
     trim(city) as city,
     lower(trim(channel)) as channel,
     trim(age_group) as age_group
-from {{ ref('sub_users') }}
+from {{ source('raw', 'sub_users') }}
 where user_id is not null
