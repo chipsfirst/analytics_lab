@@ -29,8 +29,17 @@
     <form class="search" id="searchForm" role="search">
       <label class="sr-only" for="searchInput">Поиск по сайту</label>
       <input type="search" id="searchInput" placeholder="Поиск" autocomplete="off">
+      <button class="search-btn" type="submit" aria-label="Найти">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M16.5 16.5L21 21"/></svg>
+      </button>
     </form>
-    <button class="btn small theme-btn" id="themeBtn" type="button" aria-label="Переключить тему">Тема</button>
+    <a class="search-mobile" href="#/search" aria-label="Поиск по сайту">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M16.5 16.5L21 21"/></svg>
+    </a>
+    <button class="btn small theme-btn" id="themeBtn" type="button" aria-label="Тёмная тема" title="Тёмная тема">
+      <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 14.5A8 8 0 019.5 4 8 8 0 1020 14.5z"/></svg>
+      <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4 12H2M22 12h-2M5 5l1.5 1.5M17.5 17.5L19 19M19 5l-1.5 1.5M6.5 17.5L5 19"/></svg>
+    </button>
   </div>
 </header>
 <main id="app" tabindex="-1"></main>

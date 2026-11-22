@@ -1092,7 +1092,9 @@
 
   var themeBtn = document.getElementById("themeBtn");  if (themeBtn) {
     var drawTheme = function () {
-      themeBtn.textContent = document.documentElement.dataset.theme === "dark" ? "Светлая" : "Тёмная";
+      var dark = document.documentElement.dataset.theme === "dark";
+      themeBtn.setAttribute("aria-label", dark ? "Светлая тема" : "Тёмная тема");
+      themeBtn.setAttribute("title", dark ? "Светлая тема" : "Тёмная тема");
     };
     drawTheme();
     themeBtn.addEventListener("click", function () {
