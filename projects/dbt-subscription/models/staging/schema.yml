@@ -8,7 +8,8 @@ models:
       - name: channel
         tests:
           - accepted_values:
-              values: ['paid_search', 'social', 'referral', 'email']
+              arguments:
+                values: ['paid_search', 'social', 'referral', 'email']
 
   - name: stg_subscriptions
     columns:
@@ -18,16 +19,19 @@ models:
         tests:
           - not_null
           - relationships:
-              to: ref('stg_users')
-              field: user_id
+              arguments:
+                to: ref('stg_users')
+                field: user_id
       - name: plan
         tests:
           - accepted_values:
-              values: ['basic', 'pro']
+              arguments:
+                values: ['basic', 'pro']
       - name: status
         tests:
           - accepted_values:
-              values: ['active', 'cancelled']
+              arguments:
+                values: ['active', 'cancelled']
 
   - name: stg_payments
     columns:
@@ -37,22 +41,26 @@ models:
         tests:
           - not_null
           - relationships:
-              to: ref('stg_users')
-              field: user_id
+              arguments:
+                to: ref('stg_users')
+                field: user_id
       - name: subscription_id
         tests:
           - not_null
           - relationships:
-              to: ref('stg_subscriptions')
-              field: subscription_id
+              arguments:
+                to: ref('stg_subscriptions')
+                field: subscription_id
       - name: status
         tests:
           - accepted_values:
-              values: ['paid', 'failed', 'refunded']
+              arguments:
+                values: ['paid', 'failed', 'refunded']
       - name: method
         tests:
           - accepted_values:
-              values: ['card', 'sbp', 'apple_pay']
+              arguments:
+                values: ['card', 'sbp', 'apple_pay']
 
   - name: stg_tickets
     columns:
@@ -62,5 +70,6 @@ models:
         tests:
           - not_null
           - relationships:
-              to: ref('stg_users')
-              field: user_id
+              arguments:
+                to: ref('stg_users')
+                field: user_id

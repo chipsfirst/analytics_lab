@@ -1,5 +1,12 @@
 # Что нового
 
+## 0.6.1
+
+- Починен `dbt build`: в `stg_subscriptions` и `stg_tickets` даты приводятся к varchar перед разбором, а `accepted_values`/`relationships` переведены на `arguments`.
+- Проверено на чистом zip: `PASS=49 WARN=0 ERROR=0`; повторный прогон без deprecation-предупреждений.
+- Пересобраны `dbt-subscription.zip` и офлайн-архив; версия 0.6.1.
+
+
 ## 0.6.0
 
 - Сквозной проект «dbt + BI»: 4 источника, staging/marts, 5 витрин, тесты `unique`/`not_null`/`relationships`/`accepted_values`, два singular-теста, DuckDB-профиль и GitHub Actions.

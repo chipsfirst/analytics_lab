@@ -14,8 +14,9 @@ models:
         tests:
           - not_null
           - relationships:
-              to: ref('dim_users')
-              field: user_id
+              arguments:
+                to: ref('dim_users')
+                field: user_id
 
   - name: mart_subscription_health
     columns:
