@@ -258,21 +258,6 @@
       }).join("") + "</div>";
   }
 
-  function sourceItem(b) {
-    var text = esc(b.author + (b.year ? ", " + b.year : "")) + " — <i>" + esc(b.title) + "</i>";
-    return '<li><span class="source-kind">' + esc(b.kind || "книга") + "</span>" +
-      (b.url ? '<a href="' + b.url + '" target="_blank" rel="noopener">' + text + "</a>" : text) +
-      (b.note ? '<span class="source-note">' + esc(b.note) + "</span>" : "") + "</li>";
-  }
-
-  function sourcesHtml(id) {
-    var list = (window.SOURCES && window.SOURCES[id]) || [];
-    if (!list.length) return "";
-    return '<details class="sources"><summary>Источники и что почитать <span class="source-count">' + list.length +
-      '</span></summary><ul class="source-list">' + list.map(sourceItem).join("") +
-      '</ul><p class="meta"><a href="#/sources">Все источники библиотеки →</a></p></details>';
-  }
-
   function theory(id, chapterIdx) {
     var t = window.TOPICS[id];
     var meta = TOPIC_META[id] || {};
@@ -305,7 +290,6 @@
     return '<div class="topic-page" data-topic="' + id + '">' +
       '<p><a href="#/textbook">&larr; все разделы</a></p>' +
       "<h1>" + icon(meta.icon) + esc(t.title) + "</h1><p class=\"lead\">" + esc(t.lead) + "</p>" +
-      sourcesHtml(id) +
       '<div class="reader reader-top"><aside class="toc"><b>Главы</b><ol>' + toc + "</ol>" +
       '<div class="btn-row"><a class="btn" href="#/quiz/' + id + '">Тест</a>' +
       '<a class="btn" href="#/trainer/' + id + '">Тренажёр</a>' +
@@ -1332,28 +1316,6 @@
     });
   }
 
-  function sourcesPage() {
-    var ids = Object.keys(window.SOURCES).filter(function (id) { return !!window.TOPICS[id]; });
-    var all = [];
-    ids.forEach(function (id) { all = all.concat(window.SOURCES[id]); });
-    var books = all.filter(function (b) { return b.kind === "книга"; }).length;
-    var docs = all.filter(function (b) { return b.kind === "документация" || b.kind === "курс" || b.kind === "статья"; }).length;
-    return "<h1>Библиотека источников</h1>" +
-      '<p class="lead">' + all.length + " источников по всем разделам: книги для глубины, документация для работы и курсы для быстрой практики. " +
-      "Начните с одного источника по теме, а не с двадцати сразу.</p>" +
-      '<div class="stats"><div class="stat"><div class="k">всего источников</div><div class="v">' + all.length +
-      '</div></div><div class="stat"><div class="k">книг</div><div class="v">' + books +
-      '</div></div><div class="stat"><div class="k">документации и курсов</div><div class="v">' + docs + "</div></div></div>" +
-      '<figure class="figure"><svg viewBox="0 0 360 132" role="img" aria-label="Карта источников: основы, инструменты, практика, коммуникация"><g font-size="8" fill="currentColor" text-anchor="middle"><rect x="2" y="28" width="78" height="48" rx="7" fill="none" stroke="currentColor" opacity=".5"/><text x="41" y="48">Основы</text><text x="41" y="61" opacity=".7">статистика</text><text x="41" y="71" opacity=".7">вероятность</text><rect x="94" y="28" width="78" height="48" rx="7" fill="none" stroke="currentColor" opacity=".5"/><text x="133" y="48">Инструменты</text><text x="133" y="61" opacity=".7">SQL · Python</text><text x="133" y="71" opacity=".7">Excel · BI</text><rect x="186" y="28" width="78" height="48" rx="7" fill="none" stroke="currentColor" opacity=".5"/><text x="225" y="48">Практика</text><text x="225" y="61" opacity=".7">A/B · ML</text><text x="225" y="71" opacity=".7">кейсы</text><rect x="278" y="28" width="78" height="48" rx="7" fill="none" stroke="currentColor" opacity=".5"/><text x="317" y="48">Коммуникация</text><text x="317" y="61" opacity=".7">графики</text><text x="317" y="71" opacity=".7">выводы</text><g opacity=".55"><text x="84" y="56">→</text><text x="176" y="56">→</text><text x="268" y="56">→</text></g></g></svg><figcaption>Карта библиотеки: теория подкрепляется инструментами, практикой и умением объяснить результат.</figcaption></figure>' +
-      '<figure class="figure"><svg viewBox="0 0 360 86" role="img" aria-label="Как читать источник: зачем, что взять, где применить"><g font-size="8" fill="currentColor"><circle cx="34" cy="36" r="14" fill="none" stroke="currentColor" opacity=".6"/><text x="34" y="40" text-anchor="middle">1</text><text x="58" y="34">Зачем</text><text x="58" y="46" opacity=".7">какой вопрос решаем</text><circle cx="154" cy="36" r="14" fill="none" stroke="currentColor" opacity=".6"/><text x="154" y="40" text-anchor="middle">2</text><text x="178" y="34">Что взять</text><text x="178" y="46" opacity=".7">одна идея и пример</text><circle cx="274" cy="36" r="14" fill="none" stroke="currentColor" opacity=".6"/><text x="274" y="40" text-anchor="middle">3</text><text x="298" y="34">Где применить</text><text x="298" y="46" opacity=".7">задача или кейс</text><g opacity=".55"><text x="112" y="40">→</text><text x="232" y="40">→</text></g></g></svg><figcaption>Читайте источник под конкретную задачу: так книга не превращается в коллекцию подчёркиваний.</figcaption></figure>' +
-      '<div class="grid">' + ids.map(function (id) {
-        var t = window.TOPICS[id];
-        return '<section class="card sources-card"><h2>' + esc(t.title) + "</h2><ul class=\"source-list\">" +
-          window.SOURCES[id].map(sourceItem).join("") + "</ul></section>";
-      }).join("") + "</div>" +
-      '<div class="note"><b>Как выбрать</b>Для первого знакомства — один учебник и официальная документация. Курс или статья помогают быстро войти, но не заменяют системную базу. После каждого источника сформулируйте один вывод и проверьте его на учебном датасете.</div>';
-  }
-
   var CASE_BANK = [
     { topic: "Аналитика", title: "Конверсия упала после релиза",
       prompt: "В понедельник выкатили новую форму оплаты. За неделю конверсия в покупку упала с 4,2% до 3,5%. Что проверить до вывода «релиз виноват»?",
@@ -1684,7 +1646,6 @@
     if (seg === "project") return { html: projectPage(), after: bindProject };
     if (seg === "datalab") return { html: datalabPage(), after: bindDatalab };
     if (seg === "cases") return { html: casesPage() };
-    if (seg === "sources") return { html: sourcesPage() };
     if (seg === "progress") return { html: progressPage(), after: bindProgress };
     if (seg === "review") return { html: reviewPage(), after: bindReview };
     if (seg === "calc") return { html: calcPage(), after: bindCalc };
