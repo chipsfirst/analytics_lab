@@ -49,7 +49,7 @@
     var cur = "#/" + path().join("/");
     nav.innerHTML = NAV.map(function (n) {
       var active = n[0] === "#/" ? cur === "#/" : cur.indexOf(n[0]) === 0;
-      return '<a href="' + n[0] + '"' + (active ? ' class="active"' : "") + ">" + n[1] + "</a>";
+      return '<a href="' + n[0] + '"' + (active ? ' class="active" aria-current="page"' : "") + ">" + n[1] + "</a>";
     }).join("");
   }
 
@@ -112,6 +112,7 @@
       '<p class="lead">Короткий учебник, тесты с разбором, бесконечные тренажёры на расчёт, ' +
       "интерактивные демонстрации и игры на интуицию. Без регистрации: прогресс хранится в браузере.</p>" +
       '<div class="btn-row"><a class="btn primary" href="#/theory">Начать с теории</a>' +
+      '<a class="btn" href="#/path">Маршрут обучения</a>' +
       '<a class="btn" href="#/trainer">Сразу к тренажёрам</a></div>' +
       "</div>" +
       progressBlock() +
@@ -150,11 +151,12 @@
 
     return '<p><a href="#/theory">&larr; все разделы</a></p>' +
       "<h1>" + esc(t.title) + "</h1><p class=\"lead\">" + esc(t.lead) + "</p>" +
-      '<div class="reader" style="margin-top:28px"><aside class="toc"><b>Главы</b><ol>' + toc + "</ol>" +
+      '<div class="reader reader-top"><aside class="toc"><b>Главы</b><ol>' + toc + "</ol>" +
       '<div class="btn-row"><a class="btn" href="#/quiz/' + id + '">Тест</a>' +
       '<a class="btn" href="#/trainer/' + id + '">Тренажёр</a></div>' +
       (id === "sql" ? '<div class="btn-row"><a class="btn" href="#/sandbox">Песочница SQL</a></div>' : "") +
       (id === "python" ? '<div class="btn-row"><a class="btn" href="#/pysandbox">Песочница Python</a></div>' : "") +
+      (id === "statistics" ? '<div class="btn-row"><a class="btn" href="#/cheatsheet">Какой критерий выбрать</a></div>' : "") +
       "</aside><article>" + body + "</article></div>";
   }
 
@@ -252,13 +254,13 @@
       var isRecord = quiz.score === stats.best && quiz.answers.filter(function (a) { return a.ok; }).length === stats.best;
 
       app.innerHTML = '<p><a href="#/quiz">&larr; все тесты</a></p>' +
-        '<div class="card center"><h2 style="margin-top:8px">' + esc(t.title) +
+        '<div class="card center"><h2 class="quiz-head">' + esc(t.title) +
         (quiz.reviewMode ? " · работа над ошибками" : "") + "</h2>" +
-        '<p class="lead" style="margin:0 auto 12px">Правильных ответов: <b>' + quiz.score + " из " + quiz.qs.length +
+        '<p class="lead center">Правильных ответов: <b>' + quiz.score + " из " + quiz.qs.length +
         "</b> (" + pct + "%)</p>" +
         '<p class="meta">Лучший результат: ' + stats.best + " из " + stats.total +
         (isRecord && !quiz.reviewMode ? " — это рекорд" : "") + "</p>" +
-        '<div class="btn-row" style="justify-content:center">' +
+        '<div class="btn-row center-row">' +
         (review.length ? '<button class="btn primary" id="review">Разобрать ошибки (' + review.length + ")</button>" : "") +
         '<button class="btn" id="again">Пройти ещё раз</button>' +
         '<a class="btn" href="#/theory/' + quiz.id + '">К теории</a>' +
@@ -355,7 +357,7 @@
       '<div class="card">' + task.prompt;
 
     if (choice) {
-      html += '<div class="options" style="margin-top:16px">' + task.answer.options.map(function (o, k) {
+      html += '<div class="options top">' + task.answer.options.map(function (o, k) {
         var cls = "option";
         if (trainer.checked) {
           if (o.ok) cls += " right";
@@ -460,6 +462,49 @@
     return null;
   }
 
+  function pathPage() {
+    var tracks = window.TRACKS || [];
+    return "<h1>Маршрут обучения</h1>" +
+      '<p class="lead">Три последовательности: с чего начать, что читать перед экспериментами и как перейти к Python. ' +
+      "Прогресс считается по прочитанным главам.</p>" +
+      '<div class="grid">' + tracks.map(function (t) {
+        var total = t.steps.length;
+        var done = t.steps.filter(function (s) { return window.PROGRESS.isRead(s[0], s[1]); }).length;
+        var next = t.steps.filter(function (s) { return !window.PROGRESS.isRead(s[0], s[1]); })[0] || t.steps[0];
+        var href = "#/theory/" + next[0] + "/" + next[1];
+        var steps = t.steps.map(function (s) {
+          var c = window.TOPICS[s[0]].chapters[s[1]];
+          var read = window.PROGRESS.isRead(s[0], s[1]);
+          return '<li' + (read ? ' class="read"' : "") + ">" +
+            '<a href="#/theory/' + s[0] + "/" + s[1] + '">' + esc(c.title) + "</a></li>";
+        }).join("");
+        return '<div class="card"><h3>' + esc(t.title) + "</h3>" +
+          "<p>" + esc(t.tag) + "</p>" +
+          '<p class="meta">Пройдено: ' + done + " из " + total + "</p>" +
+          '<div class="track-bar"><div style="width:' + Math.round(done / total * 100) + '%"></div></div>' +
+          '<div class="links"><a class="btn primary" href="' + href + '">' +
+          (done ? "Продолжить" : "Начать") + "</a></div>" +
+          '<ol class="track-steps">' + steps + "</ol></div>";
+      }).join("") + "</div>";
+  }
+
+  function cheatSheetPage() {
+    var rows = window.CHEATSHEET || [];
+    return "<h1>Какой критерий выбрать</h1>" +
+      '<p class="lead">Сначала задача, потом метод, потом проверка допущений. Таблица не заменяет учебник, ' +
+      "но помогает не выбрать t-тест там, где нужен Фридман.</p>" +
+      '<div class="table-wrap"><table><thead><tr><th>Задача</th><th>Основной метод</th>' +
+      "<th>Если допущения нарушены</th><th>Что проверить</th></tr></thead><tbody>" +
+      rows.map(function (r) {
+        return "<tr><td>" + esc(r.task) + "</td><td>" + esc(r.main) + "</td><td>" +
+          esc(r.alt) + "</td><td>" + esc(r.check) + "</td></tr>";
+      }).join("") + "</tbody></table></div>" +
+      '<div class="note"><b>Перед расчётом</b>Проверьте независимость наблюдений, форму распределения и выбросы, ' +
+      "объём выборки и число сравнений. Гипотезу фиксируйте до того, как смотреть на данные.</div>" +
+      '<div class="note"><b>Что писать в выводе</b>Размер эффекта, доверительный интервал, p-уровень и объём выборки. ' +
+      "p не говорит, насколько эффект большой или важный.</div>";
+  }
+
   // ---------- поиск ----------
 
   var searchIndex = null;
@@ -536,6 +581,8 @@
     else if (p[0] === "demos") html = demosList();
     else if (p[0] === "sandbox") return sandboxPage();
     else if (p[0] === "pysandbox") return pySandboxPage();
+    else if (p[0] === "path") html = pathPage();
+    else if (p[0] === "cheatsheet") html = cheatSheetPage();
     else if (p[0] === "search") { html = searchPage(p[1]); after = function () { bindSearch(p[1]); }; }
     else html = "<h1>Страница не найдена</h1><p><a href=\"#/\">На главную</a></p>";
 
@@ -577,9 +624,33 @@
     });
   }
 
+  function showUpdateToast() {
+    if (document.getElementById("swToast")) return;
+    var el = document.createElement("div");
+    el.id = "swToast";
+    el.className = "sw-toast";
+    el.innerHTML = "<span>Доступна новая версия</span>" +
+      '<button class="btn small" id="swReload" type="button">Обновить</button>';
+    document.body.appendChild(el);
+    el.querySelector("#swReload").addEventListener("click", function () { location.reload(); });
+  }
+
   if ("serviceWorker" in navigator && /^https?:$/.test(location.protocol)) {
+    var hadController = !!navigator.serviceWorker.controller;
+    navigator.serviceWorker.addEventListener("controllerchange", function () {
+      if (hadController) showUpdateToast();
+    });
     window.addEventListener("load", function () {
-      navigator.serviceWorker.register("sw.js").catch(function () {});
+      navigator.serviceWorker.register("sw.js").then(function (reg) {
+        if (!hadController) return;
+        reg.addEventListener("updatefound", function () {
+          var nw = reg.installing;
+          if (!nw) return;
+          nw.addEventListener("statechange", function () {
+            if (nw.state === "installed") showUpdateToast();
+          });
+        });
+      }).catch(function () {});
     });
   }
 

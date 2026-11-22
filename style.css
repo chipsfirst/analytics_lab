@@ -412,6 +412,37 @@ input:focus, select:focus, textarea:focus { border-color: var(--accent); }
 .nb-progress.done { display: none; }
 @keyframes nb-slide { from { margin-left: -35%; } to { margin-left: 100%; } }
 
+/* маршруты */
+.reader-top { margin-top: 28px; }
+.quiz-head { margin-top: 8px; }
+.lead.center { margin: 0 auto 12px; }
+.btn-row.center-row { justify-content: center; }
+.options.top { margin-top: 16px; }
+.sw-toast {
+  position: fixed;
+  left: 50%;
+  bottom: 20px;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 10px 14px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, .14);
+  z-index: 50;
+  font-size: 14px;
+}
+.track-bar { height: 6px; border-radius: 3px; background: var(--line); overflow: hidden; margin: 0 0 10px; }
+.track-bar div { height: 100%; background: var(--accent); border-radius: 3px; }
+.track-steps { margin: 10px 0 0; padding-left: 18px; font-size: 13px; color: var(--muted); }
+.track-steps li { margin-bottom: 4px; }
+.track-steps a { color: var(--muted); }
+.track-steps a:hover { color: var(--accent); }
+.track-steps li.read a { color: var(--ink); }
+.track-steps li.read a::after { content: ""; display: inline-block; width: 6px; height: 6px; margin-left: 6px; border-radius: 50%; background: var(--ok); vertical-align: middle; }
+
 @media (max-width: 760px) {
   .reader { grid-template-columns: 1fr; gap: 16px; }
   .toc { position: static; }

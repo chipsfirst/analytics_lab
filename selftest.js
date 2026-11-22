@@ -12,6 +12,8 @@ require("./search.js");
 require("./demos.js");
 require("./sandbox.js");
 require("./pysandbox.js");
+require("./tracks.js");
+require("./cheatsheet.js");
 
 var errors = [];
 var checks = 0;
@@ -39,6 +41,44 @@ topicIds.forEach(function (id) {
     ok(q.explain && q.explain.length > 10, id + " q" + i + ": нет разбора");
     ok(new Set(q.options).size === q.options.length, id + " q" + i + ": дубли вариантов");
   });
+});
+
+// --- ссылки внутри глав ---
+var linkRe = /href="#\/([a-z]+)(?:\/([a-z0-9]+))?(?:\/(\d+))?"/g;
+topicIds.forEach(function (id) {
+  window.TOPICS[id].chapters.forEach(function (c, ci) {
+    var m;
+    linkRe.lastIndex = 0;
+    while ((m = linkRe.exec(c.html))) {
+      var route = m[1], a = m[2], b = m[3];
+      var good;
+      if (route === "theory") {
+        good = !!(a && window.TOPICS[a] && (b === undefined || window.TOPICS[a].chapters[Number(b)]));
+      } else if (route === "quiz" || route === "trainer") {
+        good = !!(a && window.TOPICS[a]);
+      } else if (route === "games") {
+        good = !!(a && window.GAMES[a]);
+      } else if (route === "demos") {
+        good = !!(a && window.DEMOS[a]);
+      } else {
+        good = ["sandbox", "pysandbox", "path", "cheatsheet", "search"].indexOf(route) >= 0 && !a;
+      }
+      ok(good, id + ": битая ссылка #/" + route + (a ? "/" + a : "") + (b ? "/" + b : "") + " в главе " + ci);
+    }
+  });
+});
+
+ok(Array.isArray(window.TRACKS) && window.TRACKS.length === 3, "маршруты: ожидалось 3");
+window.TRACKS.forEach(function (t) {
+  ok(t.title && t.tag && t.steps.length >= 6, "маршрут " + t.id + " неполный");
+  t.steps.forEach(function (s) {
+    ok(window.TOPICS[s[0]] && window.TOPICS[s[0]].chapters[s[1]], "маршрут " + t.id + ": битый шаг " + s.join("/"));
+  });
+});
+
+ok(Array.isArray(window.CHEATSHEET) && window.CHEATSHEET.length >= 10, "шпаргалка: мало строк");
+window.CHEATSHEET.forEach(function (r, i) {
+  ok(r.task && r.main && r.check, "шпаргалка: строка " + i + " неполная");
 });
 
 ok(Object.keys(window.TRAINERS).length === 11, "тренажёры есть не для всех разделов");
