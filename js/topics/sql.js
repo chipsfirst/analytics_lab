@@ -20,6 +20,24 @@ FROM таблица
 <p>Из этого порядка следуют два практических правила. Первое: алиасы, заданные в SELECT, доступны в ORDER BY, но не в WHERE — на момент фильтрации их ещё не существует. Второе: LIMIT применяется последним, поэтому «первые 10 строк» без ORDER BY означают «какие попались».</p>
 <p><b>SELECT *</b> удобен для знакомства с таблицей, но плох в постоянных запросах: он тянет лишние столбцы и ломается, когда в таблицу добавляют поле. Перечисляйте нужные столбцы явно.</p>
 <div class="example"><b>Пример.</b> SELECT city, COUNT(*) AS orders FROM orders WHERE amount &gt; 1000 GROUP BY city HAVING COUNT(*) &gt;= 5 ORDER BY orders DESC LIMIT 3;</div>
+
+<h3>Дополнительно: порядок выполнения и типичные ошибки</h3>
+<p>Запрос пишется сверху вниз, но логически выполняется иначе. Псевдонимы из <code>SELECT</code> обычно ещё не существуют в <code>WHERE</code>, зато доступны в <code>ORDER BY</code>.</p>
+<div class="table-wrap"><table><thead><tr><th>Шаг</th><th>Что происходит</th></tr></thead><tbody>
+<tr><td>FROM / JOIN</td><td>Собираются строки и соединяются таблицы</td></tr>
+<tr><td>WHERE</td><td>Фильтруются отдельные строки</td></tr>
+<tr><td>GROUP BY</td><td>Строки собираются в группы</td></tr>
+<tr><td>HAVING</td><td>Фильтруются уже группы</td></tr>
+<tr><td>SELECT</td><td>Вычисляются выражения и псевдонимы</td></tr>
+<tr><td>ORDER BY / LIMIT</td><td>Сортировка и ограничение результата</td></tr>
+</tbody></table></div>
+<pre><code>SELECT city, COUNT(*) AS orders
+FROM orders
+WHERE returned = 0
+GROUP BY city
+HAVING COUNT(*) &gt;= 3
+ORDER BY orders DESC;</code></pre>
+<p><code>WHERE</code> не может ссылаться на агрегат <code>COUNT(*)</code> — для этого нужен <code>HAVING</code>. А <code>COUNT(*)</code> считает строки, тогда как <code>COUNT(discount)</code> пропускает NULL: это разные вопросы к данным.</p>
 `
       },
       {

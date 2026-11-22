@@ -42,6 +42,18 @@ s[2:5]        # "али" — с индекса 2 до 5, не включая 5</
 <div class="formula">city = "Казань"
 rate = 0.0734
 print(f"Конверсия в {city}: {rate:.1%}")   # Конверсия в Казань: 7.3%</div>
+
+<h3>Дополнительно: неизменяемость и рабочие методы</h3>
+<p>Строка в Python неизменяема: <code>s[0] = "A"</code> вызовет ошибку. Методы возвращают новую строку, поэтому результат нужно присвоить или использовать сразу.</p>
+<div class="table-wrap"><table><thead><tr><th>Операция</th><th>Пример</th><th>Результат</th></tr></thead><tbody>
+<tr><td>Очистка</td><td><code>"  да ".strip()</code></td><td><code>"да"</code></td></tr>
+<tr><td>Регистр</td><td><code>"Да".lower()</code></td><td><code>"да"</code></td></tr>
+<tr><td>Разбиение</td><td><code>"a,b".split(",")</code></td><td><code>["a","b"]</code></td></tr>
+<tr><td>Сборка</td><td><code>"-".join(["a","b"])</code></td><td><code>"a-b"</code></td></tr>
+<tr><td>Срез</td><td><code>"аналитика"[:4]</code></td><td><code>"анал"</code></td></tr>
+</tbody></table></div>
+<div class="example"><b>Пример.</b> Строку <code>"  Анна, 34 "</code> разбирают так: <code>name, age = "  Анна, 34 ".strip().split(", ")</code>, затем <code>age = int(age)</code>. Для вывода — <code>f"{name}: {age} лет"</code>. f-строки удобнее склейки через <code>+</code> и сразу приводят значения к тексту.</div>
+<p>Для русского текста указывайте кодировку при чтении файлов: <code>open(path, encoding="utf-8")</code>. Иначе на Windows можно получить кракозябры или ошибку декодирования.</p>
 `
       },
       {
