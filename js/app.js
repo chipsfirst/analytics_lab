@@ -85,8 +85,32 @@
       (ICONS[name] || ICONS.book) + "</svg>";
   }
 
-  function chapterIcon(title) {
-    var s = String(title).toLowerCase();
+  function markQuery(text, words) {
+    var out = esc(text);
+    words.forEach(function (w) {
+      if (!w) return;
+      var re = new RegExp("(" + w.replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + ")", "gi");
+      out = out.replace(re, "<mark>$1</mark>");
+    });
+    return out;
+  }
+
+  function miniPicks(bank, title) {
+    var words = String(title || "").toLowerCase()
+      .replace(/[^a-zа-яё0-9\s]/gi, " ").split(/\s+/)
+      .filter(function (w) { return w.length > 4; });
+    if (!words.length) return null;
+    var scored = bank.map(function (q, i) {
+      var options = (q.options || []).map(function (o) { return typeof o === "string" ? o : o.text; }).join(" ");
+      var text = (q.q + " " + q.explain + " " + options).toLowerCase();
+      var s = 0;
+      words.forEach(function (w) { if (text.indexOf(w) >= 0) s++; });
+      return { i: i, s: s };
+    }).filter(function (x) { return x.s > 0; }).sort(function (a, b) { return b.s - a.s; });
+    return scored.length >= 3 ? scored.slice(0, 6).map(function (x) { return x.i; }) : null;
+  }
+
+  function chapterIcon(title) {    var s = String(title).toLowerCase();
     if (/корреляц|связ/.test(s)) return "link";
     if (/регресс|предсказ|нелинейн/.test(s)) return "trend";
     if (/кластер|дерев|лес|компонент|ансамбл|фактор/.test(s)) return "network";
@@ -133,10 +157,14 @@
       : '<a class="btn" href="#/theory/' + id + '">Учебник</a>' +
         '<a class="btn" href="#/quiz/' + id + '">Тест</a>' +
         '<a class="btn" href="#/trainer/' + id + '">Тренажёр</a>';
+    var total = t.chapters.length;
+    var read = Math.min(window.PROGRESS.readCount(id), total);
+    var pct = total ? Math.round(read / total * 100) : 0;
     return '<div class="card" data-topic="' + id + '"' + (linkable ? ' data-href="#/theory/' + id + '"' : "") + ">" +
       "<h3>" + icon(meta.icon) + esc(t.title) + "</h3>" +
       "<p>" + esc(t.tag) + "</p>" +
       progressLine(id) +
+      '<div class="topic-bar" aria-hidden="true"><div style="width:' + pct + '%"></div></div>' +
       '<div class="links">' + links + "</div></div>";
   }
 
@@ -159,12 +187,14 @@
 
   function progressBlock() {
     var s = window.PROGRESS.summary(window.TOPICS);
-    if (!s.chapters && !s.quizTotal) return "";
+    var m = window.PROGRESS.miniStats();
+    if (!s.chapters && !s.quizTotal && !m.total) return "";
     return '<div class="card progress-card">' +
       '<div class="stats">' +
       '<div class="stat"><div class="k">глав прочитано</div><div class="v">' + s.chapters + " / " + s.totalChapters + "</div></div>" +
       '<div class="stat"><div class="k">лучшие ответы в тестах</div><div class="v">' +
         s.quizBest + " / " + s.quizTotal + "</div></div>" +
+      (m.total ? '<div class="stat"><div class="k">мини-тесты</div><div class="v">' + m.correct + " / " + m.total + "</div></div>" : "") +
       "</div>" +
       '<div class="btn-row"><a class="btn" href="' + continueHref() + '">Продолжить</a>' +
       '<button class="btn" id="exportProgress">Экспорт прогресса</button>' +
@@ -218,9 +248,10 @@
       var prev = i > 0 ? '<a class="btn small" href="#/theory/' + id + "/" + (i - 1) + '" data-ch="' + (i - 1) + '">&larr; ' + esc(t.chapters[i - 1].title) + "</a>" : "<span></span>";
       var next = i < t.chapters.length - 1 ? '<a class="btn small" href="#/theory/' + id + "/" + (i + 1) + '" data-ch="' + (i + 1) + '">' + esc(t.chapters[i + 1].title) + " &rarr;</a>" : "<span></span>";
       return '<section id="ch-' + i + '">' +
-        '<div class="ch-head"><h2>' + icon(chapterIcon(c.title) || meta.icon) + (i + 1) + ". " + esc(c.title) + "</h2>" +
+        '<div class="ch-head"><h2 id="ch-' + i + '-title">' + icon(chapterIcon(c.title) || meta.icon) + (i + 1) + ". " + esc(c.title) + "</h2>" +
+        '<span class="ch-actions"><button class="btn small" data-copy="' + i + '">Ссылка</button>' +
         '<button class="btn small' + (read ? " is-read" : "") + '" data-read="' + i + '" aria-pressed="' + read + '">' +
-        (read ? "Прочитано" : "Отметить прочитанной") + "</button></div>" +
+        (read ? "Прочитано" : "Отметить прочитанной") + "</button></span></div>" +
         c.html +
         '<div class="ch-nav">' + prev + next + "</div>" +
         '<div class="mini" data-mini="' + i + '"><button class="btn small" data-mini-start="' + i + '">Проверить себя · 3 вопроса</button></div>' +
@@ -232,7 +263,8 @@
       "<h1>" + icon(meta.icon) + esc(t.title) + "</h1><p class=\"lead\">" + esc(t.lead) + "</p>" +
       '<div class="reader reader-top"><aside class="toc"><b>Главы</b><ol>' + toc + "</ol>" +
       '<div class="btn-row"><a class="btn" href="#/quiz/' + id + '">Тест</a>' +
-      '<a class="btn" href="#/trainer/' + id + '">Тренажёр</a></div>' +
+      '<a class="btn" href="#/trainer/' + id + '">Тренажёр</a>' +
+      '<button class="btn" id="printSection">Печать</button></div>' +
       (id === "sql" ? '<div class="btn-row"><a class="btn" href="#/sandbox">Песочница SQL</a></div>' : "") +
       (id === "python" ? '<div class="btn-row"><a class="btn" href="#/pysandbox">Песочница Python</a></div>' : "") +
       (id === "statistics" ? '<div class="btn-row"><a class="btn" href="#/cheatsheet">Какой критерий выбрать</a></div>' : "") +
@@ -249,6 +281,23 @@
     });
   }
 
+  function markInChapter(root, word) {
+    if (!word || !root) return;
+    var walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, null);
+    var n;
+    while ((n = walker.nextNode())) {
+      var idx = n.nodeValue.toLowerCase().indexOf(String(word).toLowerCase());
+      if (idx < 0) continue;
+      var range = document.createRange();
+      range.setStart(n, idx);
+      range.setEnd(n, idx + word.length);
+      var mark = document.createElement("mark");
+      mark.className = "hl";
+      try { range.surroundContents(mark); } catch (e) { return; }
+      return;
+    }
+  }
+
   function bindChapters() {
     var p = path();
     wrapTables(app);
@@ -258,6 +307,13 @@
       if (target) {
         window.PROGRESS.setLast(p[1], Number(p[2]));
         target.scrollIntoView({ behavior: "instant", block: "start" });
+        try {
+          var jump = JSON.parse(sessionStorage.getItem("searchJump") || "null");
+          if (jump && jump.href === "#/" + p.join("/")) {
+            markInChapter(target, String(jump.q || "").split(/\s+/)[0]);
+            sessionStorage.removeItem("searchJump");
+          }
+        } catch (e) {}
       }
     }
 
@@ -292,7 +348,10 @@
       b.addEventListener("click", function () {
         var box = b.parentNode;
         var bank = window.TOPICS[p[1]].quiz;
-        var picks = shuffle(bank.map(function (_, k) { return k; })).slice(0, 3);
+        var chIdx = Number(b.getAttribute("data-mini-start"));
+        var chapter = window.TOPICS[p[1]].chapters[chIdx];
+        var pool = miniPicks(bank, chapter && chapter.title) || bank.map(function (_, k) { return k; });
+        var picks = shuffle(pool).slice(0, 3);
         var prepared = {};
         box.innerHTML = picks.map(function (n, qi) {
           var q = bank[n];
@@ -312,6 +371,7 @@
               qEl.setAttribute("data-done", "1");
               var k = Number(opt.getAttribute("data-k"));
               var ok = opts[k].ok;
+              qEl.setAttribute("data-ok", ok ? "1" : "0");
               Array.prototype.forEach.call(qEl.querySelectorAll(".option"), function (o, oi) {
                 o.disabled = true;
                 if (opts[oi].ok) o.classList.add("right");
@@ -320,6 +380,15 @@
               var ex = qEl.querySelector(".explain");
               ex.hidden = false;
               ex.innerHTML = "<b>" + (ok ? "Верно" : "Неверно") + "</b>" + q.explain;
+              var total = box.querySelectorAll(".mini-q").length;
+              if (box.querySelectorAll(".mini-q[data-done]").length === total && !box.querySelector(".mini-sum")) {
+                var correct = box.querySelectorAll('.mini-q[data-ok="1"]').length;
+                window.PROGRESS.recordMini(p[1], correct, total);
+                var sum = document.createElement("p");
+                sum.className = "mini-sum";
+                sum.textContent = "Верно " + correct + " из " + total;
+                box.appendChild(sum);
+              }
             });
           });
         });
@@ -352,6 +421,48 @@
       });
       calcSize();
     }
+
+    Array.prototype.forEach.call(app.querySelectorAll("[data-copy]"), function (b) {
+      b.addEventListener("click", function () {
+        var url = location.origin + location.pathname + "#/theory/" + p[1] + "/" + b.getAttribute("data-copy");
+        function done() {
+          var old = b.textContent;
+          b.textContent = "Скопировано";
+          setTimeout(function () { b.textContent = old; }, 1200);
+        }
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(url).then(done, function () { prompt("Ссылка на главу:", url); });
+        } else {
+          prompt("Ссылка на главу:", url);
+        }
+      });
+    });
+
+    var printBtn = document.getElementById("printSection");
+    if (printBtn) printBtn.addEventListener("click", function () { window.print(); });
+
+    setKeys(function (e) {
+      if (e.metaKey || e.ctrlKey || e.altKey) return;
+      var t = e.target;
+      if (t && (t.tagName === "INPUT" || t.tagName === "TEXTAREA" || t.tagName === "SELECT" || t.isContentEditable)) return;
+      if (e.key === "/") {
+        e.preventDefault();
+        var s = document.getElementById("searchInput");
+        if (s) s.focus();
+        return;
+      }
+      var key = String(e.key).toLowerCase();
+      if (key !== "j" && key !== "k") return;
+      var secs = app.querySelectorAll("article section[id^='ch-']");
+      if (!secs.length) return;
+      e.preventDefault();
+      var cur = 0, y = window.scrollY + 90;
+      Array.prototype.forEach.call(secs, function (sec, idx) { if (sec.offsetTop <= y) cur = idx; });
+      var n = Math.max(0, Math.min(secs.length - 1, cur + (key === "j" ? 1 : -1)));
+      window.PROGRESS.setLast(p[1], n);
+      try { history.replaceState(null, "", "#/theory/" + p[1] + "/" + n); } catch (err) {}
+      secs[n].scrollIntoView();
+    });
 
     Array.prototype.forEach.call(app.querySelectorAll("button[data-read]"), function (b) {
       b.addEventListener("click", function () {
@@ -718,12 +829,18 @@
         box.innerHTML = '<p class="lead">Ничего не найдено. Попробуйте другое слово.</p>';
         return;
       }
+      var words = q.trim().toLowerCase().split(/\s+/).filter(function (w) { return w.length > 1; });
       box.innerHTML = hits.map(function (h) {
         return '<a class="result" href="' + h.entry.href + '">' +
           '<span class="chip">' + esc(h.entry.topicTitle) + " · " + h.entry.kind + "</span>" +
-          "<b>" + esc(h.entry.title) + "</b>" +
-          '<span class="result-text">' + esc(h.snippet) + "</span></a>";
+          "<b>" + markQuery(h.entry.title, words) + "</b>" +
+          '<span class="result-text">' + markQuery(h.snippet, words) + "</span></a>";
       }).join("");
+      Array.prototype.forEach.call(box.querySelectorAll(".result"), function (a) {
+        a.addEventListener("click", function () {
+          try { sessionStorage.setItem("searchJump", JSON.stringify({ q: q, href: a.getAttribute("href") })); } catch (e) {}
+        });
+      });
     }
 
     input.addEventListener("input", function () {

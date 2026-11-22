@@ -447,6 +447,15 @@ input:focus, select:focus, textarea:focus { border-color: var(--accent); }
 .card[data-topic] { border-top: 3px solid var(--topic); }
 .card[data-topic]:hover { border-color: var(--topic); }
 .card[data-topic] h3 .ico { color: var(--topic); }
+.ch-actions { display: flex; gap: 6px; flex-wrap: wrap; }
+.figure { margin: 14px 0; padding: 10px 12px; background: var(--soft); border: 1px solid var(--line); border-radius: 10px; }
+.figure svg { width: 100%; height: auto; display: block; color: var(--topic, var(--accent)); }
+.figure figcaption { margin-top: 6px; font-size: 12px; color: var(--muted); }
+.topic-bar { height: 4px; border-radius: 999px; background: var(--line); margin: 7px 0 0; overflow: hidden; }
+.topic-bar > div { height: 100%; background: var(--topic, var(--accent)); border-radius: inherit; }
+mark { background: #fde68a; color: #171a20; border-radius: 2px; padding: 0 1px; }
+:root[data-theme="dark"] mark { background: #6b4f00; color: #f8fafc; }
+article h2[id] { scroll-margin-top: 76px; }
 .ch-nav { display: flex; justify-content: space-between; gap: 8px; margin: 18px 0 0; }
 .ch-nav a { max-width: 48%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .mini { margin: 10px 0 0; }
@@ -513,6 +522,7 @@ article h2 { border-left: 3px solid var(--topic, var(--accent)); padding-left: 1
 .ico { width: 18px; height: 18px; margin-right: 6px; vertical-align: -3px; color: var(--topic, var(--accent)); }
 table tbody tr:nth-child(even) { background: var(--soft); }
 a { text-underline-offset: 2px; }
+.note a, article a, .lead a { text-decoration: underline; }
 @media (prefers-reduced-motion: reduce) {
   .card { transition: none; }
   .card:hover { transform: none; }

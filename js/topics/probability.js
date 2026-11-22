@@ -53,7 +53,8 @@ P = (0,99 · 0,01) / (0,99 · 0,01 + 0,01 · 0,99) = 0,0099 / 0,0198 = 0,5.<br>
 <div class="example"><b>Пример.</b> Три броска монеты, P(ровно два орла) = C(3,2) · 0,5² · 0,5¹ = 3 · 0,125 = 0,375.</div>
 <p><b>Геометрическое распределение</b> — число испытаний до первого успеха: P(X = k) = (1 − p)<sup>k − 1</sup>·p, матожидание 1/p.</p>
 <p><b>Вероятность хотя бы одного успеха</b> за n попыток: 1 − (1 − p)<sup>n</sup>. При p = 0,05 и n = 20 это 64%, а не 100%.</p>
-`
+
+<figure class="figure"><svg viewBox="0 0 320 140" role="img" aria-label="Биномиальное распределение"><line x1="20" y1="120" x2="300" y2="120" stroke="currentColor" opacity=".3"/><g fill="currentColor" opacity=".8"><rect x="44" y="100" width="26" height="20" rx="3"/><rect x="88" y="72" width="26" height="48" rx="3"/><rect x="132" y="38" width="26" height="82" rx="3"/><rect x="176" y="50" width="26" height="70" rx="3"/><rect x="220" y="84" width="26" height="36" rx="3"/><rect x="264" y="108" width="26" height="12" rx="3"/></g></svg><figcaption>Число успехов при 5 испытаниях: крайние значения редки, середина — частая.</figcaption></figure>`
       },
       {
         title: "Случайные величины",

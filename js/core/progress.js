@@ -7,14 +7,14 @@
 
   var KEY = "analytics-lab-progress-v1";
 
-  function empty() { return { chapters: {}, quizzes: {}, last: null }; }
+  function empty() { return { chapters: {}, quizzes: {}, mini: {}, last: null }; }
 
   function load() {
     try {
       var raw = window.localStorage.getItem(KEY);
       if (!raw) return empty();
       var p = JSON.parse(raw);
-      return { chapters: p.chapters || {}, quizzes: p.quizzes || {}, last: p.last || null };
+      return { chapters: p.chapters || {}, quizzes: p.quizzes || {}, mini: p.mini || {}, last: p.last || null };
     } catch (e) {
       return empty();
     }
@@ -65,6 +65,25 @@
       return data.quizzes[topic];
     },
 
+    recordMini: function (topic, correct, total) {
+      var cur = data.mini[topic] || { correct: 0, total: 0, attempts: 0 };
+      data.mini[topic] = {
+        correct: cur.correct + (Number(correct) || 0),
+        total: cur.total + (Number(total) || 0),
+        attempts: cur.attempts + 1
+      };
+      save();
+    },
+
+    miniStats: function () {
+      var correct = 0, total = 0;
+      Object.keys(data.mini).forEach(function (k) {
+        correct += data.mini[k].correct;
+        total += data.mini[k].total;
+      });
+      return { correct: correct, total: total };
+    },
+
     clear: function () { data = empty(); save(); },
 
     exportData: function () {
@@ -73,6 +92,7 @@
         v: 1,
         chapters: data.chapters,
         quizzes: data.quizzes,
+        mini: data.mini,
         last: data.last
       }, null, 2);
     },
@@ -94,10 +114,19 @@
             review: Array.isArray(q.review) ? q.review.map(Number).filter(isFinite) : []
           };
         });
+        var mini = {};
+        Object.keys(p.mini || {}).forEach(function (k) {
+          var m = p.mini[k] || {};
+          mini[k] = {
+            correct: Number(m.correct) || 0,
+            total: Number(m.total) || 0,
+            attempts: Number(m.attempts) || 0
+          };
+        });
         var last = p.last && typeof p.last.id === "string" && isFinite(Number(p.last.i))
           ? { id: p.last.id, i: Number(p.last.i) }
           : null;
-        data = { chapters: chapters, quizzes: quizzes, last: last };
+        data = { chapters: chapters, quizzes: quizzes, mini: mini, last: last };
         save();
         return true;
       } catch (e) {
