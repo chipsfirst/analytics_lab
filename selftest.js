@@ -2,18 +2,18 @@
 "use strict";
 
 global.window = global;
-require("./data.js");
+require("./js/data.js");
 ["analytics", "statistics", "gametheory", "probability", "sql", "excel", "python", "regression", "classification", "ml", "useful"]
-  .forEach(function (id) { require("./topics/" + id + ".js"); });
-require("./trainers.js");
-require("./games.js");
-require("./progress.js");
-require("./search.js");
-require("./demos.js");
-require("./sandbox.js");
-require("./pysandbox.js");
-require("./tracks.js");
-require("./cheatsheet.js");
+  .forEach(function (id) { require("./js/topics/" + id + ".js"); });
+require("./js/features/trainers.js");
+require("./js/features/games.js");
+require("./js/core/progress.js");
+require("./js/core/search.js");
+require("./js/features/demos.js");
+require("./js/sandboxes/sql.js");
+require("./js/sandboxes/python.js");
+require("./js/core/tracks.js");
+require("./js/core/cheatsheet.js");
 
 var errors = [];
 var checks = 0;

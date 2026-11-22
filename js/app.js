@@ -40,6 +40,13 @@
     });
   }
 
+  // варианты хранятся строками, правильный задан индексом correct
+  function quizOptions(q) {
+    return shuffle((q.options || []).map(function (o, i) {
+      return typeof o === "string" ? { text: o, ok: i === q.correct } : { text: o.text, ok: !!o.ok };
+    }));
+  }
+
   function topicIds() { return Object.keys(window.TOPICS); }
 
   function path() {
@@ -228,24 +235,28 @@
         var box = b.parentNode;
         var bank = window.TOPICS[p[1]].quiz;
         var picks = shuffle(bank.map(function (_, k) { return k; })).slice(0, 3);
+        var prepared = {};
         box.innerHTML = picks.map(function (n, qi) {
           var q = bank[n];
+          var opts = prepared[qi] = quizOptions(q);
           return '<div class="mini-q" data-q="' + qi + '"><p class="q-text"><b>' + (qi + 1) + ".</b> " + q.q + "</p>" +
-            '<div class="options">' + q.options.map(function (o, k) {
+            '<div class="options">' + opts.map(function (o, k) {
               return '<button class="option" data-k="' + k + '">' + String.fromCharCode(1040 + k) + ". " + esc(o.text) + "</button>";
             }).join("") + '</div><div class="explain" aria-live="polite" hidden></div></div>';
         }).join("");
         Array.prototype.forEach.call(box.querySelectorAll(".mini-q"), function (qEl) {
-          var q = bank[picks[Number(qEl.getAttribute("data-q"))]];
+          var qi = Number(qEl.getAttribute("data-q"));
+          var opts = prepared[qi];
+          var q = bank[picks[qi]];
           Array.prototype.forEach.call(qEl.querySelectorAll(".option"), function (opt) {
             opt.addEventListener("click", function () {
               if (qEl.getAttribute("data-done")) return;
               qEl.setAttribute("data-done", "1");
               var k = Number(opt.getAttribute("data-k"));
-              var ok = q.options[k].ok;
+              var ok = opts[k].ok;
               Array.prototype.forEach.call(qEl.querySelectorAll(".option"), function (o, oi) {
                 o.disabled = true;
-                if (q.options[oi].ok) o.classList.add("right");
+                if (opts[oi].ok) o.classList.add("right");
                 else if (oi === k) o.classList.add("wrong");
               });
               var ex = qEl.querySelector(".explain");
@@ -319,9 +330,7 @@
           srcIndex: n,
           q: q.q,
           explain: q.explain,
-          options: shuffle(q.options.map(function (text, i) {
-            return { text: text, ok: i === q.correct };
-          }))
+          options: quizOptions(q)
         };
       }),
       i: 0,

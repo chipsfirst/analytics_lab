@@ -1,5 +1,5 @@
 // Песочница Python: блокнот в стиле Jupyter на Pyodide.
-// Код выполняется в воркере pyworker.js, состояние ячеек хранится в localStorage.
+// Код выполняется в воркере js/sandboxes/pyworker.js, состояние ячеек хранится в localStorage.
 
 (function () {
   "use strict";
@@ -176,7 +176,7 @@
       setStatus("Загрузка Python…");
 
       try {
-        worker = new Worker("pyworker.js");
+        worker = new Worker("js/sandboxes/pyworker.js");
       } catch (e) {
         setStatus("Браузер не разрешает воркеры на этой странице. Откройте сайт по http:// или https://, а не через файл.", true);
         if (retry) retry.hidden = false;
