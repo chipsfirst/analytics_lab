@@ -46,6 +46,7 @@
 [data-topic="classification"] { --topic: #be185d; }
 [data-topic="ml"] { --topic: #4338ca; }
 [data-topic="useful"] { --topic: #475569; }
+[data-topic="bi"] { --topic: #86198f; }
 :root[data-theme="dark"] [data-topic="analytics"] { --topic: #8fb0ff; }
 :root[data-theme="dark"] [data-topic="statistics"] { --topic: #c4b5fd; }
 :root[data-theme="dark"] [data-topic="gametheory"] { --topic: #fbbf24; }
@@ -57,6 +58,7 @@
 :root[data-theme="dark"] [data-topic="classification"] { --topic: #f9a8d4; }
 :root[data-theme="dark"] [data-topic="ml"] { --topic: #a5b4fc; }
 :root[data-theme="dark"] [data-topic="useful"] { --topic: #cbd5e1; }
+:root[data-theme="dark"] [data-topic="bi"] { --topic: #f0abfc; }
 
 * { box-sizing: border-box; }
 

@@ -3,7 +3,7 @@
 
 global.window = global;
 require("./js/data.js");
-["analytics", "statistics", "gametheory", "probability", "sql", "excel", "python", "regression", "classification", "ml", "useful"]
+["analytics", "statistics", "gametheory", "probability", "sql", "excel", "python", "regression", "classification", "ml", "useful", "bi"]
   .forEach(function (id) { require("./js/topics/" + id + ".js"); });
 require("./js/features/trainers.js");
 require("./js/features/games.js");
@@ -26,7 +26,7 @@ function ok(cond, msg) {
 
 // --- структура контента ---
 var topicIds = Object.keys(window.TOPICS);
-ok(topicIds.length === 11, "ожидалось 11 разделов, найдено " + topicIds.length);
+ok(topicIds.length === 12, "ожидалось 12 разделов, найдено " + topicIds.length);
 
 topicIds.forEach(function (id) {
   var t = window.TOPICS[id];
@@ -82,12 +82,12 @@ window.CHEATSHEET.forEach(function (r, i) {
   ok(r.task && r.main && r.check, "шпаргалка: строка " + i + " неполная");
 });
 
-ok(Object.keys(window.TRAINERS).length === 11, "тренажёры есть не для всех разделов");
+ok(Object.keys(window.TRAINERS).length === 12, "тренажёры есть не для всех разделов");
 topicIds.forEach(function (id) {
   ok(window.TRAINERS[id] && window.TRAINERS[id].length > 0, id + ": нет тренажёров");
 });
 
-ok(Object.keys(window.GAMES).length === 6, "ожидалось 6 игр");
+ok(Object.keys(window.GAMES).length === 8, "ожидалось 8 игр");
 
 // --- генераторы задач: 300 прогонов на каждый ---
 topicIds.forEach(function (id) {

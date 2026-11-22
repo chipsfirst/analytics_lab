@@ -1096,6 +1096,36 @@
     };
   }
 
+  function tBiConversion() {
+    var visits = rndInt(2000, 20000);
+    var orders = rndInt(50, Math.max(60, Math.floor(visits * 0.08)));
+    var ans = orders / visits * 100;
+    return {
+      prompt: "За неделю <b>" + visits + "</b> визитов и <b>" + orders +
+        "</b> заказов. Какова конверсия в заказы, в процентах?",
+      solution: "Конверсия = заказы / визиты × 100% = " + orders + " / " + visits + " × 100% = " + fmt(ans, 2) + "%.",
+      answer: num(ans, 0.05)
+    };
+  }
+
+  function tBiChartChoice() {
+    var cases = [
+      { q: "показать выручку по неделям", right: "Линия", wrong: ["Круговая диаграмма", "Тепловая карта", "Трёхмерные столбики"] },
+      { q: "сравнить выручку четырёх каналов", right: "Столбики", wrong: ["Линия", "Круговая диаграмма", "Диаграмма рассеяния"] },
+      { q: "показать удержание по когортам и дням", right: "Тепловая карта", wrong: ["Линия", "Круговая диаграмма", "Ящик с усами"] },
+      { q: "показать связь цены и числа заказов", right: "Диаграмма рассеяния", wrong: ["Линия по времени", "Круговая диаграмма", "Столбики"] }
+    ];
+    var c = cases[rndInt(0, cases.length - 1)];
+    var opts = [{ text: c.right, ok: true }].concat(c.wrong.map(function (t) { return { text: t, ok: false }; }));
+    var k = rndInt(0, opts.length - 1);
+    opts = opts.slice(k).concat(opts.slice(0, k));
+    return {
+      prompt: "Задача дашборда: " + c.q + ". Какой тип графика выбрать?",
+      solution: "Тип графика определяется вопросом: здесь подходит «" + c.right + "».",
+      answer: { type: "choice", options: opts }
+    };
+  }
+
   window.TRAINERS = {
     analytics: [tCtr, tFunnel, tRomi, tLtvCac, tAbLift, tRetention],
     statistics: [tMean, tMedian, tVariance, tSd, tZ, tSe, tMad, tTrimMean, tIqr, tPoisson],
@@ -1107,6 +1137,7 @@
     regression: [tRegPredict, tRegRmse, tRegDummies],
     classification: [tClfPrecision, tClfRecall, tClfThreshold, tClfOdds],
     ml: [tKnnClass, tForestVote, tKmeansAssign],
-    useful: [tVizChoice, tNoteType]
+    useful: [tVizChoice, tNoteType],
+    bi: [tBiConversion, tBiChartChoice]
   };
 })();

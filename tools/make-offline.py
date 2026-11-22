@@ -24,6 +24,7 @@ FILES = [
     "js/topics/classification.js",
     "js/topics/ml.js",
     "js/topics/useful.js",
+    "js/topics/bi.js",
     "js/core/tracks.js",
     "js/core/cheatsheet.js",
     "js/core/glossary.js",

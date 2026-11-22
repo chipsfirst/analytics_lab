@@ -231,10 +231,10 @@
     }
 
     function start() {
+      stop();
       state.pool = buildPool();
       state.i = 0; state.left = 45; state.score = 0; state.picked = -1; state.running = true;
       draw();
-      stop();
       timer = setInterval(function () {
         state.left--;
         var el = document.getElementById("clock");
@@ -627,6 +627,102 @@
     draw();
   }
 
+  // ---------- Ультиматум ----------
+
+  function ultimatum(root) {
+    var OFFERS = [10, 20, 30, 40, 50, 60];
+    var state = { i: 0, total: 0, accepted: 0, rejected: 0, list: [] };
+
+    function start() {
+      state = { i: 0, total: 0, accepted: 0, rejected: 0, list: shuffle(OFFERS) };
+      draw();
+    }
+
+    function draw() {
+      if (state.i >= state.list.length) {
+        root.innerHTML = '<div class="card center"><h2 style="margin-top:0">Вы получили ' + state.total + ' из ' + (state.list.length * 100) + '</h2>' +
+          '<p class="lead center">Принято ' + state.accepted + ', отклонено ' + state.rejected + '.</p>' +
+          '<p class="meta">Рациональный ответчик принимает любое положительное предложение: отказ даёт 0. Но отказ от низких предложений — сигнал, который может улучшить будущие предложения.</p>' +
+          '<div class="btn-row" style="justify-content:center"><button class="btn primary" id="again">Ещё раз</button></div></div>';
+        document.getElementById("again").addEventListener("click", start);
+        return;
+      }
+      var offer = state.list[state.i];
+      root.innerHTML = '<div class="card"><div class="progress"><span>Раунд ' + (state.i + 1) + ' из ' + state.list.length +
+        '</span><span>Получено: ' + state.total + '</span></div>' +
+        '<p class="q-text">Вам предлагают ' + offer + ' из 100. Принять?</p>' +
+        '<div class="btn-row"><button class="btn primary" id="accept">Принять ' + offer + '</button>' +
+        '<button class="btn" id="reject">Отклонить</button></div></div>';
+      document.getElementById("accept").addEventListener("click", function () {
+        state.total += offer; state.accepted++; state.i++; draw();
+      });
+      document.getElementById("reject").addEventListener("click", function () {
+        state.rejected++; state.i++; draw();
+      });
+    }
+
+    start();
+    return function () {};
+  }
+
+  // ---------- Аукцион второй цены ----------
+
+  function auction(root) {
+    var ROUNDS = 5;
+    var state = { round: 0, profit: 0, value: 0, rival: 0, bid: 0, done: false };
+
+    function newRound() {
+      state.value = rndInt(50, 150);
+      state.rival = rndInt(50, 150);
+      state.bid = state.value;
+      state.done = false;
+      draw();
+    }
+
+    function draw() {
+      if (state.round >= ROUNDS) {
+        root.innerHTML = '<div class="card center"><h2 style="margin-top:0">Прибыль: ' + state.profit + '</h2>' +
+          '<p class="lead center">Во второй цене правдивая ставка — доминирующая стратегия: победитель платит ставку соперника, а не свою.</p>' +
+          '<div class="btn-row" style="justify-content:center"><button class="btn primary" id="again">Ещё раз</button></div></div>';
+        document.getElementById("again").addEventListener("click", function () {
+          state = { round: 0, profit: 0, value: 0, rival: 0, bid: 0, done: false };
+          newRound();
+        });
+        return;
+      }
+      if (!state.done) {
+        root.innerHTML = '<div class="card"><div class="progress"><span>Раунд ' + (state.round + 1) + ' из ' + ROUNDS +
+          '</span><span>Прибыль: ' + state.profit + '</span></div>' +
+          '<p>Лот ценен вам в <b>' + state.value + '</b>. Победитель платит ставку соперника.</p>' +
+          '<div class="answer-row"><label class="sr-only" for="bid">Ваша ставка</label>' +
+          '<input type="number" id="bid" min="0" max="200" value="' + state.bid + '">' +
+          '<button class="btn primary" id="place">Сделать ставку</button></div></div>';
+        document.getElementById("place").addEventListener("click", function () {
+          state.bid = Number(document.getElementById("bid").value) || 0;
+          state.done = true;
+          if (state.bid > state.rival) state.profit += Math.max(0, state.value - state.rival);
+          draw();
+        });
+        return;
+      }
+      var won = state.bid > state.rival;
+      var gain = won ? Math.max(0, state.value - state.rival) : 0;
+      root.innerHTML = '<div class="card"><div class="progress"><span>Раунд ' + (state.round + 1) + ' из ' + ROUNDS +
+        '</span><span>Прибыль: ' + state.profit + '</span></div>' +
+        '<p>Ваша ставка ' + state.bid + ', соперник поставил ' + state.rival + '.</p>' +
+        '<p class="q-text">' + (won ? "Вы выиграли, платите " + state.rival + ". Прибыль " + gain + "." : "Вы не выиграли. Прибыль 0.") + '</p>' +
+        '<div class="btn-row"><button class="btn primary" id="next">Следующий лот</button></div></div>';
+      document.getElementById("next").addEventListener("click", function () {
+        state.round++;
+        if (state.round >= ROUNDS) { draw(); return; }
+        newRound();
+      });
+    }
+
+    newRound();
+    return function () {};
+  }
+
   window.GAMES = {
     montyhall: {
       title: "Парадокс Монти Холла",
@@ -652,6 +748,16 @@
       title: "Аудитор отчёта",
       tag: "Найдите ошибку в чужом выводе",
       mount: audit
+    },
+    ultimatum: {
+      title: "Ультиматум",
+      tag: "Принимайте или отклоняйте предложения о дележе 100",
+      mount: ultimatum
+    },
+    auction: {
+      title: "Аукцион второй цены",
+      tag: "Пять лотов: какую ставку выбрать, если платит соперник",
+      mount: auction
     },
     bandit: {
       title: "Многорукий бандит",

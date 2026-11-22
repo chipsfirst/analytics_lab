@@ -59,7 +59,8 @@
     regression: { icon: "trend" },
     classification: { icon: "tag" },
     ml: { icon: "network" },
-    useful: { icon: "note" }
+    useful: { icon: "note" },
+    bi: { icon: "chart" }
   };
 
   var ICONS = {
