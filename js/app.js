@@ -836,6 +836,9 @@
 
   if ("serviceWorker" in navigator && /^https?:$/.test(location.protocol)) {
     var hadController = !!navigator.serviceWorker.controller;
+    navigator.serviceWorker.addEventListener("message", function (e) {
+      if (e.data && e.data.type === "reload") location.reload();
+    });
     navigator.serviceWorker.addEventListener("controllerchange", function () {
       if (hadController) showUpdateToast();
     });

@@ -1,6 +1,6 @@
 // Кеш оболочки приложения. При изменении файлов поднимите версию —
 // иначе браузер продолжит отдавать старую копию.
-const VERSION = "v22";
+const VERSION = "v23";
 const CACHE = "analytics-lab-" + VERSION;
 
 const ASSETS = [
@@ -49,11 +49,16 @@ self.addEventListener("install", (event) => {
 });
 
 self.addEventListener("activate", (event) => {
-  event.waitUntil(
-    caches.keys()
-      .then((keys) => Promise.all(keys.filter((k) => k !== CACHE).map((k) => caches.delete(k))))
-      .then(() => self.clients.claim())
-  );
+  event.waitUntil((async () => {
+    const keys = await caches.keys();
+    const hadOld = keys.some((k) => k !== CACHE);
+    await Promise.all(keys.filter((k) => k !== CACHE).map((k) => caches.delete(k)));
+    await self.clients.claim();
+    if (hadOld) {
+      const clients = await self.clients.matchAll({ type: "window" });
+      clients.forEach((client) => client.postMessage({ type: "reload" }));
+    }
+  })());
 });
 
 self.addEventListener("fetch", (event) => {
@@ -62,6 +67,21 @@ self.addEventListener("fetch", (event) => {
 
   const url = new URL(request.url);
   if (url.origin !== self.location.origin) return;
+
+  // Навигацию берём из сети: иначе старый index.html может ссылаться
+  // на уже удалённые файлы и страница останется пустой.
+  if (request.mode === "navigate") {
+    event.respondWith(
+      fetch(request).then((response) => {
+        if (response.ok) {
+          const copy = response.clone();
+          caches.open(CACHE).then((cache) => cache.put("index.html", copy));
+        }
+        return response;
+      }).catch(() => caches.match("index.html"))
+    );
+    return;
+  }
 
   event.respondWith(
     caches.match(request).then((hit) => {
