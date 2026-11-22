@@ -271,6 +271,7 @@
       (id === "sql" ? '<div class="btn-row"><a class="btn" href="#/sandbox">Песочница SQL</a></div>' : "") +
       (id === "python" ? '<div class="btn-row"><a class="btn" href="#/pysandbox">Песочница Python</a></div>' : "") +
       (id === "statistics" ? '<div class="btn-row"><a class="btn" href="#/cheatsheet">Какой критерий выбрать</a></div>' : "") +
+      (id === "bi" ? '<div class="btn-row"><a class="btn" href="#/bi-exam">Сертификация</a></div>' : "") +
       "</aside><article>" + body + "</article></div></div>";
   }
 
@@ -722,6 +723,108 @@
       "как меняется результат.</p>" + entryGrid(window.DEMOS, "#/demos/", "Открыть", true);
   }
 
+  function biExamPage() {
+    var bank = window.TOPICS.bi.quiz;
+    var state = null;
+    var timer = null;
+
+    app.innerHTML = '<p><a href="#/theory/bi">&larr; к разделу BI</a></p>' +
+      '<h1>Сертификация BI</h1><p class="lead">20 вопросов, 15 минут. Проходной балл — 14 правильных ответов.</p>' +
+      '<div id="examRoot"></div>';
+    var root = document.getElementById("examRoot");
+
+    function fmtTime(sec) {
+      var m = Math.floor(sec / 60), s = sec % 60;
+      return m + ":" + (s < 10 ? "0" : "") + s;
+    }
+
+    function start() {
+      if (timer) clearInterval(timer);
+      state = {
+        qs: bank.map(function (q) {
+          return { q: q.q, explain: q.explain, options: quizOptions(q) };
+        }),
+        i: 0, picked: -1, score: 0, answers: [], left: 15 * 60, done: false
+      };
+      timer = setInterval(function () {
+        if (state.done) return;
+        state.left--;
+        var clock = document.getElementById("examClock");
+        if (clock) clock.textContent = fmtTime(Math.max(0, state.left));
+        if (state.left <= 0) finish();
+      }, 1000);
+      draw();
+    }
+
+    function finish() {
+      if (!state || state.done) return;
+      state.done = true;
+      if (timer) { clearInterval(timer); timer = null; }
+      draw();
+    }
+
+    function draw() {
+      if (state.done) {
+        var pct = Math.round(state.score / state.qs.length * 100);
+        var pass = state.score >= 14;
+        var review = state.qs.map(function (q, i) {
+          var a = state.answers[i];
+          var correct = q.options.filter(function (o) { return o.ok; })[0];
+          return '<div class="review-item"><p><b>' + (i + 1) + ". " + q.q + "</b></p>" +
+            '<p class="meta">Ваш ответ: ' + (a && a.picked >= 0 ? esc(q.options[a.picked].text) : "—") +
+            " · Правильно: " + esc(correct ? correct.text : "—") + "</p>" +
+            (a && a.ok ? "" : '<p class="meta">' + q.explain + "</p>") + "</div>";
+        }).join("");
+        root.innerHTML = '<div class="card center"><h2 style="margin-top:0">' + state.score + " из " + state.qs.length +
+          " (" + pct + "%)</h2><p class=\"lead center\">" + (pass ? "Сдано. Можно разбирать слабые места." : "Пока не сдано: нужно 14 правильных.") + "</p>" +
+          '<div class="btn-row" style="justify-content:center"><button class="btn primary" id="retry">Пройти ещё раз</button>' +
+          '<a class="btn" href="#/theory/bi">К разделу BI</a></div></div>' +
+          '<h2>Разбор</h2>' + review;
+        document.getElementById("retry").addEventListener("click", start);
+        return;
+      }
+
+      var q = state.qs[state.i];
+      root.innerHTML = '<div class="progress"><span>Вопрос ' + (state.i + 1) + " из " + state.qs.length +
+        '</span><span id="examClock" role="status">' + fmtTime(state.left) + '</span><span>Верно: ' + state.score + "</span></div>" +
+        '<p class="q-text">' + q.q + "</p>" +
+        '<div class="options">' + q.options.map(function (o, k) {
+          var cls = "option";
+          if (state.picked >= 0) {
+            if (o.ok) cls += " right";
+            else if (k === state.picked) cls += " wrong";
+          }
+          return '<button class="' + cls + '" data-k="' + k + '"' + (state.picked >= 0 ? " disabled" : "") + ">" +
+            String.fromCharCode(1040 + k) + ". " + esc(o.text) + "</button>";
+        }).join("") + "</div>" +
+        (state.picked >= 0 ? '<div class="explain" aria-live="polite"><b>' +
+          (q.options[state.picked].ok ? "Верно" : "Неверно") + "</b>" + q.explain + "</div>" +
+          '<div class="btn-row"><button class="btn primary" id="examNext">' +
+          (state.i + 1 < state.qs.length ? "Следующий вопрос" : "Результат") + "</button></div>" : "");
+
+      Array.prototype.forEach.call(root.querySelectorAll(".option"), function (b) {
+        b.addEventListener("click", function () {
+          if (state.picked >= 0) return;
+          state.picked = Number(b.getAttribute("data-k"));
+          var ok = q.options[state.picked].ok;
+          if (ok) state.score++;
+          state.answers[state.i] = { picked: state.picked, ok: ok };
+          draw();
+        });
+      });
+      var next = document.getElementById("examNext");
+      if (next) next.addEventListener("click", function () {
+        state.i++;
+        state.picked = -1;
+        if (state.i >= state.qs.length) finish();
+        else draw();
+      });
+    }
+
+    start();
+    cleanup = function () { if (timer) clearInterval(timer); };
+  }
+
   function sandboxPage() {
     app.innerHTML = '<p><a href="#/theory/sql">&larr; к теории SQL</a></p>' +
       "<h1>Песочница SQL</h1><p class=\"lead\" style=\"margin-bottom:20px\">Настоящая база в браузере: " +
@@ -990,6 +1093,7 @@
       if (id) return { mount: function () { return mountPage(window.DEMOS, id, "demo", "#/demos", "все демонстрации", "Демонстрация"); } };
       return { html: demosList() };
     }
+    if (seg === "bi-exam") return { mount: biExamPage };
     if (seg === "sandbox") return { mount: sandboxPage };
     if (seg === "pysandbox") return { mount: pySandboxPage };
     if (seg === "path") return { html: pathPage() };

@@ -1126,6 +1126,41 @@
     };
   }
 
+  function tDaxChoice() {
+    var cases = [
+      { q: "посчитать выручку в таблице Sales", right: "SUM(Sales[Amount])", wrong: ["COUNT(Sales[Amount])", "AVERAGE(Sales[Amount])", "MAX(Sales[Amount])"] },
+      { q: "посчитать уникальных клиентов", right: "DISTINCTCOUNT(Sales[CustomerId])", wrong: ["COUNT(Sales[CustomerId])", "SUM(Sales[CustomerId])", "AVERAGE(Sales[CustomerId])"] },
+      { q: "поделить выручку на заказы без ошибки деления на ноль", right: "DIVIDE([Revenue], [Orders])", wrong: ["[Revenue] / [Orders]", "SUM([Revenue] / [Orders])", "CALCULATE([Revenue]) / [Orders]"] },
+      { q: "посчитать продажи за тот же период прошлого года", right: "CALCULATE([Sales], SAMEPERIODLASTYEAR('Date'[Date]))", wrong: ["[Sales] - 1", "SUM([Sales]) / 2", "DIVIDE([Sales], 12)"] }
+    ];
+    var c = cases[rndInt(0, cases.length - 1)];
+    var opts = [{ text: c.right, ok: true }].concat(c.wrong.map(function (t) { return { text: t, ok: false }; }));
+    var k = rndInt(0, opts.length - 1);
+    opts = opts.slice(k).concat(opts.slice(0, k));
+    return {
+      prompt: "Какое выражение DAX нужно, чтобы " + c.q + "?",
+      solution: "Правильный вариант: <code>" + c.right + "</code>. Он соответствует смыслу задачи и не смешивает строки с агрегатами.",
+      answer: { type: "choice", options: opts }
+    };
+  }
+
+  function tLodChoice() {
+    var cases = [
+      { q: "дата первой покупки каждого клиента", right: "{ FIXED [Customer] : MIN([Order Date]) }", wrong: ["MIN([Order Date])", "{ INCLUDE [Region] : SUM([Sales]) }", "{ EXCLUDE [Category] : SUM([Sales]) }"] },
+      { q: "сумма продаж с учётом региона, даже если регион не в графике", right: "{ INCLUDE [Region] : SUM([Sales]) }", wrong: ["{ FIXED [Customer] : MIN([Order Date]) }", "SUM([Sales])", "{ EXCLUDE [Region] : SUM([Sales]) }"] },
+      { q: "сумма продаж без разбивки по категории", right: "{ EXCLUDE [Category] : SUM([Sales]) }", wrong: ["SUM([Sales])", "{ INCLUDE [Category] : SUM([Sales]) }", "{ FIXED [Category] : MIN([Sales]) }"] }
+    ];
+    var c = cases[rndInt(0, cases.length - 1)];
+    var opts = [{ text: c.right, ok: true }].concat(c.wrong.map(function (t) { return { text: t, ok: false }; }));
+    var k = rndInt(0, opts.length - 1);
+    opts = opts.slice(k).concat(opts.slice(0, k));
+    return {
+      prompt: "Какое LOD-выражение Tableau считает: " + c.q + "?",
+      solution: "Правильный вариант: <code>" + c.right + "</code>. FIXED задаёт свой уровень, INCLUDE добавляет измерение, EXCLUDE убирает его.",
+      answer: { type: "choice", options: opts }
+    };
+  }
+
   window.TRAINERS = {
     analytics: [tCtr, tFunnel, tRomi, tLtvCac, tAbLift, tRetention],
     statistics: [tMean, tMedian, tVariance, tSd, tZ, tSe, tMad, tTrimMean, tIqr, tPoisson],
@@ -1138,6 +1173,6 @@
     classification: [tClfPrecision, tClfRecall, tClfThreshold, tClfOdds],
     ml: [tKnnClass, tForestVote, tKmeansAssign],
     useful: [tVizChoice, tNoteType],
-    bi: [tBiConversion, tBiChartChoice]
+    bi: [tBiConversion, tBiChartChoice, tDaxChoice, tLodChoice]
   };
 })();

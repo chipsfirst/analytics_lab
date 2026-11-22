@@ -45,6 +45,11 @@ FILES = [
     "vendor/sql-wasm.js",
     "vendor/sql-wasm.wasm",
     "data/case-orders.csv",
+    "data/bi-orders.csv",
+    "data/dashboard-sales-template.svg",
+    "data/dashboard-product-template.svg",
+    "data/dashboard-sales-template.md",
+    "data/dashboard-product-template.md",
 ]
 
 README = """Аналитика-лаб — офлайн-версия
