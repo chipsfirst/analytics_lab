@@ -1,6 +1,6 @@
 // Кеш оболочки приложения. При изменении файлов поднимите версию —
 // иначе браузер продолжит отдавать старую копию.
-const VERSION = "v24";
+const VERSION = "v25";
 const CACHE = "analytics-lab-" + VERSION;
 
 const ASSETS = [
@@ -43,7 +43,9 @@ const ASSETS = [
 self.addEventListener("install", (event) => {
   event.waitUntil(
     caches.open(CACHE)
-      .then((cache) => cache.addAll(ASSETS))
+      // cache: "reload" — иначе при установке можно получить старые файлы
+      // из HTTP-кеша браузера и закешировать их под новой версией.
+      .then((cache) => cache.addAll(ASSETS.map((url) => new Request(new URL(url, self.registration.scope).href, { cache: "reload" }))))
       .then(() => self.skipWaiting())
   );
 });
