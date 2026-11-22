@@ -210,8 +210,7 @@
   function home() {
     return '<div class="hero">' +
       "<h1>Аналитика, статистика, теория игр и вероятность</h1>" +
-      '<p class="lead">Короткий учебник, тесты с разбором, бесконечные тренажёры на расчёт, ' +
-      "интерактивные демонстрации и игры на интуицию. Без регистрации: прогресс хранится в браузере.</p>" +
+      '<p class="lead">Короткий учебник, тесты и тренажёры. Без регистрации: прогресс хранится в браузере.</p>' +
       '<div class="btn-row"><a class="btn primary" href="#/theory">Начать с теории</a>' +
       '<a class="btn" href="#/path">Маршрут обучения</a>' +
       '<a class="btn" href="#/calc">Калькуляторы</a>' +
@@ -221,19 +220,14 @@
       '<a class="btn" href="#/trainer">Сразу к тренажёрам</a></div>' +
       "</div>" +
       progressBlock() +
-      "<h2>Разделы</h2>" +
-      '<div class="grid">' + topicIds().map(function (id) { return topicCard(id, null, true); }).join("") + "</div>" +
-      "<h2>Демонстрации</h2>" +
-      entryGrid(window.DEMOS, "#/demos/", "Открыть") +
-      "<h2>Игры</h2>" +
-      entryGrid(window.GAMES, "#/games/", "Играть") +
-      '<div class="note"><b>Практика SQL</b>В разделе SQL есть <a href="#/sandbox">песочница</a>: ' +
-      "настоящая база в браузере, можно писать любые запросы.</div>" +
+      '<div class="home-links">' +
+      '<a class="home-link" href="#/sandbox"><b>SQL-песочница</b><span>Запросы к настоящей базе в браузере</span></a>' +
+      '<a class="home-link" href="#/pysandbox"><b>Python-песочница</b><span>Блокнот на Pyodide без установки</span></a>' +
       (window.OFFLINE_BUILD
-        ? '<div class="note"><b>Офлайн</b>Вы открыли автономную версию сайта. Установить как приложение можно с сайта; ' +
-          'подробности — в разделе <a href="#/offline">офлайн-версия</a>.</div>'
-        : '<div class="note"><b>Офлайн</b>Скачайте <a href="analytics-lab-offline.zip" download>архив сайта</a> ' +
-          'или установите его как приложение — подробности в разделе <a href="#/offline">офлайн-версия</a>.</div>');
+        ? '<a class="home-link" href="#/offline"><b>Офлайн-версия</b><span>Как установить сайт как приложение</span></a>'
+        : '<a class="home-link" href="analytics-lab-offline.zip" download><b>Офлайн-архив</b><span>Скачать сайт одним файлом</span></a>') +
+      "</div>" +
+      '<p class="meta home-hint">Разделы, игры и демонстрации — в меню сверху.</p>';
   }
 
   function listPage(kind, title, lead, label) {
