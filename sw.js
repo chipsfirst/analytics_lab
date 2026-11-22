@@ -1,6 +1,6 @@
 // Кеш оболочки приложения. При изменении файлов поднимите версию —
 // иначе браузер продолжит отдавать старую копию.
-const VERSION = "0.5.0";
+const VERSION = "0.6.0";
 const CACHE = "analytics-lab-" + VERSION;
 
 const ASSETS = [
@@ -34,6 +34,7 @@ const ASSETS = [
   "data/marketing.csv",
   "data/bi-orders.csv",
   "data/dirty-customers.csv",
+  "dbt-subscription.zip",
   "data/retail-users.csv",
   "data/retail-orders.csv",
   "data/retail-events.csv",
@@ -49,6 +50,7 @@ const ASSETS = [
   "js/core/cheatsheet.js",
   "js/core/glossary.js",
   "js/features/trainers.js",
+  "js/features/dbt-project.js",
   "js/features/games.js",
   "js/core/progress.js",
   "js/core/search.js",

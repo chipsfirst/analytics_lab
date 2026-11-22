@@ -1,0 +1,33 @@
+version: 2
+
+models:
+  - name: dim_users
+    columns:
+      - name: user_id
+        tests: [unique, not_null]
+
+  - name: fct_payments
+    columns:
+      - name: payment_id
+        tests: [unique, not_null]
+      - name: user_id
+        tests:
+          - not_null
+          - relationships:
+              to: ref('dim_users')
+              field: user_id
+
+  - name: mart_subscription_health
+    columns:
+      - name: subscription_id
+        tests: [unique, not_null]
+
+  - name: mart_monthly_revenue
+    columns:
+      - name: month
+        tests: [unique, not_null]
+
+  - name: mart_channel_cohort
+    columns:
+      - name: channel
+        tests: [unique, not_null]

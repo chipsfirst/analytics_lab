@@ -680,3 +680,15 @@ p a { text-decoration: underline; text-underline-offset: 2px; }
 .cmd-result:hover, .cmd-result:focus { background: var(--accent-soft); text-decoration: none; }
 .cmd-result b { display: block; font-size: 13.5px; }
 .cmd-result span { display: block; color: var(--muted); font-size: 12px; }
+
+.dbt-kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin: 16px 0; }
+.dbt-kpi { border: 1px solid var(--line); border-radius: var(--radius); background: var(--panel); padding: 14px; }
+.dbt-kpi > span:first-child { display: block; color: var(--muted); font-size: 12.5px; }
+.dbt-kpi b { display: block; font-size: 1.35rem; margin: 5px 0 2px; }
+.dbt-toolbar { margin-bottom: 12px; }
+.dbt-toolbar select { margin-left: 8px; padding: 5px 8px; border: 1px solid var(--line); border-radius: 7px; background: var(--panel); color: var(--ink); }
+.dbt-bar-row { display: grid; grid-template-columns: 64px 1fr 44px; gap: 10px; align-items: center; margin: 10px 0; font-size: 13px; }
+.dbt-bar { height: 10px; background: var(--line); border-radius: 999px; overflow: hidden; }
+.dbt-bar i { display: block; height: 100%; background: var(--accent); border-radius: 999px; }
+.dbt-chart { width: 100%; height: auto; color: var(--accent); margin-top: 6px; }
+.code-block { overflow: auto; padding: 14px; border: 1px solid var(--line); border-radius: 10px; background: var(--soft); font-family: var(--mono); font-size: 12.5px; line-height: 1.5; }

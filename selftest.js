@@ -7,6 +7,7 @@ require("./js/data.js");
   require("./js/topics/" + id + ".js");
 });
 require("./js/features/trainers.js");
+require("./js/features/dbt-project.js");
 require("./js/features/games.js");
 require("./js/core/progress.js");
 require("./js/core/glossary.js");
@@ -87,6 +88,7 @@ topicIds.forEach(function (id) {
   });
 });
 
+ok(window.DBT_PROJECT && typeof window.DBT_PROJECT.page === "function" && typeof window.DBT_PROJECT.bind === "function", "dbt-проект: страница не загрузилась");
 ok(Array.isArray(window.TRACKS) && window.TRACKS.length === 7, "маршруты: ожидалось 7");
 ok(window.TOPICS.production && window.TOPICS.production.chapters.length === 6 && window.TOPICS.production.quiz.length === 12, "production: 6 глав / 12 вопросов");
 ok((window.TRAINERS.production || []).length === 3, "production: тренажёры");

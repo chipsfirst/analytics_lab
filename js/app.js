@@ -249,6 +249,7 @@
       '<a href="#/project">Сквозной проект</a>' +
       '<a href="#/capstone">Большой проект</a>' +
       '<a href="#/open-project">Открытый проект</a>' +
+      '<a href="#/dbt-project">dbt + BI</a>' +
       '<a href="#/datalab">Практика на данных</a>' +
       '<a href="#/cases">Кейсы</a>' +
       '<a href="#/prompt-lab">Тренажёр промптов</a>' +
@@ -2062,6 +2063,7 @@
     if (seg === "project") return { html: projectPage(), after: bindProject };
     if (seg === "capstone") return { html: capstonePage(), after: bindCapstone };
     if (seg === "open-project") return { html: openProjectPage(), after: bindOpenProject };
+    if (seg === "dbt-project") return { html: window.DBT_PROJECT.page(), after: window.DBT_PROJECT.bind };
     if (seg === "datalab") return { html: datalabPage(), after: bindDatalab };
     if (seg === "cases") return { html: casesPage() };
     if (seg === "prompt-lab") return { html: promptLabPage(), after: bindPromptLab };
