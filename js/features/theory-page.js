@@ -2,14 +2,24 @@
 (function () {
   "use strict";
   var LAB = window.LAB;
-  function chapterSourcesHtml(id) {
+  function topicSourcesHtml(id) {
     var list = (window.SOURCES && window.SOURCES[id]) || [];
     if (!list.length) return "";
-    return '<div class="chapter-sources"><h3>Источники раздела</h3>' +
-      '<p class="meta">Две ссылки на весь раздел, а не на отдельную главу.</p><ul>' + list.map(function (s) {
+    return '<div class="topic-sources"><h3>Источники раздела</h3>' +
+      '<p class="meta">Ссылки ко всему разделу, а не к отдельной главе.</p><ul>' + list.map(function (s) {
       return '<li><a href="' + s.url + '" target="_blank" rel="noopener">' + LAB.esc(s.title) + "</a>" +
         '<span class="meta"> — ' + LAB.esc(s.note) + "</span></li>";
     }).join("") + "</ul></div>";
+  }
+
+  function topicTermsHtml(t) {
+    var list = t.terms || [];
+    if (!list.length) return "";
+    return '<section class="topic-terms"><h2>Термины раздела</h2>' +
+      '<p class="meta">Короткие определения терминов, которые встречаются в главах.</p>' +
+      '<dl class="terms-grid">' + list.map(function (x) {
+        return '<div class="term"><dt>' + LAB.esc(x.term) + '</dt><dd>' + LAB.esc(x.def) + '</dd></div>';
+      }).join("") + '</dl></section>';
   }
 
   function readingTime(html) {
@@ -38,7 +48,6 @@
         (read ? "Прочитано" : "Отметить прочитанной") + "</button></span></div>" +
         c.html +
         window.GLOSSARY_PAGE.termsHtml(id, i, c.html) +
-        chapterSourcesHtml(id) +
         '<p class="meta"><a href="https://github.com/chipsfirst/analytics_lab/issues/new?title=' +
           encodeURIComponent("Ошибка в главе: " + c.title) + "&body=" +
           encodeURIComponent("Раздел: " + t.title + "\nГлава: " + c.title + "\nСсылка: " +
@@ -60,7 +69,7 @@
       (id === "python" ? '<div class="btn-row"><a class="btn" href="#/pysandbox">Песочница Python</a></div>' : "") +
       (id === "statistics" ? '<div class="btn-row"><a class="btn" href="#/cheatsheet">Какой критерий выбрать</a></div>' : "") +
       (id === "bi" ? '<div class="btn-row"><a class="btn" href="#/bi-exam">Сертификация</a></div>' : "") +
-      "</aside><article>" + body + "</article></div></div>";
+      "</aside><article>" + body + topicTermsHtml(t) + topicSourcesHtml(id) + "</article></div></div>";
   }
 
   window.THEORY_PAGE = { page: theory };

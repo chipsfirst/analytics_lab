@@ -1,6 +1,6 @@
 // Кеш оболочки приложения. При изменении файлов поднимите версию —
 // иначе браузер продолжит отдавать старую копию.
-const VERSION = "0.9.1";
+const VERSION = "0.9.2";
 const CACHE = "analytics-lab-" + VERSION;
 
 const ASSETS = [
