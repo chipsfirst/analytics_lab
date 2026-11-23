@@ -27,30 +27,14 @@ jobs:
           cp ../../data/sub-subscriptions.csv seeds/sub_subscriptions.csv
           cp ../../data/sub-payments.csv seeds/sub_payments.csv
           cp ../../data/sub-tickets.csv seeds/sub_tickets.csv
-      - name: Обновить _loaded_at для CI
-        run: |
-          python - <<'PY'
-          import csv, datetime, pathlib
-          now = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-          for name in ("sub_users.csv", "sub_subscriptions.csv", "sub_payments.csv", "sub_tickets.csv"):
-              path = pathlib.Path("seeds") / name
-              with path.open(newline="", encoding="utf-8") as fh:
-                  rows = list(csv.DictReader(fh))
-              for row in rows:
-                  row["_loaded_at"] = now
-              with path.open("w", newline="", encoding="utf-8") as fh:
-                  writer = csv.DictWriter(fh, fieldnames=rows[0].keys())
-                  writer.writeheader()
-                  writer.writerows(rows)
-          PY
+      # source freshness не запускаем: _loaded_at в синтетических seeds фиксирован,
+      # поэтому проверка была бы демонстрационной. Запускайте локально на реальных данных.
       - name: Профиль DuckDB
         run: cp profiles.yml.example profiles.yml
       - name: dbt seed
         run: dbt seed --profiles-dir .
       - name: dbt build
         run: dbt build --profiles-dir .
-      - name: dbt source freshness
-        run: dbt source freshness --profiles-dir .
       - name: dbt docs
         run: dbt docs generate --profiles-dir .
       - name: Сохранить docs

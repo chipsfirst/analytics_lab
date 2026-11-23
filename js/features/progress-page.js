@@ -30,6 +30,7 @@
         " · Тест: " + (last === null ? "—" : last + " из " + qTotal) +
         " · Мини: " + (m && m.total ? m.correct + " из " + m.total : "—") +
         (dueCount ? " · К повторению: " + dueCount : "") + "</p>" +
+        '<p class="meta">Освоение: ' + window.PROGRESS.mastery(id) + "% · главы 40%, первая попытка 40%, мини 20%</p>" +
         '<div class="links"><a class="btn small" href="' + href + '">' +
         (next < t.chapters.length ? "Продолжить" : "К тесту") + "</a>" +
         '<a class="btn small" href="#/quiz/' + id + '">Тест</a></div></div>';
