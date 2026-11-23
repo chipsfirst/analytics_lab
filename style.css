@@ -862,3 +862,11 @@ th { background: var(--accent-soft); color: var(--accent); }
 .ch-time { margin-right: 4px; white-space: nowrap; }
 .session-clock { font-family: var(--mono); font-size: 56px; font-weight: 750; letter-spacing: -.04em; margin: 8px 0 4px; background: linear-gradient(100deg, var(--accent), var(--accent-2)); -webkit-background-clip: text; background-clip: text; color: transparent; }
 .session-clock.done { background: none; color: var(--ok); }
+.session-step { display: flex; align-items: flex-start; gap: 8px; cursor: pointer; }
+.session-step input { width: auto; margin-top: 3px; }
+.session-dock { position: fixed; right: 18px; bottom: 18px; z-index: 60; display: flex; align-items: center; gap: 8px; padding: 9px 12px; border: 1px solid var(--accent); border-radius: 999px; background: var(--panel); color: var(--ink); box-shadow: 0 8px 24px rgba(15, 23, 42, .16); font-size: 12px; text-decoration: none; }
+.session-dock b { font-family: var(--mono); font-size: 14px; color: var(--accent); }
+.session-dock[hidden] { display: none; }
+@media (max-width: 640px) { .session-dock { right: 10px; bottom: 10px; } }
+.home-meta { margin: 7px 0 0; }
+.home-tools + .home-tools { margin-top: 3px; }

@@ -37,9 +37,20 @@
     return !!(window.PROGRESS && window.PROGRESS.isRead(topic, idx));
   }
 
-  function quizBest(id) {
+  function quizFirst(id) {
     var q = window.PROGRESS && window.PROGRESS.quiz(id);
-    return q ? Number(q.best) || 0 : 0;
+    if (!q) return { score: 0, total: 0 };
+    if (Number(q.attempts) === 1 && (q.firstScore === null || q.firstScore === undefined)) {
+      return { score: Number(q.best) || 0, total: Number(q.total) || 0 };
+    }
+    return Number(q.firstTotal) > 0
+      ? { score: Number(q.firstScore) || 0, total: Number(q.firstTotal) || 0 }
+      : { score: 0, total: 0 };
+  }
+
+  function firstAtLeast(id, n) {
+    var f = quizFirst(id);
+    return f.total > 0 && f.score >= n ? 1 : 0;
   }
 
   var DEFS = [
@@ -47,18 +58,18 @@
       value: function (c) { return c.chapters; } },
     { id: "first-quiz", title: "Проверка", text: "Пройдите первый тест", icon: "target", tone: "#0891b2", target: 1,
       value: function (c) { return c.attempts > 0 ? 1 : 0; } },
-    { id: "perfect-quiz", title: "Чистый тест", text: "Пройдите тест без ошибок", icon: "shield", tone: "#15803d", target: 1,
+    { id: "perfect-quiz", title: "Чистый тест", text: "Пройдите тест без ошибок с первой попытки", icon: "shield", tone: "#15803d", target: 1,
       value: function (c) { return c.perfect ? 1 : 0; } },
     { id: "mini-ten", title: "Десять задач", text: "Решите 10 заданий в тренажёрах", icon: "flask", tone: "#a16207", target: 10,
       value: function (c) { return c.miniTotal; } },
-    { id: "sql-quiz", title: "SQL-практик", text: "Наберите 7 из 8 в тесте SQL", icon: "database", tone: "#15803d", target: 1,
-      value: function () { return quizBest("sql") >= 7 ? 1 : 0; } },
-    { id: "cs-quiz", title: "Под капот", text: "Наберите 7 из 8 в тесте Computer Science", icon: "cpu", tone: "#0891b2", target: 1,
-      value: function () { return quizBest("cs") >= 7 ? 1 : 0; } },
-    { id: "pandas-quiz", title: "pandas в руках", text: "Наберите 7 из 8 в тесте Python", icon: "code", tone: "#a16207", target: 1,
-      value: function () { return quizBest("python") >= 7 ? 1 : 0; } },
-    { id: "causal-quiz", title: "Причинный вывод", text: "Наберите 7 из 8 в тесте причинности", icon: "link", tone: "#9a3412", target: 1,
-      value: function () { return quizBest("causal") >= 7 ? 1 : 0; } },
+    { id: "sql-quiz", title: "SQL-практик", text: "С первой попытки: 7 из 8 в тесте SQL", icon: "database", tone: "#15803d", target: 1,
+      value: function () { return firstAtLeast("sql", 7); } },
+    { id: "cs-quiz", title: "Под капот", text: "С первой попытки: 7 из 8 в тесте Computer Science", icon: "cpu", tone: "#0891b2", target: 1,
+      value: function () { return firstAtLeast("cs", 7); } },
+    { id: "pandas-quiz", title: "pandas в руках", text: "С первой попытки: 7 из 8 в тесте Python", icon: "code", tone: "#a16207", target: 1,
+      value: function () { return firstAtLeast("python", 7); } },
+    { id: "causal-quiz", title: "Причинный вывод", text: "С первой попытки: 7 из 8 в тесте причинности", icon: "link", tone: "#9a3412", target: 1,
+      value: function () { return firstAtLeast("causal", 7); } },
     { id: "game-theory", title: "Стратег", text: "Прочитайте первую главу теории игр", icon: "scale", tone: "#b45309", target: 1,
       value: function () { return read("gametheory", 0) ? 1 : 0; } },
     { id: "capstone-first", title: "Первый ответ", text: "Решите одну задачу большого проекта", icon: "layers", tone: "#7c3aed", target: 1,
@@ -76,7 +87,7 @@
       var q = window.PROGRESS && window.PROGRESS.quiz(id);
       if (!q) return;
       attempts += Number(q.attempts) || 0;
-      if (q.total > 0 && q.best === q.total) perfect = true;
+      if (Number(q.firstTotal) > 0 && Number(q.firstScore) === Number(q.firstTotal)) perfect = true;
     });
     var mini = window.PROGRESS ? window.PROGRESS.miniStats() : { total: 0 };
     return {

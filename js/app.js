@@ -197,12 +197,31 @@
     }).join("") + "</div>";
   }
 
-  function continueHref() {
-    var l = window.PROGRESS.last();
-    if (l && window.TOPICS[l.id] && window.TOPICS[l.id].chapters[l.i]) {
-      return "#/theory/" + l.id + "/" + l.i;
+  function resumeTarget() {
+    var ids = topicIds(), all = [], l = window.PROGRESS.last(), lastIdx = -1;
+    ids.forEach(function (id) {
+      window.TOPICS[id].chapters.forEach(function (c, i) {
+        if (l && l.id === id && Number(l.i) === i) lastIdx = all.length;
+        all.push({ id: id, i: i });
+      });
+    });
+    if (lastIdx >= 0 && !window.PROGRESS.isRead(all[lastIdx].id, all[lastIdx].i)) {
+      return { id: all[lastIdx].id, i: all[lastIdx].i, allRead: false };
     }
-    return "#/theory";
+    var start = lastIdx >= 0 ? lastIdx + 1 : 0;
+    for (var k = 0; k < all.length; k++) {
+      var x = all[(start + k) % all.length];
+      if (!window.PROGRESS.isRead(x.id, x.i)) {
+        return { id: x.id, i: x.i, allRead: false };
+      }
+    }
+    if (all.length) return { id: all[0].id, i: all[0].i, allRead: true };
+    return { id: "analytics", i: 0, allRead: false };
+  }
+
+  function continueHref() {
+    var r = resumeTarget();
+    return "#/theory/" + r.id + "/" + r.i;
   }
 
   function progressBlock() {
@@ -217,7 +236,8 @@
       (m.total ? '<div class="stat"><div class="k">мини-тесты</div><div class="v">' + m.correct + " / " + m.total + "</div></div>" : "") +
       (window.ACHIEVEMENTS && window.ACHIEVEMENTS.count() ? '<div class="stat"><div class="k">достижения</div><div class="v">' + window.ACHIEVEMENTS.count() + " / " + window.ACHIEVEMENTS.total() + "</div></div>" : "") +
       "</div>" +
-      '<div class="btn-row"><a class="btn" href="' + continueHref() + '">Продолжить</a>' +
+      '<div class="btn-row"><a class="btn" href="' + continueHref() + '">' +
+        (resumeTarget().allRead ? "Повторить" : "Продолжить") + "</a>" +
       (window.PROGRESS.dueReviews().length ? '<a class="btn" href="#/review">Повторить ошибки (' +
         window.PROGRESS.dueReviews().length + ")</a>" : "") +
       '<button class="btn" id="exportProgress">Экспорт прогресса</button>' +
@@ -259,33 +279,40 @@
     var chapterCount = Object.keys(window.TOPICS).reduce(function (n, id) {
       return n + window.TOPICS[id].chapters.length;
     }, 0);
+    var resume = resumeTarget();
+    var resumeTopic = window.TOPICS[resume.id];
+    var resumeChapter = resumeTopic && resumeTopic.chapters[resume.i];
     return '<div class="hero">' +
       "<h1>Лаборатория аналитики</h1>" +
       '<p class="lead">Практикум по аналитике данных: статистика, SQL, Python, BI и эксперименты.<br>' +
       "Короткая теория, тесты и тренажёры. Прогресс хранится в браузере.</p>" +
       '<div class="home-actions">' +
-      '<a class="home-action primary" href="#/textbook"><b>Открыть учебник</b><span>' +
-        topicCount + " " + plural(topicCount, "раздел", "раздела", "разделов") + ", " +
-        chapterCount + " " + plural(chapterCount, "глава", "главы", "глав") + "</span></a>" +
+      '<a class="home-action primary" href="#/theory/' + resume.id + '/' + resume.i + '">' +
+        "<b>" + (resume.allRead ? "Повторить с начала" : (window.PROGRESS.last() ? "Продолжить" : "Начать обучение")) + "</b><span>" +
+        esc(resume.allRead ? "Все главы прочитаны" : resumeTopic.title + " · " + resumeChapter.title) + "</span></a>" +
       '<a class="home-action" href="#/path"><b>Маршрут обучения</b><span>Семь треков под цель</span></a>' +
       '<a class="home-action" href="#/trainer"><b>Тренажёры</b><span>Задачи с автопроверкой</span></a>' +
       "</div>" +
+      '<p class="meta home-meta">' + topicCount + " " + plural(topicCount, "раздел", "раздела", "разделов") + " · " +
+        chapterCount + " " + plural(chapterCount, "глава", "главы", "глав") +
+        ' · <a href="#/textbook">Все разделы</a></p>' +
       roadmapBlock() +
-      '<div class="home-tools"><span>Инструменты:</span>' +
+      '<div class="home-tools"><span>Практика:</span>' +
       '<a href="#/project">Сквозной проект</a>' +
       '<a href="#/capstone">Большой проект</a>' +
       '<a href="#/open-project">Открытый проект</a>' +
       '<a href="#/pandas-case">Pandas-кейс</a>' +
       '<a href="#/dbt-project">dbt + BI</a>' +
-      '<a href="#/achievements">Достижения</a>' +
-      '<a href="#/session">30 минут</a>' +
       '<a href="#/datalab">Практика на данных</a>' +
       '<a href="#/cases">Кейсы</a>' +
-      '<a href="#/prompt-lab">Тренажёр промптов</a>' +
+      '<a href="#/notebook">Python-блокнот</a></div>' +
+      '<div class="home-tools"><span>Ритм и проверка:</span>' +
+      '<a href="#/session">30 минут</a>' +
+      '<a href="#/achievements">Достижения</a>' +
       '<a href="#/cards">Карточки</a>' +
       '<a href="#/calc">Калькуляторы</a>' +
       '<a href="#/analyst-exam">Сертификация</a>' +
-      '<a href="#/notebook">Python-блокнот</a></div>' +
+      '<a href="#/prompt-lab">Тренажёр промптов</a></div>' +
       "</div>" +
       progressBlock() +
       '<div class="home-links">' +
@@ -334,7 +361,8 @@
     var chips = terms.length
       ? '<div class="cheat-chips">' + terms.map(function (t) { return '<span class="cheat-chip">' + esc(t) + "</span>"; }).join("") + "</div>"
       : '<p class="meta">Ключевые термины — в тексте главы.</p>';
-    return '<div class="chapter-cheatsheet"><h3>Шпаргалка главы</h3>' +
+    return '<div class="chapter-cheatsheet"><h3>Автошпаргалка главы</h3>' +
+      '<p class="meta">Собрана из выделенных фраз и первой формулы. Это не заменяет конспект.</p>' +
       '<div class="cheat-cols"><div><b>Ключевые понятия</b>' + chips + "</div>" +
       (formula ? '<div><b>Формула или правило</b><code class="cheat-formula">' + esc(formula) + "</code></div>" : "") +
       "</div>" +
@@ -345,7 +373,8 @@
   function chapterSourcesHtml(id) {
     var list = (window.SOURCES && window.SOURCES[id]) || [];
     if (!list.length) return "";
-    return '<div class="chapter-sources"><h3>Что почитать</h3><ul>' + list.map(function (s) {
+    return '<div class="chapter-sources"><h3>Источники раздела</h3>' +
+      '<p class="meta">Две ссылки на весь раздел, а не на отдельную главу.</p><ul>' + list.map(function (s) {
       return '<li><a href="' + s.url + '" target="_blank" rel="noopener">' + esc(s.title) + "</a>" +
         '<span class="meta"> — ' + esc(s.note) + "</span></li>";
     }).join("") + "</ul></div>";
@@ -1333,7 +1362,7 @@
       '<div class="card"><h2>Бриф</h2><p>Сервис «Пульс» просит аналитика собрать месячный отчёт по подписке. ' +
       "Нужно объяснить, что происходит с выручкой и удержанием, найти один проблемный сегмент и предложить действие на квартал.</p>" +
       '<p><a class="btn primary" href="data/pandas-case-starter.py" download>Скачать стартовый файл</a> ' +
-      '<a class="btn" href="#/pysandbox">Открыть Python-песочницу</a> ' +
+      '<a class="btn" href="#/pandas-lab">Открыть кейс в песочнице</a> ' +
       '<a class="btn" href="#/theory/python/5">Повторить pandas</a> ' +
       '<a class="btn" href="https://github.com/chipsfirst/analytics_lab/issues/new?template=review.md" target="_blank" rel="noopener">Запросить ревью</a></p>' +
       '<p class="meta">Данные синтетические. Запускать можно локально или в песочнице: pandas и чтение CSV уже доступны.</p></div>' +
@@ -1364,6 +1393,45 @@
       '<p class="meta">Максимум 8 баллов. 6 и больше — работа, которую можно обсуждать на собеседовании.</p>' +
       '<div class="note"><b>Подсказка.</b> Сначала зафиксируйте определения: что такое активная подписка, ' +
       "как считается отток и входит ли возврат в выручку. Потом считайте — иначе цифры не сойдутся.</div>";
+  }
+
+  function pandasLabPage() {
+    app.innerHTML = '<p><a href="#/pandas-case">&larr; к кейсу</a></p>' +
+      "<h1>Pandas-кейс в песочнице</h1>" +
+      '<p class="lead" style="margin-bottom:20px">Четыре CSV уже лежат в рабочей папке, pandas загрузится при первом запуске. ' +
+      "Заполните функции, затем запустите последнюю ячейку самопроверки.</p>" +
+      '<div id="pandasLab"></div>';
+    var root = document.getElementById("pandasLab");
+    var nbCleanup = null;
+    cleanup = function () { if (typeof nbCleanup === "function") nbCleanup(); };
+    var names = ["sub-users.csv", "sub-subscriptions.csv", "sub-payments.csv", "sub-tickets.csv"];
+    var cells = [
+      'import pandas as pd\n\nusers = pd.read_csv("sub-users.csv", parse_dates=["signup_date"])\nsubscriptions = pd.read_csv("sub-subscriptions.csv", parse_dates=["start_date", "end_date"])\npayments = pd.read_csv("sub-payments.csv")\ntickets = pd.read_csv("sub-tickets.csv", parse_dates=["created_at", "resolved_at"])\nraw_payments = payments.copy()\nprint(users.shape, subscriptions.shape, payments.shape, tickets.shape)\nprint(payments["payment_date"].head().tolist())',
+      'def audit(users, subscriptions, payments, tickets):\n    checks = [\n        ("duplicate payment_id", payments["payment_id"].duplicated().sum(), "удалить дубли"),\n        ("payments without user_id", payments["user_id"].isna().sum(), "решить, что делать с пропусками"),\n        ("tickets without satisfaction", tickets["satisfaction"].isna().sum(), "не считать как 0"),\n    ]\n    return pd.DataFrame(checks, columns=["check", "rows", "action"])',
+      '# После аудита: приведите даты и уберите дубли\npayments["payment_date"] = pd.to_datetime(payments["payment_date"], errors="coerce", format="mixed")\npayments = payments.drop_duplicates("payment_id")\nprint("После дедупликации:", len(payments))\nprint("Пропуски user_id:", payments["user_id"].isna().sum())',
+      'def monthly_revenue(payments):\n    # TODO: оставьте 2026-01..2026-09, разделите paid/refunded, посчитайте net\n    return pd.DataFrame(columns=["month", "paid", "refunded", "net"])',
+      'def cohort_retention(users, subscriptions):\n    # TODO: когорта регистрации январь–март 2026, доля активных на 30.09.2026\n    return pd.DataFrame(columns=["channel", "cohort", "active_share"])',
+      'from pandas.testing import assert_frame_equal\n\nchecks = audit(users, subscriptions, raw_payments, tickets)\nassert list(checks.columns) == ["check", "rows", "action"], "audit: колонки"\nassert len(checks) >= 3, "audit: мало проверок"\nassert int(checks.loc[checks["check"] == "duplicate payment_id", "rows"].iloc[0]) > 0, "audit: дубли должны быть видны до очистки"\n\nmonthly = monthly_revenue(payments)\nassert list(monthly.columns) == ["month", "paid", "refunded", "net"], "monthly: колонки"\nassert len(monthly) == 9, "monthly: нужен январь–сентябрь 2026"\nassert abs(float(monthly["net"].sum()) - 12955440) < 1, "monthly: net revenue не сходится"\n\ncohort = cohort_retention(users, subscriptions)\nassert list(cohort.columns) == ["channel", "cohort", "active_share"], "cohort: колонки"\nassert len(cohort) == 4, "cohort: нужны четыре канала"\nassert cohort["active_share"].between(0, 1).all(), "cohort: доля должна быть 0..1"\nprint("Самопроверка структуры пройдена. Сверьте выводы с рубрикой.")'
+    ];
+    Promise.all(names.map(function (name) {
+      return fetch("data/" + name).then(function (r) {
+        if (!r.ok) throw new Error("HTTP " + r.status);
+        return r.text();
+      });
+    })).then(function (texts) {
+      if (!document.getElementById("pandasLab")) return;
+      var files = {};
+      names.forEach(function (name, i) { files[name] = texts[i]; });
+      nbCleanup = window.PYSANDBOX.mount(root, {
+        keySuffix: "-pandas-case",
+        packages: ["pandas"],
+        files: files,
+        cells: cells
+      });
+    }).catch(function () {
+      if (root) root.innerHTML = '<p class="verdict bad">Не удалось загрузить CSV. Откройте сайт по http:// или https://, а не двойным щелчком по файлу.</p>';
+    });
+    return null;
   }
 
   function openProjectPage() {
@@ -1484,9 +1552,13 @@
   function achievementsPage() {
     var list = window.ACHIEVEMENTS.list();
     var done = list.filter(function (a) { return a.done; }).length;
+    var legacy = window.PROGRESS.hasLegacyQuizzes();
     return "<h1>Достижения</h1>" +
-      '<p class="lead">Маленькие победы, которые складываются в привычку. Достижения открываются автоматически по прогрессу, тестам, тренажёрам и проектам.</p>' +
+      '<p class="lead">Маленькие победы, которые складываются в привычку. Достижения за тесты выдаются за первую попытку, а не за лучший результат после перепрохождений.</p>' +
       '<p class="meta">Открыто: ' + done + " из " + list.length + "</p>" +
+      (legacy ? '<div class="card"><h3>Старые тесты</h3><p>Некоторые тесты пройдены до появления достижений за первую попытку. ' +
+        "Их результаты не учитываются. Можно сбросить историю тестов: уже открытые достижения останутся, а тесты начнутся заново.</p>" +
+        '<button class="btn" id="resetQuizHistory">Сбросить историю тестов</button></div>' : "") +
       '<div class="grid">' + list.map(function (a) {
         var pct = Math.round(a.value / a.target * 100);
         return '<div class="card achievement-card ' + (a.done ? "done" : "locked") + '">' +
@@ -1498,52 +1570,172 @@
       }).join("") + "</div>";
   }
 
+  var SESSION_KEY = "analytics-lab-session-v1";
+  var SESSION_SECONDS = 30 * 60;
+
+  function sessionLoad() {
+    var base = { left: SESSION_SECONDS, running: false, startedAt: 0, steps: {} };
+    try {
+      var p = JSON.parse(localStorage.getItem(SESSION_KEY) || "null");
+      if (!p || typeof p !== "object") return base;
+      var left = Number(p.left);
+      return {
+        left: isFinite(left) ? Math.max(0, Math.min(SESSION_SECONDS, left)) : SESSION_SECONDS,
+        running: !!p.running && !!p.startedAt,
+        startedAt: Number(p.startedAt) || 0,
+        steps: p.steps && typeof p.steps === "object" ? p.steps : {}
+      };
+    } catch (e) { return base; }
+  }
+
+  var sessionState = sessionLoad();
+  var sessionInterval = null;
+
+  function sessionSave() {
+    try { localStorage.setItem(SESSION_KEY, JSON.stringify(sessionState)); } catch (e) {}
+  }
+
+  function sessionRemaining() {
+    var left = sessionState.left;
+    if (sessionState.running && sessionState.startedAt) {
+      left -= Math.floor((Date.now() - sessionState.startedAt) / 1000);
+    }
+    return Math.max(0, left);
+  }
+
+  function sessionClockText(sec) {
+    var m = Math.floor(sec / 60), s = sec % 60;
+    return (m < 10 ? "0" : "") + m + ":" + (s < 10 ? "0" : "") + s;
+  }
+
+  function sessionDone() {
+    var done = 0;
+    ["theory", "trainer", "quiz", "cheatsheet"].forEach(function (id) { if (sessionState.steps[id]) done++; });
+    return done;
+  }
+
+  function sessionDraw() {
+    var left = sessionRemaining();
+    if (sessionState.running && left <= 0) {
+      sessionState.left = 0;
+      sessionState.running = false;
+      sessionState.startedAt = 0;
+      sessionSave();
+    }
+    Array.prototype.forEach.call(document.querySelectorAll("[data-session-clock]"), function (el) {
+      el.textContent = sessionClockText(left);
+      el.classList.toggle("done", left <= 0);
+    });
+    var btn = document.getElementById("sessionStart");
+    if (btn) btn.textContent = sessionState.running ? "Пауза" : (left <= 0 ? "Ещё 30 минут" : "Старт");
+    var prog = document.getElementById("sessionProgress");
+    if (prog) prog.textContent = "Шаги: " + sessionDone() + " из 4";
+    renderSessionDock();
+  }
+
+  function renderSessionDock() {
+    if (!document.body) return;
+    var dock = document.getElementById("sessionDock");
+    if (!dock) {
+      dock = document.createElement("a");
+      dock.id = "sessionDock";
+      dock.className = "session-dock";
+      dock.href = "#/session";
+      dock.innerHTML = "<span>30 минут</span><b data-session-clock>30:00</b>";
+      document.body.appendChild(dock);
+    }
+    var active = sessionState.running || sessionState.left < SESSION_SECONDS || sessionState.left === 0;
+    var here = (location.hash || "").indexOf("#/session") === 0;
+    dock.hidden = !active || here;
+    if (!dock.hidden) dock.querySelector("[data-session-clock]").textContent = sessionClockText(sessionRemaining());
+  }
+
+  function sessionTick() {
+    if (sessionInterval) return;
+    sessionInterval = setInterval(function () {
+      if (sessionState.running) sessionDraw();
+    }, 1000);
+  }
+
+  function sessionToggle() {
+    if (sessionState.running) {
+      sessionState.left = sessionRemaining();
+      sessionState.running = false;
+      sessionState.startedAt = 0;
+    } else {
+      if (sessionRemaining() <= 0) sessionState.left = SESSION_SECONDS;
+      sessionState.running = true;
+      sessionState.startedAt = Date.now();
+    }
+    sessionSave();
+    sessionDraw();
+  }
+
+  function sessionReset() {
+    sessionState.left = SESSION_SECONDS;
+    sessionState.running = false;
+    sessionState.startedAt = 0;
+    sessionState.steps = {};
+    sessionSave();
+    Array.prototype.forEach.call(document.querySelectorAll("[data-session-step]"), function (box) {
+      box.checked = false;
+    });
+    sessionDraw();
+  }
+
+  function bindAchievements() {
+    var btn = document.getElementById("resetQuizHistory");
+    if (!btn) return;
+    btn.addEventListener("click", function () {
+      if (!confirm("Сбросить историю тестов? Лучшие результаты и повторения будут удалены, открытые достижения останутся.")) return;
+      window.PROGRESS.clearQuizHistory();
+      render();
+    });
+  }
+
   function sessionPage() {
     var last = window.PROGRESS.last();
     var topic = last && window.TOPICS[last.id] ? last.id : "analytics";
     var idx = last && window.TOPICS[last.id] && window.TOPICS[last.id].chapters[last.i] ? last.i : 0;
+    function step(id, title, text, href, label) {
+      return '<div class="card"><label class="session-step"><input type="checkbox" data-session-step="' + id + '"> ' +
+        "<b>" + title + "</b></label><p>" + text + '</p><a class="btn" href="' + href + '">' + label + "</a></div>";
+    }
     return "<h1>30 минут</h1>" +
-      '<p class="lead">Короткая сессия без выбора «что делать дальше»: немного теории, один тренажёр, тест и шпаргалка.</p>' +
-      '<div class="session-clock" id="sessionClock">30:00</div>' +
+      '<p class="lead">Короткая сессия без выбора «что делать дальше»: немного теории, один тренажёр, тест и шпаргалка. ' +
+      "Таймер продолжает идти при переходах.</p>" +
+      '<div class="session-clock" id="sessionClock" data-session-clock role="timer" aria-live="off">30:00</div>' +
       '<div class="btn-row"><button class="btn primary" id="sessionStart">Старт</button>' +
-      '<button class="btn" id="sessionReset">Сброс</button></div>' +
+      '<button class="btn" id="sessionReset">Сброс</button><span class="meta" id="sessionProgress"></span></div>' +
       '<div class="grid">' +
-      '<div class="card"><h3>5 минут — теория</h3><p>Продолжите с последней главы или начните с введения.</p>' +
-        '<a class="btn" href="' + (last ? "#/theory/" + topic + "/" + idx : "#/theory/analytics/0") + '">Продолжить</a></div>' +
-      '<div class="card"><h3>10 минут — тренажёр</h3><p>Одна задача с автопроверкой: не скорость, а разбор ошибки.</p>' +
-        '<a class="btn" href="#/trainer/' + topic + '">К тренажёру</a></div>' +
-      '<div class="card"><h3>10 минут — тест</h3><p>Восемь вопросов из банка раздела и разбор ответов.</p>' +
-        '<a class="btn" href="#/quiz/' + topic + '">К тесту</a></div>' +
-      '<div class="card"><h3>5 минут — шпаргалка</h3><p>Повторите формулы и термины перед следующим шагом.</p>' +
-        '<a class="btn" href="#/cheatsheet">Открыть</a></div>' +
+      step("theory", "5 минут — теория", "Продолжите с последней главы или начните с введения.",
+        last ? "#/theory/" + topic + "/" + idx : "#/theory/analytics/0", "Продолжить") +
+      step("trainer", "10 минут — тренажёр", "Одна задача с автопроверкой: не скорость, а разбор ошибки.",
+        "#/trainer/" + topic, "К тренажёру") +
+      step("quiz", "10 минут — тест", "Восемь вопросов из банка раздела и разбор ответов.",
+        "#/quiz/" + topic, "К тесту") +
+      step("cheatsheet", "5 минут — шпаргалка", "Повторите формулы и термины перед следующим шагом.",
+        "#/cheatsheet", "Открыть") +
       "</div>";
   }
 
   function bindSession() {
-    var clock = document.getElementById("sessionClock");
     var start = document.getElementById("sessionStart");
     var reset = document.getElementById("sessionReset");
-    if (!clock || !start) return;
-    var left = 30 * 60, timer = null;
-    function draw() {
-      var m = Math.floor(left / 60), s = left % 60;
-      clock.textContent = (m < 10 ? "0" : "") + m + ":" + (s < 10 ? "0" : "") + s;
-      clock.classList.toggle("done", left <= 0);
-    }
-    function stop() { if (timer) { clearInterval(timer); timer = null; } start.textContent = "Старт"; }
-    start.addEventListener("click", function () {
-      if (timer) { stop(); return; }
-      if (left <= 0) left = 30 * 60;
-      start.textContent = "Пауза";
-      timer = setInterval(function () {
-        left--;
-        draw();
-        if (left <= 0) stop();
-      }, 1000);
+    if (!start || !reset) return;
+    start.addEventListener("click", sessionToggle);
+    reset.addEventListener("click", sessionReset);
+    Array.prototype.forEach.call(document.querySelectorAll("[data-session-step]"), function (box) {
+      var id = box.getAttribute("data-session-step");
+      box.checked = !!sessionState.steps[id];
+      box.addEventListener("change", function () {
+        if (box.checked) sessionState.steps[id] = 1; else delete sessionState.steps[id];
+        sessionSave();
+        sessionDraw();
+      });
     });
-    reset.addEventListener("click", function () { stop(); left = 30 * 60; draw(); });
-    draw();
-    cleanup = stop;
+    sessionTick();
+    sessionDraw();
   }
 
   function calcPage() {
@@ -2251,6 +2443,7 @@
     if (seg === "capstone") return { html: capstonePage(), after: bindCapstone };
     if (seg === "open-project") return { html: openProjectPage(), after: bindOpenProject };
     if (seg === "pandas-case") return { html: pandasCasePage() };
+    if (seg === "pandas-lab") return { mount: pandasLabPage };
     if (seg === "dbt-project") return { html: window.DBT_PROJECT.page(), after: window.DBT_PROJECT.bind };
     if (seg === "datalab") return { html: datalabPage(), after: bindDatalab };
     if (seg === "cases") return { html: casesPage() };
@@ -2258,7 +2451,7 @@
     if (seg === "cards") return { html: cardsPage(), after: bindCards };
     if (seg === "progress") return { html: progressPage(), after: bindProgress };
     if (seg === "review") return { html: reviewPage(), after: bindReview };
-    if (seg === "achievements") return { html: achievementsPage() };
+    if (seg === "achievements") return { html: achievementsPage(), after: bindAchievements };
     if (seg === "session") return { html: sessionPage(), after: bindSession };
     if (seg === "calc") return { html: calcPage(), after: bindCalc };
     if (seg === "bi-exam") return { mount: biExamPage };
@@ -2277,6 +2470,7 @@
 
   function render() {
     if (cleanup) { try { cleanup(); } catch (e) {} cleanup = null; }
+    renderSessionDock();
     setKeys(null);
     var p = path();
     renderNav();
@@ -2490,6 +2684,8 @@
 
   initPalette();
   syncVersion();
+  sessionTick();
+  sessionDraw();
   window.addEventListener("hashchange", render);
   render();
 })();

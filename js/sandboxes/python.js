@@ -12,7 +12,7 @@
       var list = raw ? JSON.parse(raw) : null;
       if (Array.isArray(list) && list.length) return list.map(String);
     } catch (e) {}
-    return [EXAMPLE];
+    return null;
   }
 
   function saveCells(cells, key) {
@@ -32,7 +32,8 @@
   function mount(root, opts) {
     opts = opts || {};
     var KEY = "analytics-lab-pysandbox-v1" + (opts.keySuffix || "");
-    var cells = opts.cells && opts.cells.length ? opts.cells.map(String) : loadCells(KEY);
+    var savedCells = loadCells(KEY);
+    var cells = savedCells || (opts.cells && opts.cells.length ? opts.cells.map(String) : [EXAMPLE]);
     var worker = null;
     var ready = false;
     var running = false;
@@ -246,7 +247,7 @@
         setStatus("Ошибка загрузки Python: " + text + ". Проверьте интернет и нажмите «Повторить».", true);
       };
 
-      worker.postMessage({ type: "init", files: files });
+      worker.postMessage({ type: "init", files: files, packages: opts.packages || [] });
     }
 
     if (retry) retry.addEventListener("click", startWorker);

@@ -73,6 +73,19 @@
 
     quiz: function (topic) { return data.quizzes[topic] || null; },
 
+    hasLegacyQuizzes: function () {
+      return Object.keys(data.quizzes).some(function (topic) {
+        var q = data.quizzes[topic];
+        return q && Number(q.attempts) > 1 && (q.firstScore === null || q.firstScore === undefined);
+      });
+    },
+
+    clearQuizHistory: function () {
+      data.quizzes = {};
+      data.srs = {};
+      save();
+    },
+
     // answers: [{ idx, ok }], idx — номер вопроса в банке раздела
     recordQuiz: function (topic, answers) {
       var cur = data.quizzes[topic] || { best: 0, total: 0, attempts: 0, review: [] };
@@ -83,11 +96,15 @@
       answers.forEach(function (a) { if (a.ok) delete review[a.idx]; else review[a.idx] = 1; });
 
       answers.forEach(function (a) { schedule(topic, a.idx, a.ok); });
+      var firstScore = cur.attempts ? (typeof cur.firstScore === "number" ? cur.firstScore : null) : score;
+      var firstTotal = cur.attempts ? (typeof cur.firstTotal === "number" ? cur.firstTotal : null) : answers.length;
       data.quizzes[topic] = {
         best: Math.max(cur.best, score),
         total: answers.length,
         attempts: cur.attempts + 1,
         lastScore: score,
+        firstScore: firstScore,
+        firstTotal: firstTotal,
         review: Object.keys(review).map(Number).sort(function (a, b) { return a - b; })
       };
       save();
@@ -146,6 +163,8 @@
             total: Number(q.total) || 0,
             attempts: Number(q.attempts) || 0,
             lastScore: Number(q.lastScore) || 0,
+            firstScore: q.firstScore === null || q.firstScore === undefined ? null : (Number(q.firstScore) || 0),
+            firstTotal: Number(q.firstTotal) || Number(q.total) || 0,
             review: Array.isArray(q.review) ? q.review.map(Number).filter(isFinite) : []
           };
         });

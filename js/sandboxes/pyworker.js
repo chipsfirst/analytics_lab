@@ -55,6 +55,10 @@ self.onmessage = function (e) {
       })
       .then(function (p) {
         pyodide = p;
+        return msg.packages && msg.packages.length ? pyodide.loadPackage(msg.packages) : null;
+      })
+      .then(function () {
+        if (!pyodide) return;
         try {
           if (msg.files && pyodide.FS) {
             Object.keys(msg.files).forEach(function (name) {
