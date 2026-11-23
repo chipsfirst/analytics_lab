@@ -55,7 +55,7 @@ test("Pyodide: pandas-кейс загружает CSV", async ({ page }) => {
 });
 
 test("ключевые страницы открываются", async ({ page }) => {
-  const routes = ["/#/", "/#/theory/analytics/0", "/#/glossary", "/#/session", "/#/project", "/#/dbt-project", "/#/achievements", "/#/cases", "/#/prompt-lab", "/#/calc", "/#/cards", "/#/progress", "/#/cheatsheet"];
+  const routes = ["/#/", "/#/theory/analytics/0", "/#/theory/ai", "/#/theory/marketing", "/#/theory/simulation", "/#/marketing-project", "/#/demos/aicost", "/#/demos/montecarlo", "/#/demos/queue", "/#/glossary", "/#/session", "/#/project", "/#/dbt-project", "/#/achievements", "/#/cases", "/#/prompt-lab", "/#/calc", "/#/cards", "/#/progress", "/#/cheatsheet"];
   for (const route of routes) {
     await page.goto(route);
     await expect(page.locator("#app h1").first()).toBeVisible();

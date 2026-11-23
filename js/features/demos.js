@@ -12,6 +12,9 @@
   var mountPermutation = F.mountPermutation;
   var mountRoc = F.mountRoc;
   var mountPeek = F.mountPeek;
+  var mountAiCost = F.mountAiCost;
+  var mountMonteCarlo = F.mountMonteCarlo;
+  var mountQueue = F.mountQueue;
   window.DEMOS = {
     clt: {
       title: "Центральная предельная теорема",
@@ -62,6 +65,21 @@
       title: "Подглядывание в A/B",
       tag: "Почему ежедневная проверка p-value повышает ложные срабатывания",
       mount: mountPeek
+    },
+    aicost: {
+      title: "Стоимость AI-фичи",
+      tag: "Цена запроса, месяца и решённой задачи",
+      mount: mountAiCost
+    },
+    montecarlo: {
+      title: "Монте-Карло для LTV",
+      tag: "Диапазон исходов вместо одной цифры",
+      mount: mountMonteCarlo
+    },
+    queue: {
+      title: "Очередь поддержки",
+      tag: "Загрузка, среднее ожидание и p95",
+      mount: mountQueue
     }
   };
 })();

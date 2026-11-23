@@ -52,6 +52,18 @@ window.SOURCES = {
     { title: "scikit-learn: обучение с учителем", url: "https://scikit-learn.org/stable/supervised_learning.html", note: "классификация" },
     { title: "Google ML: классификация", url: "https://developers.google.com/machine-learning/crash-course/classification", note: "порог, precision и recall" }
   ],
+  ai: [
+    { title: "OpenAI: Evals", url: "https://platform.openai.com/docs/guides/evals", note: "как строить и запускать eval-наборы" },
+    { title: "RAGAS", url: "https://docs.ragas.io/", note: "метрики retrieval и groundedness для RAG" }
+  ],
+  marketing: [
+    { title: "Google Ads: атрибуция", url: "https://support.google.com/google-ads/answer/1722022", note: "модели атрибуции и отчёты" },
+    { title: "Robyn: MMM", url: "https://robynrmm.org/", note: "маркетинг-микс и калибровка" }
+  ],
+  simulation: [
+    { title: "SimPy", url: "https://simpy.readthedocs.io/", note: "дискретно-событийное моделирование" },
+    { title: "SciPy: linprog", url: "https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.linprog.html", note: "линейная оптимизация" }
+  ],
   ml: [
     { title: "scikit-learn: user guide", url: "https://scikit-learn.org/stable/user_guide.html", note: "модели и пайплайны" },
     { title: "Google ML Crash Course", url: "https://developers.google.com/machine-learning/crash-course", note: "базовые идеи ML" }

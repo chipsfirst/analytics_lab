@@ -757,6 +757,175 @@
     return function () { root.innerHTML = ""; };
   }
 
+  // ---------- стоимость AI-фичи ----------
+
+  function mountAiCost(root) {
+    root.innerHTML =
+      '<div class="card">' +
+      '<p class="lead">Считайте не цену запроса, а цену решённой задачи. Экономия на токенах ' +
+      "легко превращается в рост расходов, если ответы перестают решать задачу.</p>" +
+      '<div class="demo-controls">' +
+      '<label>Запросов в месяц<input type="number" id="aiReq" value="100000" min="1" step="1000"></label>' +
+      '<label>Токенов на запрос<input type="number" id="aiTok" value="1200" min="1" step="100"></label>' +
+      '<label>Цена за 1 млн токенов, ₽<input type="number" id="aiPrice" value="150" min="0" step="10"></label>' +
+      '<label>Доля решённых задач, %<input type="number" id="aiOk" value="70" min="1" max="100" step="1"></label>' +
+      "</div>" +
+      '<div class="stats"><div class="stat"><div class="k">цена запроса</div><div class="v" id="aiCostReq">—</div></div>' +
+      '<div class="stat"><div class="k">расходы в месяц</div><div class="v" id="aiMonth">—</div></div>' +
+      '<div class="stat"><div class="k">цена решённой задачи</div><div class="v" id="aiResolved">—</div></div></div>' +
+      '<div class="formula">цена запроса = токены / 1 000 000 × цена за 1 млн</div>' +
+      '<p class="demo-note" id="aiNote"></p>' +
+      "</div>";
+
+    var reqEl = document.getElementById("aiReq"), tokEl = document.getElementById("aiTok");
+    var priceEl = document.getElementById("aiPrice"), okEl = document.getElementById("aiOk");
+    var costReq = document.getElementById("aiCostReq"), month = document.getElementById("aiMonth");
+    var resolved = document.getElementById("aiResolved"), note = document.getElementById("aiNote");
+
+    function rub(x) { return x.toLocaleString("ru-RU", { maximumFractionDigits: 2 }) + " ₽"; }
+
+    function render() {
+      var req = Number(reqEl.value), tok = Number(tokEl.value);
+      var price = Number(priceEl.value), ok = Number(okEl.value);
+      if (!(req > 0 && tok > 0 && price >= 0 && ok > 0)) {
+        costReq.textContent = month.textContent = resolved.textContent = "—";
+        return;
+      }
+      var perRequest = tok / 1000000 * price;
+      var monthly = req * perRequest;
+      var solved = req * ok / 100;
+      costReq.textContent = rub(perRequest);
+      month.textContent = rub(monthly);
+      resolved.textContent = monthly / solved ? rub(monthly / solved) : "—";
+      note.textContent = "Успешных задач: " + Math.round(solved).toLocaleString("ru-RU") +
+        ". Если доля успеха упадёт при той же цене запроса, цена решённой задачи вырастет.";
+    }
+
+    reqEl.addEventListener("input", render);
+    tokEl.addEventListener("input", render);
+    priceEl.addEventListener("input", render);
+    okEl.addEventListener("input", render);
+    render();
+  }
+
+  // ---------- Монте-Карло для LTV ----------
+
+  function mountMonteCarlo(root) {
+    root.innerHTML =
+      '<div class="card">' +
+      '<p class="lead">Одна цифра LTV скрывает риск. Задайте удержание, чек и маржу — ' +
+      "симуляция покажет не только среднее, но и нижний квартиль.</p>" +
+      '<div class="demo-controls">' +
+      '<label>Удержание в месяц, %<input type="number" id="mcRet" value="85" min="1" max="99" step="1"></label>' +
+      '<label>Средний чек, ₽<input type="number" id="mcArpu" value="1500" min="1" step="100"></label>' +
+      '<label>Маржа, %<input type="number" id="mcMargin" value="40" min="1" max="100" step="1"></label>' +
+      '<label>Горизонт, мес.<input type="number" id="mcMonths" value="12" min="1" max="60" step="1"></label>' +
+      "</div>" +
+      '<div class="stats"><div class="stat"><div class="k">средний LTV</div><div class="v" id="mcMean">—</div></div>' +
+      '<div class="stat"><div class="k">P10</div><div class="v" id="mcP10">—</div></div>' +
+      '<div class="stat"><div class="k">P90</div><div class="v" id="mcP90">—</div></div></div>' +
+      '<p class="demo-note" id="mcNote"></p></div>';
+
+    var retEl = document.getElementById("mcRet"), arpuEl = document.getElementById("mcArpu");
+    var marginEl = document.getElementById("mcMargin"), monthsEl = document.getElementById("mcMonths");
+    var meanEl = document.getElementById("mcMean"), p10El = document.getElementById("mcP10");
+    var p90El = document.getElementById("mcP90"), note = document.getElementById("mcNote");
+
+    function rub(x) { return Math.round(x).toLocaleString("ru-RU") + " ₽"; }
+
+    function render() {
+      var ret = Number(retEl.value) / 100, arpu = Number(arpuEl.value);
+      var margin = Number(marginEl.value) / 100, months = Number(monthsEl.value);
+      if (!(ret > 0 && arpu > 0 && margin > 0 && months > 0)) { return; }
+      var vals = [];
+      for (var i = 0; i < 2000; i++) {
+        var ltv = 0;
+        for (var m = 0; m < months; m++) {
+          ltv += arpu * margin;
+          if (Math.random() > ret) break;
+        }
+        vals.push(ltv);
+      }
+      vals.sort(function (a, b) { return a - b; });
+      var sum = vals.reduce(function (a, b) { return a + b; }, 0);
+      meanEl.textContent = rub(sum / vals.length);
+      p10El.textContent = rub(percentile(vals, 0.1));
+      p90El.textContent = rub(percentile(vals, 0.9));
+      note.textContent = "2000 клиентов, удержание " + Math.round(ret * 100) + "% в месяц. " +
+        "P10 — плохой, но не катастрофический исход; решайте по нему, если цена ошибки велика.";
+    }
+
+    [retEl, arpuEl, marginEl, monthsEl].forEach(function (el) { el.addEventListener("input", render); });
+    render();
+  }
+
+  // ---------- очередь поддержки ----------
+
+  function mountQueue(root) {
+    root.innerHTML =
+      '<div class="card">' +
+      '<p class="lead">Почасовая нагрузка на поддержку: 30 дней по 8 часов. ' +
+      "Смотрите не только среднее ожидание, но и хвост.</p>" +
+      '<div class="demo-controls">' +
+      '<label>Обращений в час<input type="number" id="qArr" value="30" min="1" step="1"></label>' +
+      '<label>Обращений на агента в час<input type="number" id="qSrv" value="8" min="1" step="1"></label>' +
+      '<label>Агентов<input type="number" id="qAgents" value="5" min="1" max="50" step="1"></label>' +
+      "</div>" +
+      '<div class="stats"><div class="stat"><div class="k">среднее ожидание</div><div class="v" id="qMean">—</div></div>' +
+      '<div class="stat"><div class="k">p95 ожидания</div><div class="v" id="qP95">—</div></div>' +
+      '<div class="stat"><div class="k">загрузка</div><div class="v" id="qUtil">—</div></div></div>' +
+      '<p class="demo-note" id="qNote"></p></div>';
+
+    var arrEl = document.getElementById("qArr"), srvEl = document.getElementById("qSrv");
+    var agEl = document.getElementById("qAgents");
+    var meanEl = document.getElementById("qMean"), p95El = document.getElementById("qP95");
+    var utilEl = document.getElementById("qUtil"), note = document.getElementById("qNote");
+
+    function poisson(lambda) {
+      var L = Math.exp(-lambda), k = 0, p = 1;
+      do { k++; p *= Math.random(); } while (p > L);
+      return k - 1;
+    }
+    function mins(x) { return x.toFixed(1).replace(".", ",") + " мин"; }
+
+    function render() {
+      var lambda = Number(arrEl.value), mu = Number(srvEl.value), c = Number(agEl.value);
+      if (!(lambda > 0 && mu > 0 && c > 0)) return;
+      var waits = [], busyMinutes = 0, totalMinutes = 0;
+      for (var day = 0; day < 30; day++) {
+        var q = [], busy = 0;
+        for (var minute = 0; minute < 480; minute++) {
+          var completed = 0;
+          for (var b = 0; b < busy; b++) {
+            if (Math.random() < mu / 60) completed++;
+          }
+          busy -= completed;
+          busyMinutes += busy;
+          totalMinutes += c;
+          var arrivals = poisson(lambda / 60);
+          for (var a = 0; a < arrivals; a++) q.push(minute);
+          while (busy < c && q.length) {
+            var arrived = q.shift();
+            waits.push(minute - arrived);
+            busy++;
+          }
+        }
+      }
+      waits.sort(function (a, b) { return a - b; });
+      if (!waits.length) { meanEl.textContent = p95El.textContent = utilEl.textContent = "—"; return; }
+      var sum = waits.reduce(function (a, b) { return a + b; }, 0);
+      meanEl.textContent = mins(sum / waits.length);
+      p95El.textContent = mins(percentile(waits, 0.95));
+      var util = busyMinutes / totalMinutes;
+      utilEl.textContent = Math.round(util * 100) + "%";
+      note.textContent = "Загрузка " + Math.round(util * 100) + "%. При приближении к 100% очередь растёт " +
+        "нелинейно: небольшой всплеск создаёт длинный хвост ожидания.";
+    }
+
+    [arrEl, srvEl, agEl].forEach(function (el) { el.addEventListener("input", render); });
+    render();
+  }
+
   window.DEMO_FNS.mountCLT = mountCLT;
   window.DEMO_FNS.mountSample = mountSample;
   window.DEMO_FNS.mountRegression = mountRegression;
@@ -767,4 +936,7 @@
   window.DEMO_FNS.mountPermutation = mountPermutation;
   window.DEMO_FNS.mountRoc = mountRoc;
   window.DEMO_FNS.mountPeek = mountPeek;
+  window.DEMO_FNS.mountAiCost = mountAiCost;
+  window.DEMO_FNS.mountMonteCarlo = mountMonteCarlo;
+  window.DEMO_FNS.mountQueue = mountQueue;
 })();

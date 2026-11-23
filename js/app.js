@@ -58,6 +58,9 @@
     regression: { icon: "trend" },
     classification: { icon: "tag" },
     ml: { icon: "network" },
+    ai: { icon: "network" },
+    marketing: { icon: "trend" },
+    simulation: { icon: "gear" },
     timeseries: { icon: "wave" },
     causal: { icon: "link" },
     ethics: { icon: "shield" },
@@ -335,6 +338,7 @@
     }
     if (seg === "project") return { html: window.PROJECTS.page(), after: window.PROJECTS.bind };
     if (seg === "capstone") return { html: window.PROJECTS.capstonePage(), after: window.PROJECTS.bindCapstone };
+    if (seg === "marketing-project") return { html: window.PROJECTS.marketingProjectPage(), after: window.PROJECTS.bindMarketingProject };
     if (seg === "open-project") return { html: window.PROJECTS.openProjectPage(), after: window.PROJECTS.bindOpenProject };
     if (seg === "pandas-case") return { html: window.PANDAS_CASE.page() };
     if (seg === "pandas-lab") return { mount: window.PANDAS_CASE.lab };

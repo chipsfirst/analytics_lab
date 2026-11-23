@@ -288,12 +288,101 @@
     });
   }
 
+  function marketingProjectPage() {
+    return "<h1>Проект: записка CMO</h1>" +
+      '<p class="lead">Три канала, один месяц и решение о бюджете. Нужно посчитать экономику, ' +
+      "увидеть ограничения атрибуции и написать записку на одну страницу.</p>" +
+      '<p class="meta" id="mpProgress">Готово: 0 из 6</p>' +
+      '<section class="project-stage" data-mp-stage="data"><h2>1. Данные</h2>' +
+      '<p>Скачайте <a href="data/marketing.csv" download>marketing.csv</a>: дата, канал, расходы, клики, конверсии и выручка.</p>' +
+      '<label><input type="checkbox" data-mp-check="data"> Проверил период, каналы и пропуски</label></section>' +
+      '<section class="project-stage" data-mp-stage="cac"><h2>2. CAC поиска</h2>' +
+      '<p>Расходы на поиск разделите на конверсии поиска. Округлите до сотых.</p>' +
+      '<div class="answer-row"><label class="sr-only" for="mpCac">CAC поиска</label>' +
+      '<input type="number" id="mpCac" step="0.01" placeholder="₽">' +
+      '<button class="btn" data-mp-answer="156.14" data-mp-tol="0.5" data-mp-id="cac">Проверить</button></div></section>' +
+      '<section class="project-stage" data-mp-stage="roas"><h2>3. ROAS email</h2>' +
+      '<p>Выручку email разделите на расходы email. Округлите до сотых.</p>' +
+      '<div class="answer-row"><label class="sr-only" for="mpRoas">ROAS email</label>' +
+      '<input type="number" id="mpRoas" step="0.01" placeholder="×">' +
+      '<button class="btn" data-mp-answer="40.79" data-mp-tol="0.1" data-mp-id="roas">Проверить</button></div></section>' +
+      '<section class="project-stage" data-mp-stage="decision"><h2>4. Решение</h2>' +
+      '<p>Какой вывод корректен по этим данным?</p><div class="options">' +
+      '<button class="option" data-mp-option="0">Email дешевле по CAC, но перед перераспределением нужен holdout: last-click не доказывает инкремент</button>' +
+      '<button class="option" data-mp-option="1">Нужно сразу отключить поиск: у него самый высокий CAC</button>' +
+      '<button class="option" data-mp-option="2">ROAS 40 у email доказывает, что весь бюджет нужно отдать email</button>' +
+      "</div></section>" +
+      '<section class="project-stage" data-mp-stage="memo"><h2>5. Записка</h2>' +
+      '<label><input type="checkbox" data-mp-check="memo"> Есть решение, три цифры, ограничение и следующий шаг</label>' +
+      '<label><input type="checkbox" data-mp-check="risk"> Указан риск атрибуции или сезонности</label></section>' +
+      '<section class="project-stage" data-mp-stage="next"><h2>6. Следующий шаг</h2>' +
+      '<label><input type="checkbox" data-mp-check="next"> Предложен geo-тест или holdout с метрикой успеха</label></section>' +
+      '<div class="card"><h2>Подсказки</h2><ul>' +
+      "<li>Итого расходы: 300 724 ₽, конверсии: 2 386, выручка: 2 963 394 ₽.</li>" +
+      "<li>CAC: поиск — 156,14 ₽, соцсети — 194,27 ₽, email — 31,20 ₽.</li>" +
+      "<li>ROAS: поиск — 7,93, соцсети — 6,23, email — 40,79.</li>" +
+      "<li>Email часто закрывает уже разогретый спрос. Низкий CAC не равен инкрементальному эффекту.</li>" +
+      "</ul></div>";
+  }
+
+  function bindMarketingProject() {
+    var KEY = "analytics-lab-marketing-project-v1";
+    var done = {};
+    try { done = JSON.parse(localStorage.getItem(KEY) || "{}") || {}; } catch (e) {}
+    function total() {
+      return document.querySelectorAll("[data-mp-check]").length +
+        document.querySelectorAll("[data-mp-answer]").length + 1;
+    }
+    function save() {
+      try { localStorage.setItem(KEY, JSON.stringify(done)); } catch (e) {}
+      var el = document.getElementById("mpProgress");
+      if (el) el.textContent = "Готово: " + Object.keys(done).length + " из " + total();
+      Array.prototype.forEach.call(document.querySelectorAll("[data-mp-stage]"), function (sec) {
+        sec.classList.toggle("done", !!done[sec.getAttribute("data-mp-stage")]);
+      });
+    }
+    function mark(id) { done[id] = 1; save(); }
+    save();
+    Array.prototype.forEach.call(document.querySelectorAll("[data-mp-check]"), function (box) {
+      var id = box.getAttribute("data-mp-check");
+      box.checked = !!done[id];
+      box.addEventListener("change", function () {
+        if (box.checked) mark(id); else { delete done[id]; save(); }
+      });
+    });
+    Array.prototype.forEach.call(document.querySelectorAll("[data-mp-answer]"), function (btn) {
+      var id = btn.getAttribute("data-mp-id");
+      if (done[id]) btn.textContent = "Верно";
+      btn.addEventListener("click", function () {
+        var input = document.getElementById(id === "cac" ? "mpCac" : "mpRoas");
+        var value = Number(String(input.value || "").replace(",", "."));
+        var answer = Number(btn.getAttribute("data-mp-answer"));
+        var tol = Number(btn.getAttribute("data-mp-tol") || 0.01);
+        if (input.value !== "" && Math.abs(value - answer) <= tol) {
+          btn.textContent = "Верно";
+          mark(id);
+        } else {
+          btn.textContent = "Ещё раз";
+        }
+      });
+    });
+    Array.prototype.forEach.call(document.querySelectorAll("[data-mp-option]"), function (btn) {
+      btn.addEventListener("click", function () {
+        var ok = btn.getAttribute("data-mp-option") === "0";
+        btn.classList.add(ok ? "right" : "wrong");
+        if (ok) mark("decision");
+      });
+    });
+  }
+
   window.PROJECTS = {
     page: projectPage,
     bind: bindProject,
     capstonePage: capstonePage,
     bindCapstone: bindCapstone,
     openProjectPage: openProjectPage,
-    bindOpenProject: bindOpenProject
+    bindOpenProject: bindOpenProject,
+    marketingProjectPage: marketingProjectPage,
+    bindMarketingProject: bindMarketingProject
   };
 })();
