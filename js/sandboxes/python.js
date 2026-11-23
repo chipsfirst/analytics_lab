@@ -196,6 +196,10 @@
           setStatus("Загрузка Python: " + mb(msg.loaded));
           return;
         }
+        if (msg.type === "status") {
+          setStatus(msg.text || "Загрузка пакетов…");
+          return;
+        }
         if (msg.type === "ready") {
           ready = true;
           if (bar) bar.classList.add("done");

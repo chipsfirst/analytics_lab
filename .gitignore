@@ -4,3 +4,8 @@
 *.pdf
 *.ocr.md
 Практическая статистика*
+
+# Smoke-тест
+node_modules/
+test-results/
+playwright-report/

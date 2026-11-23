@@ -55,7 +55,13 @@ self.onmessage = function (e) {
       })
       .then(function (p) {
         pyodide = p;
-        return msg.packages && msg.packages.length ? pyodide.loadPackage(msg.packages) : null;
+        if (msg.packages && msg.packages.length) {
+          send({ type: "status", text: "Загрузка пакетов…" });
+          return pyodide.loadPackage(msg.packages, {
+            messageCallback: function (text) { send({ type: "status", text: String(text) }); }
+          });
+        }
+        return null;
       })
       .then(function () {
         if (!pyodide) return;

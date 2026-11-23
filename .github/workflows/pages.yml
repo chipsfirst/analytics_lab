@@ -28,6 +28,12 @@ jobs:
         run: python3 tools/check-modules.py
       - name: Проверка контента и генераторов
         run: node selftest.js
+      - name: Установить smoke-зависимости
+        run: npm install --no-audit --no-fund
+      - name: Установить Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Smoke-тест интеракций
+        run: npm run smoke
 
   deploy:
     needs: check
