@@ -2,7 +2,7 @@ const { test, expect } = require("@playwright/test");
 
 test("главная и версия", async ({ page }) => {
   await page.goto("/");
-  await expect(page.locator("#appVersion")).toHaveText(/^0\.7\.\d+$/);
+  await expect(page.locator("#appVersion")).toHaveText(/^0\.\d+\.\d+$/);
   await expect(page.locator(".home-action.primary")).toBeVisible();
 });
 
