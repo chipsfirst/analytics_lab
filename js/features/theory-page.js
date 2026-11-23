@@ -1,37 +1,7 @@
-// Теория: главы, шпаргалка и источники.
+// Теория: главы и источники.
 (function () {
   "use strict";
   var LAB = window.LAB;
-  function chapterCheatTerms(html) {
-    var terms = [], m, re = /<b>([\s\S]*?)<\/b>/g;
-    while ((m = re.exec(html)) && terms.length < 6) {
-      var t = m[1].replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
-      if (t && t.length <= 90 && t !== "Пример." && t !== "Пример" && terms.indexOf(t) < 0) terms.push(t);
-    }
-    return terms;
-  }
-
-  function chapterFormula(html) {
-    var m = html.match(/<div class="formula">([\s\S]*?)<\/div>/);
-    if (!m) return "";
-    return m[1].replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim().slice(0, 240);
-  }
-
-  function chapterCheatsheetHtml(id, c) {
-    var terms = chapterCheatTerms(c.html);
-    var formula = chapterFormula(c.html);
-    var chips = terms.length
-      ? '<div class="cheat-chips">' + terms.map(function (t) { return '<span class="cheat-chip">' + LAB.esc(t) + "</span>"; }).join("") + "</div>"
-      : '<p class="meta">Ключевые термины — в тексте главы.</p>';
-    return '<div class="chapter-cheatsheet"><h3>Автошпаргалка главы</h3>' +
-      '<p class="meta">Собрана из выделенных фраз и первой формулы. Это не заменяет конспект.</p>' +
-      '<div class="cheat-cols"><div><b>Ключевые понятия</b>' + chips + "</div>" +
-      (formula ? '<div><b>Формула или правило</b><code class="cheat-formula">' + LAB.esc(formula) + "</code></div>" : "") +
-      "</div>" +
-      '<p class="meta"><a href="#/cheatsheet">Все шпаргалки</a> · <a href="#/quiz/' + id + '">Проверить тестом</a> · ' +
-      '<a href="#/trainer/' + id + '">Тренажёр</a></p></div>';
-  }
-
   function chapterSourcesHtml(id) {
     var list = (window.SOURCES && window.SOURCES[id]) || [];
     if (!list.length) return "";
@@ -68,7 +38,6 @@
         (read ? "Прочитано" : "Отметить прочитанной") + "</button></span></div>" +
         c.html +
         window.GLOSSARY_PAGE.termsHtml(id, i, c.html) +
-        chapterCheatsheetHtml(id, c) +
         chapterSourcesHtml(id) +
         '<p class="meta"><a href="https://github.com/chipsfirst/analytics_lab/issues/new?title=' +
           encodeURIComponent("Ошибка в главе: " + c.title) + "&body=" +

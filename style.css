@@ -835,26 +835,11 @@ th { background: var(--accent-soft); color: var(--accent); }
   .reader article section { padding: 16px 16px 12px; }
 }
 
-.chapter-cheatsheet {
-  margin: 18px 0 14px;
-  padding: 14px 16px;
-  border: 1px solid var(--line);
-  border-left: 4px solid var(--accent-2);
-  border-radius: 10px;
-  background: linear-gradient(100deg, var(--accent-soft), var(--soft));
-}
-.chapter-cheatsheet h3 { margin: 0 0 8px; color: var(--accent); }
-.cheat-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
-.cheat-cols > div > b { display: block; font-size: 12.5px; color: var(--muted); margin-bottom: 5px; }
-.cheat-chips { display: flex; flex-wrap: wrap; gap: 6px; }
-.cheat-chip { display: inline-block; padding: 3px 8px; border-radius: 999px; background: var(--panel); border: 1px solid var(--line); font-size: 12px; }
-.cheat-formula { display: block; white-space: pre-wrap; font-size: 12px; line-height: 1.5; background: transparent; border: 0; padding: 0; }
 .chapter-sources { margin: 14px 0 4px; padding-top: 12px; border-top: 1px dashed var(--line); }
 .chapter-sources h3 { margin: 0 0 6px; font-size: 14px; }
 .chapter-sources ul { margin: 0; padding: 0; list-style: none; }
 .chapter-sources li { font-size: 13px; margin: 4px 0; }
 .chapter-sources .meta { margin: 0; }
-@media (max-width: 600px) { .cheat-cols { grid-template-columns: 1fr; } }
 .ach-head { display: flex; align-items: center; gap: 9px; }
 .ach-head h3 { margin: 0; }
 .ach-icon { flex: none; width: 38px; height: 38px; display: grid; place-items: center; border-radius: 11px; }
