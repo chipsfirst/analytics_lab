@@ -23,6 +23,8 @@
       while (next < t.chapters.length && window.PROGRESS.isRead(id, next)) next++;
       var href = next < t.chapters.length ? "#/theory/" + id + "/" + next : "#/quiz/" + id;
       var status = weakTopic ? "слабое место" : dueCount ? "пора повторить" : "в норме";
+      var mastery = window.PROGRESS.masteryParts(id);
+      var weakest = mastery.read <= mastery.quiz && mastery.read <= mastery.mini ? "главы" : (mastery.quiz <= mastery.mini ? "тест" : "мини");
       return '<div class="card progress-topic' + (weakTopic ? " weak" : "") + '"><p class="meta">' + LAB.esc(t.title) +
         ' · <b>' + status + '</b></p><div class="topic-bar" aria-hidden="true"><div style="width:' +
         Math.round(read / t.chapters.length * 100) + '%"></div></div>' +
@@ -30,7 +32,8 @@
         " · Тест: " + (last === null ? "—" : last + " из " + qTotal) +
         " · Мини: " + (m && m.total ? m.correct + " из " + m.total : "—") +
         (dueCount ? " · К повторению: " + dueCount : "") + "</p>" +
-        '<p class="meta">Освоение: ' + window.PROGRESS.mastery(id) + "% · главы 40%, первая попытка 40%, мини 20%</p>" +
+        '<p class="meta">Освоение: ' + mastery.score + "% · главы " + mastery.read + "%, тест " + mastery.quiz + "%, мини " + mastery.mini + "%</p>" +
+        (mastery.score < 70 ? '<p class="meta">Подтянуть: ' + weakest + '</p>' : "") +
         '<div class="links"><a class="btn small" href="' + href + '">' +
         (next < t.chapters.length ? "Продолжить" : "К тесту") + "</a>" +
         '<a class="btn small" href="#/quiz/' + id + '">Тест</a></div></div>';

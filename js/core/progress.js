@@ -198,16 +198,18 @@
 
     last: function () { return data.last; },
 
-    mastery: function (topic) {
+    masteryParts: function (topic) {
       var t = window.TOPICS && window.TOPICS[topic];
-      if (!t || !t.chapters.length) return 0;
+      if (!t || !t.chapters.length) return { score: 0, read: 0, quiz: 0, mini: 0 };
       var read = Math.min(1, readCount(topic) / t.chapters.length);
       var q = data.quizzes[topic];
       var quiz = q && q.firstTotal ? (Number(q.firstScore) || 0) / q.firstTotal : 0;
       var m = data.mini[topic];
       var mini = m && m.total ? Math.min(1, m.correct / m.total) : 0;
-      return Math.round(100 * (0.4 * read + 0.4 * quiz + 0.2 * mini));
+      return { score: Math.round(100 * (0.4 * read + 0.4 * quiz + 0.2 * mini)), read: Math.round(read * 100), quiz: Math.round(quiz * 100), mini: Math.round(mini * 100) };
     },
+
+    mastery: function (topic) { return window.PROGRESS.masteryParts(topic).score; },
 
     summary: function (topics) {
       var chapters = 0, totalChapters = 0, best = 0, total = 0;

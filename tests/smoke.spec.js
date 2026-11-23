@@ -53,3 +53,11 @@ test("Pyodide: pandas-кейс загружает CSV", async ({ page }) => {
   await page.locator('button[data-run="0"]').click();
   await expect(page.locator('[data-out="0"]')).toContainText("(3000, 6)", { timeout: 60000 });
 });
+
+test("ключевые страницы открываются", async ({ page }) => {
+  const routes = ["/#/", "/#/theory/analytics/0", "/#/glossary", "/#/session", "/#/project", "/#/dbt-project", "/#/achievements", "/#/cases", "/#/prompt-lab", "/#/calc", "/#/cards", "/#/progress", "/#/cheatsheet"];
+  for (const route of routes) {
+    await page.goto(route);
+    await expect(page.locator("#app h1").first()).toBeVisible();
+  }
+});
