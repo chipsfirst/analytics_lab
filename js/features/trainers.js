@@ -1601,6 +1601,29 @@
     };
   }
 
+  function tPyMemory() {
+    var rows = rndInt(1, 5) * 1000000;
+    var mb = rows * 8 / 1024 / 1024;
+    return {
+      prompt: "Сколько примерно мегабайт займёт одна колонка int64 на " + rows + " строк?",
+      solution: "int64 — 8 байт на значение: " + rows + " × 8 / 1024² = " + fmt(mb, 1) + " МБ (без учёта индекса и служебных структур).",
+      answer: num(mb, 0.5, 1)
+    };
+  }
+
+  function tPyWindow() {
+    return {
+      prompt: "Что делает df.sort_values('date')['amount'].rolling(7).mean()?",
+      solution: "rolling(7) берёт текущую и шесть предыдущих строк: получается скользящее среднее по семи наблюдениям. Данные должны быть отсортированы по времени.",
+      answer: { type: "choice", options: [
+        { text: "Скользящее среднее по текущей и шести предыдущим строкам", ok: true },
+        { text: "Среднее по семи случайным строкам", ok: false },
+        { text: "Удаляет каждую седьмую строку", ok: false },
+        { text: "Считает среднее по всей таблице", ok: false }
+      ] }
+    };
+  }
+
   window.TRAINERS = {
     analytics: [tCtr, tFunnel, tRomi, tLtvCac, tAbLift, tRetention],
     statistics: [tMean, tMedian, tVariance, tSd, tZ, tSe, tMad, tTrimMean, tIqr, tPoisson],
@@ -1609,7 +1632,7 @@
     data: [tMissingChoice, tDataType, tDupKey, tGrainJoin, tMissingMNAR, tScaleChoice, tFreshness, tIdempotent],
     sql: [tSqlWhere, tSqlDistinct, tSqlGroupHaving, tSqlOrderLimit, tSqlNull, tSqlJoin, tSqlWindow, tSqlAvgNull],
     excel: [tXlSumIf, tXlCountIf, tXlIf, tXlVlookup, tXlPct, tXlAbs],
-    python: [tPySlice, tPyType, tPyConvert, tPyPrec, tPyRange, tPyBool, tPyFind],
+    python: [tPySlice, tPyType, tPyConvert, tPyPrec, tPyRange, tPyBool, tPyFind, tPyMemory, tPyWindow],
     regression: [tRegPredict, tRegRmse, tRegDummies, tRidgeChoice, tLeakageChoice],
     classification: [tClfPrecision, tClfRecall, tClfThreshold, tClfOdds, tCalibrationChoice, tMacroF1],
     ml: [tKnnClass, tForestVote, tKmeansAssign],

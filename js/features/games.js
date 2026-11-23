@@ -723,6 +723,137 @@
     return function () {};
   }
 
+  function scenarioGame(root, items, title, intro) {
+    var list = items.map(function (it) {
+      return { q: it.q, options: shuffle(it.options), explain: it.explain };
+    });
+    var state = { i: 0, score: 0, picked: -1 };
+
+    function draw() {
+      if (state.i >= list.length) {
+        root.innerHTML = '<div class="card center"><h2 style="margin-top:0">' + state.score + " из " + list.length +
+          '</h2><p class="lead" style="margin:0 auto 16px">' +
+          (state.score >= 4 ? "Хорошая диагностика: сначала данные и определения, потом решения." :
+           state.score >= 2 ? "Часть шагов верная, но выводы иногда опережают проверку." :
+           "Слишком быстро к решению: начните с данных, периода и определений.") +
+          '</p><div class="btn-row" style="justify-content:center"><button class="btn primary" id="again">Ещё раз</button></div></div>';
+        document.getElementById("again").addEventListener("click", function () {
+          state = { i: 0, score: 0, picked: -1 }; draw();
+        });
+        return;
+      }
+
+      var item = list[state.i];
+      var result = "";
+      if (state.picked >= 0) {
+        var ok = item.options[state.picked].ok;
+        result = '<div class="verdict ' + (ok ? "ok" : "bad") + '" role="status"><b>' +
+          (ok ? "Верно" : "Мимо") + "</b>" + esc(item.explain) + "</div>" +
+          '<div class="btn-row"><button class="btn primary" id="next">' +
+          (state.i + 1 < list.length ? "Дальше" : "Результат") + "</button></div>";
+      }
+
+      root.innerHTML = '<div class="card"><div class="progress"><span>' + esc(title) + " · " +
+        (state.i + 1) + " из " + list.length + "</span><span>Очки: " + state.score + "</span></div>" +
+        '<p class="lead">' + esc(intro) + "</p>" +
+        '<p class="q-text">' + esc(item.q) + "</p>" +
+        '<div class="options">' + item.options.map(function (o, k) {
+          return '<button class="option" data-k="' + k + '"' + (state.picked >= 0 ? " disabled" : "") + ">" +
+            String.fromCharCode(1040 + k) + ". " + esc(o.text) + "</button>";
+        }).join("") + "</div>" + result + "</div>";
+
+      Array.prototype.forEach.call(root.querySelectorAll(".option"), function (b) {
+        b.addEventListener("click", function () {
+          if (state.picked >= 0) return;
+          state.picked = Number(b.getAttribute("data-k"));
+          if (item.options[state.picked].ok) state.score++;
+          draw();
+        });
+      });
+      var next = document.getElementById("next");
+      if (next) next.addEventListener("click", function () {
+        state.i++; state.picked = -1; draw();
+      });
+    }
+
+    draw();
+    return function () {};
+  }
+
+  var METRIC_DROP = [
+    { q: "Выручка за день упала на 20%. Что проверить первым?", options: [
+      { text: "Полноту загрузки, период и валюту", ok: true },
+      { text: "Сразу снизить цену", ok: false },
+      { text: "Уволить маркетинг", ok: false },
+      { text: "Построить ARIMA", ok: false }
+    ], explain: "Сначала исключите сбой данных и изменение определения, потом ищите бизнес-причину." },
+    { q: "Средний чек вырос, а число заказов упало. Что делать?", options: [
+      { text: "Посмотреть распределение чеков и сегменты", ok: true },
+      { text: "Считать, что покупать стали больше", ok: false },
+      { text: "Удалить крупные заказы", ok: false },
+      { text: "Смотреть только на среднее", ok: false }
+    ], explain: "Среднее может вырасти из-за нескольких крупных заказов, а не из-за массового сдвига." },
+    { q: "Конверсия выросла сразу после релиза. Первый шаг?", options: [
+      { text: "Проверить определение метрики, период и источник", ok: true },
+      { text: "Объявить релиз успешным", ok: false },
+      { text: "Сравнить только с прошлым днём", ok: false },
+      { text: "Удалить старые данные", ok: false }
+    ], explain: "Рост может быть артефактом определения, сезонности или неполного периода." },
+    { q: "Новый канал даёт дешёвый трафик, но LTV ниже. Что решает?", options: [
+      { text: "Сравнить когорты и окупаемость, а не только CAC", ok: true },
+      { text: "Масштабировать сразу: трафик дешёвый", ok: false },
+      { text: "Смотреть только на CAC", ok: false },
+      { text: "Отключить канал без анализа", ok: false }
+    ], explain: "Дешёвый трафик может быть убыточным, если клиенты быстро уходят. Нужна юнит-экономика." },
+    { q: "Дашборд и финансовый отчёт расходятся. Что делать?", options: [
+      { text: "Сверить определения, фильтры, период и валюту", ok: true },
+      { text: "Выбрать отчёт, который удобнее", ok: false },
+      { text: "Пересчитать вручную", ok: false },
+      { text: "Удалить дашборд", ok: false }
+    ], explain: "Расхождение почти всегда в определении или фильтре, а не в «плохой базе»." }
+  ];
+
+  var QUERY_DETECTIVE = [
+    { q: "Запрос с OR по двум колонкам стал медленным. Что смотреть?", options: [
+      { text: "EXPLAIN, индексы и кардинальность фильтров", ok: true },
+      { text: "Добавить LIMIT", ok: false },
+      { text: "Заменить всё на SELECT *", ok: false },
+      { text: "Перезапустить базу", ok: false }
+    ], explain: "План покажет, есть ли full scan и какие индексы реально используются." },
+    { q: "NOT IN (SELECT ...) вернул 0 строк. В чём причина?", options: [
+      { text: "В подзапросе есть NULL; надёжнее NOT EXISTS", ok: true },
+      { text: "Нужно добавить DISTINCT", ok: false },
+      { text: "Нужно убрать WHERE", ok: false },
+      { text: "Нужно сделать JOIN без условий", ok: false }
+    ], explain: "Сравнение с NULL даёт неизвестно; NOT EXISTS обрабатывает это корректно." },
+    { q: "После JOIN выручка удвоилась. Что проверить?", options: [
+      { text: "Кардинальность и гранулярность соединения", ok: true },
+      { text: "Разделить результат на два", ok: false },
+      { text: "Удалить JOIN", ok: false },
+      { text: "Добавить GROUP BY", ok: false }
+    ], explain: "Справочник с дублями размножил строки; проверяйте уникальность ключа и число строк." },
+    { q: "WHERE lower(email) = ... не использует индекс. Почему?", options: [
+      { text: "Функция ломает sargability; нужен функциональный индекс или другой запрос", ok: true },
+      { text: "Индекс нужно создать на каждую колонку", ok: false },
+      { text: "Нужно использовать SELECT *", ok: false },
+      { text: "Планировщик всегда ошибается", ok: false }
+    ], explain: "Обычный индекс построен по исходному значению; выражение мешает его применить." },
+    { q: "LIMIT 10 без ORDER BY возвращает разные строки. Что не так?", options: [
+      { text: "Порядок не определён: нужен ORDER BY", ok: true },
+      { text: "Это аппаратная ошибка", ok: false },
+      { text: "Нужно увеличить LIMIT", ok: false },
+      { text: "Нужно удалить индекс", ok: false }
+    ], explain: "Без ORDER BY СУБД не обязана возвращать один и тот же порядок." }
+  ];
+
+  function metricDrop(root) {
+    return scenarioGame(root, METRIC_DROP, "Почему упала метрика?", "Выбирайте первый шаг диагностики. Побеждает не самый быстрый вывод, а проверяемый.");
+  }
+
+  function queryDetective(root) {
+    return scenarioGame(root, QUERY_DETECTIVE, "SQL-детектив", "Пять симптомов — пять причин. Выберите, что проверить или исправить.");
+  }
+
   window.GAMES = {
     montyhall: {
       title: "Парадокс Монти Холла",
@@ -763,6 +894,16 @@
       title: "Многорукий бандит",
       tag: "Сравните ε-жадный алгоритм с делением трафика 50/50",
       mount: bandit
+    },
+    metricdrop: {
+      title: "Почему упала метрика?",
+      tag: "Диагностика падения: данные, сегменты и определения",
+      mount: metricDrop
+    },
+    querydetective: {
+      title: "SQL-детектив",
+      tag: "Пять симптомов: план, NULL, дубли, индексы и порядок",
+      mount: queryDetective
     }
   };
 })();

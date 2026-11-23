@@ -214,6 +214,7 @@
       '<div class="stat"><div class="k">лучшие ответы в тестах</div><div class="v">' +
         s.quizBest + " / " + s.quizTotal + "</div></div>" +
       (m.total ? '<div class="stat"><div class="k">мини-тесты</div><div class="v">' + m.correct + " / " + m.total + "</div></div>" : "") +
+      (window.ACHIEVEMENTS && window.ACHIEVEMENTS.count() ? '<div class="stat"><div class="k">достижения</div><div class="v">' + window.ACHIEVEMENTS.count() + " / " + window.ACHIEVEMENTS.total() + "</div></div>" : "") +
       "</div>" +
       '<div class="btn-row"><a class="btn" href="' + continueHref() + '">Продолжить</a>' +
       (window.PROGRESS.dueReviews().length ? '<a class="btn" href="#/review">Повторить ошибки (' +
@@ -229,6 +230,27 @@
     if (n10 === 1 && n100 !== 11) return one;
     if (n10 >= 2 && n10 <= 4 && (n100 < 12 || n100 > 14)) return few;
     return many;
+  }
+
+  function roadmapBlock() {
+    var steps = [
+      ["01", "Введение", "Что такое аналитика и чем занимается аналитик", "#/theory/analytics/0"],
+      ["02", "Основы", "Метрики, продукт и типы данных", "#/theory/analytics/1"],
+      ["03", "SQL", "Запросы, срезы и проверка данных", "#/theory/sql/1"],
+      ["04", "Python и pandas", "Очистка, расчёты и таблицы", "#/theory/python/0"],
+      ["05", "Эксперименты", "A/B, причинность и решения", "#/theory/causal/0"],
+      ["06", "Портфолио", "dbt, BI и защита проекта", "#/dbt-project"]
+    ];
+    return '<section class="roadmap" aria-labelledby="roadmapTitle">' +
+      '<div class="roadmap-head"><div><h2 id="roadmapTitle">С чего начать</h2>' +
+      '<p class="meta">Шесть шагов от введения до проекта в портфолио. Ветки — в маршрутах.</p></div>' +
+      '<a class="btn" href="#/path">Все маршруты</a></div>' +
+      '<div class="roadmap-grid">' + steps.map(function (s) {
+        return '<a class="roadmap-step" href="' + s[3] + '"><span class="roadmap-num">' + s[0] +
+          "</span><b>" + esc(s[1]) + "</b><small>" + esc(s[2]) + "</small></a>";
+      }).join("") + "</div>" +
+      '<p class="roadmap-next">Дальше можно углубиться в <a href="#/theory/bi/0">BI</a>, ' +
+      '<a href="#/theory/causal/5">причинность</a> или <a href="#/theory/production/0">аналитику в проде</a>.</p></section>';
   }
 
   function home() {
@@ -247,11 +269,13 @@
       '<a class="home-action" href="#/path"><b>Маршрут обучения</b><span>Семь треков под цель</span></a>' +
       '<a class="home-action" href="#/trainer"><b>Тренажёры</b><span>Задачи с автопроверкой</span></a>' +
       "</div>" +
+      roadmapBlock() +
       '<div class="home-tools"><span>Инструменты:</span>' +
       '<a href="#/project">Сквозной проект</a>' +
       '<a href="#/capstone">Большой проект</a>' +
       '<a href="#/open-project">Открытый проект</a>' +
       '<a href="#/dbt-project">dbt + BI</a>' +
+      '<a href="#/achievements">Достижения</a>' +
       '<a href="#/datalab">Практика на данных</a>' +
       '<a href="#/cases">Кейсы</a>' +
       '<a href="#/prompt-lab">Тренажёр промптов</a>' +
@@ -1361,6 +1385,23 @@
     });
   }
 
+  function achievementsPage() {
+    var list = window.ACHIEVEMENTS.list();
+    var done = list.filter(function (a) { return a.done; }).length;
+    return "<h1>Достижения</h1>" +
+      '<p class="lead">Маленькие победы, которые складываются в привычку. Достижения открываются автоматически по прогрессу, тестам, тренажёрам и проектам.</p>' +
+      '<p class="meta">Открыто: ' + done + " из " + list.length + "</p>" +
+      '<div class="grid">' + list.map(function (a) {
+        var pct = Math.round(a.value / a.target * 100);
+        return '<div class="card achievement-card ' + (a.done ? "done" : "locked") + '">' +
+          "<h3>" + icon(a.icon) + esc(a.title) + "</h3>" +
+          "<p>" + esc(a.text) + "</p>" +
+          '<div class="ach-bar"><div style="width:' + pct + '%"></div></div>' +
+          '<p class="meta">' + (a.done ? "Открыто" + (a.at ? " " + new Date(a.at).toLocaleDateString("ru-RU") : "") :
+            "Прогресс: " + a.value + " из " + a.target) + "</p></div>";
+      }).join("") + "</div>";
+  }
+
   function calcPage() {
     function field(id, label, value, step) {
       return '<label>' + label + '<input id="' + id + '" type="number" inputmode="decimal" step="' + (step || "any") + '" value="' + value + '"></label>';
@@ -2072,6 +2113,7 @@
     if (seg === "cards") return { html: cardsPage(), after: bindCards };
     if (seg === "progress") return { html: progressPage(), after: bindProgress };
     if (seg === "review") return { html: reviewPage(), after: bindReview };
+    if (seg === "achievements") return { html: achievementsPage() };
     if (seg === "calc") return { html: calcPage(), after: bindCalc };
     if (seg === "bi-exam") return { mount: biExamPage };
     if (seg === "analyst-exam") return { mount: analystExamPage };
@@ -2092,6 +2134,7 @@
     setKeys(null);
     var p = path();
     renderNav();
+    if (window.ACHIEVEMENTS) window.ACHIEVEMENTS.checkAndToast();
     window.scrollTo(0, 0);
 
     var r = routeFor(p);
@@ -2123,6 +2166,7 @@
       if (reset) reset.addEventListener("click", function () {
         if (confirm("Сбросить прочитанные главы и результаты тестов?")) {
           window.PROGRESS.clear();
+          if (window.ACHIEVEMENTS) window.ACHIEVEMENTS.clear();
           searchIndex = null;
           render();
         }

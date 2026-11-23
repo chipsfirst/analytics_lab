@@ -143,6 +143,8 @@
   function bind() {
     var root = document.getElementById("dbtDashboard");
     if (!root) return;
+    try { localStorage.setItem("analytics-lab-dbt-visited-v1", "1"); } catch (e) {}
+    if (window.ACHIEVEMENTS) window.ACHIEVEMENTS.checkAndToast();
     var select = document.getElementById("dbtChannel");
     var status = document.getElementById("dbtDashStatus");
     var asOf = Date.UTC(2026, 8, 30);

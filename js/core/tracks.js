@@ -9,6 +9,7 @@ window.TRACKS = [
       ["analytics", 1],
       ["analytics", 2],
       ["analytics", 3],
+      ["analytics", 4],
       ["sql", 0],
       ["sql", 1],
       ["sql", 2],
@@ -42,7 +43,7 @@ window.TRACKS = [
       ["statistics", 10],
       ["statistics", 12],
       ["statistics", 13],
-      ["analytics", 1]
+      ["analytics", 2]
     ]
   },
   {
@@ -56,6 +57,9 @@ window.TRACKS = [
       ["python", 3],
       ["python", 4],
       ["python", 5],
+      ["python", 6],
+      ["python", 7],
+      ["python", 8],
       ["cs", 0],
       ["cs", 1],
       ["cs", 2],
@@ -105,7 +109,7 @@ window.TRACKS = [
       ["statistics", 8],
       ["statistics", 9],
       ["statistics", 10],
-      ["analytics", 1],
+      ["analytics", 2],
       ["causal", 0],
       ["causal", 1],
       ["causal", 2],

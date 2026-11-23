@@ -4,22 +4,22 @@ window.TOPICS = {};
 // Единый порядок разделов: используется в учебнике, тестах и самопроверке.
 // Порядок <script> в index.html должен совпадать с этим списком.
 window.TOPIC_ORDER = [
-  "data",
   "analytics",
-  "statistics",
-  "gametheory",
-  "probability",
+  "data",
   "sql",
   "excel",
   "python",
   "cs",
+  "statistics",
+  "probability",
+  "causal",
+  "bi",
+  "production",
   "regression",
   "classification",
   "ml",
   "timeseries",
-  "causal",
-  "bi",
-  "production",
+  "gametheory",
   "ethics",
   "useful"
 ];

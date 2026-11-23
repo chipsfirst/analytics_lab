@@ -10,6 +10,7 @@ require("./js/features/trainers.js");
 require("./js/features/dbt-project.js");
 require("./js/features/games.js");
 require("./js/core/progress.js");
+require("./js/core/achievements.js");
 require("./js/core/glossary.js");
 require("./js/core/search.js");
 require("./js/features/demos.js");
@@ -50,9 +51,9 @@ topicIds.forEach(function (id) {
 var totalChapters = topicIds.reduce(function (n, id) { return n + window.TOPICS[id].chapters.length; }, 0);
 var totalQuiz = topicIds.reduce(function (n, id) { return n + window.TOPICS[id].quiz.length; }, 0);
 var totalTrainers = topicIds.reduce(function (n, id) { return n + (window.TRAINERS[id] || []).length; }, 0);
-ok(totalChapters === 147, "глав: " + totalChapters);
-ok(totalQuiz === 295, "вопросов: " + totalQuiz);
-ok(totalTrainers === 94, "тренажёров: " + totalTrainers);
+ok(totalChapters === 151, "глав: " + totalChapters);
+ok(totalQuiz === 305, "вопросов: " + totalQuiz);
+ok(totalTrainers === 96, "тренажёров: " + totalTrainers);
 
 var seenQuestions = Object.create(null);
 topicIds.forEach(function (id) {
@@ -89,8 +90,10 @@ topicIds.forEach(function (id) {
 });
 
 ok(window.DBT_PROJECT && typeof window.DBT_PROJECT.page === "function" && typeof window.DBT_PROJECT.bind === "function", "dbt-проект: страница не загрузилась");
+ok(window.ACHIEVEMENTS && typeof window.ACHIEVEMENTS.list === "function" && window.ACHIEVEMENTS.total() >= 10, "достижения: модуль не загрузился");
 ok(Array.isArray(window.TRACKS) && window.TRACKS.length === 7, "маршруты: ожидалось 7");
 ok(window.TOPICS.production && window.TOPICS.production.chapters.length === 6 && window.TOPICS.production.quiz.length === 12, "production: 6 глав / 12 вопросов");
+ok(window.TOPICS.analytics && window.TOPICS.analytics.chapters.length === 10 && window.TOPICS.analytics.quiz.length === 25, "analytics: 10 глав / 25 вопросов");
 ok(window.TOPICS.gametheory && window.TOPICS.gametheory.chapters.length === 9 && window.TOPICS.gametheory.quiz.length === 16, "gametheory: 9 глав / 16 вопросов");
 ok(window.TOPICS.cs && window.TOPICS.cs.chapters.length === 6 && window.TOPICS.cs.quiz.length === 12, "cs: 6 глав / 12 вопросов");
 ok((window.TRAINERS.production || []).length === 3, "production: тренажёры");
@@ -111,7 +114,7 @@ topicIds.forEach(function (id) {
   ok(window.TRAINERS[id] && window.TRAINERS[id].length > 0, id + ": нет тренажёров");
 });
 
-ok(Object.keys(window.GAMES).length === 8, "ожидалось 8 игр");
+ok(Object.keys(window.GAMES).length === 10, "ожидалось 10 игр");
 
 // --- генераторы задач: 300 прогонов на каждый ---
 topicIds.forEach(function (id) {
