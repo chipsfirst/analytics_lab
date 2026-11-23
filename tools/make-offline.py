@@ -37,6 +37,7 @@ FILES = [
     "js/app.js",
     "js/data.js",
     "js/topics/analytics.js",
+    "js/topics/data.js",
     "js/topics/statistics.js",
     "js/topics/gametheory.js",
     "js/topics/probability.js",

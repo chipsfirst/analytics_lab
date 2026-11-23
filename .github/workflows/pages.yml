@@ -24,6 +24,8 @@ jobs:
           node-version: "20"
       - name: Проверить единую версию
         run: python3 tools/check-version.py
+      - name: Проверить списки модулей
+        run: python3 tools/check-modules.py
       - name: Проверка контента и генераторов
         run: node selftest.js
 
