@@ -1,0 +1,60 @@
+name: dbt build
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  dbt:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: projects/dbt-subscription
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Проверить версию Python
+        run: python scripts/check_python.py
+      - name: Установить dbt
+        run: pip install -r requirements.txt
+      - name: Подготовить seeds из данных сайта
+        run: |
+          mkdir -p seeds
+          cp ../../data/sub-users.csv seeds/sub_users.csv
+          cp ../../data/sub-subscriptions.csv seeds/sub_subscriptions.csv
+          cp ../../data/sub-payments.csv seeds/sub_payments.csv
+          cp ../../data/sub-tickets.csv seeds/sub_tickets.csv
+      - name: Обновить _loaded_at для CI
+        run: |
+          python - <<'PY'
+          import csv, datetime, pathlib
+          now = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+          for name in ("sub_users.csv", "sub_subscriptions.csv", "sub_payments.csv", "sub_tickets.csv"):
+              path = pathlib.Path("seeds") / name
+              with path.open(newline="", encoding="utf-8") as fh:
+                  rows = list(csv.DictReader(fh))
+              for row in rows:
+                  row["_loaded_at"] = now
+              with path.open("w", newline="", encoding="utf-8") as fh:
+                  writer = csv.DictWriter(fh, fieldnames=rows[0].keys())
+                  writer.writeheader()
+                  writer.writerows(rows)
+          PY
+      - name: Профиль DuckDB
+        run: cp profiles.yml.example profiles.yml
+      - name: dbt seed
+        run: dbt seed --profiles-dir .
+      - name: dbt build
+        run: dbt build --profiles-dir .
+      - name: dbt source freshness
+        run: dbt source freshness --profiles-dir .
+      - name: dbt docs
+        run: dbt docs generate --profiles-dir .
+      - name: Сохранить docs
+        uses: actions/upload-artifact@v4
+        with:
+          name: dbt-docs
+          path: projects/dbt-subscription/target

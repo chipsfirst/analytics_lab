@@ -37,30 +37,35 @@
     return !!(window.PROGRESS && window.PROGRESS.isRead(topic, idx));
   }
 
+  function quizBest(id) {
+    var q = window.PROGRESS && window.PROGRESS.quiz(id);
+    return q ? Number(q.best) || 0 : 0;
+  }
+
   var DEFS = [
-    { id: "first-chapter", title: "Первый шаг", text: "Прочитайте первую главу", icon: "book", target: 1,
+    { id: "first-chapter", title: "Первый шаг", text: "Прочитайте первую главу", icon: "book", tone: "#4f46e5", target: 1,
       value: function (c) { return c.chapters; } },
-    { id: "ten-chapters", title: "Разогрев", text: "Прочитайте 10 глав", icon: "book", target: 10,
-      value: function (c) { return c.chapters; } },
-    { id: "fifty-chapters", title: "Половина пути", text: "Прочитайте 50 глав", icon: "layers", target: 50,
-      value: function (c) { return c.chapters; } },
-    { id: "first-quiz", title: "Проверка", text: "Пройдите первый тест", icon: "target", target: 1,
+    { id: "first-quiz", title: "Проверка", text: "Пройдите первый тест", icon: "target", tone: "#0891b2", target: 1,
       value: function (c) { return c.attempts > 0 ? 1 : 0; } },
-    { id: "perfect-quiz", title: "Чистый тест", text: "Пройдите тест без ошибок", icon: "shield", target: 1,
+    { id: "perfect-quiz", title: "Чистый тест", text: "Пройдите тест без ошибок", icon: "shield", tone: "#15803d", target: 1,
       value: function (c) { return c.perfect ? 1 : 0; } },
-    { id: "mini-ten", title: "Десять задач", text: "Решите 10 заданий в тренажёрах", icon: "flask", target: 10,
+    { id: "mini-ten", title: "Десять задач", text: "Решите 10 заданий в тренажёрах", icon: "flask", tone: "#a16207", target: 10,
       value: function (c) { return c.miniTotal; } },
-    { id: "sql-basics", title: "В базу", text: "Прочитайте первую главу SQL", icon: "database", target: 1,
-      value: function () { return read("sql", 0) ? 1 : 0; } },
-    { id: "cs-start", title: "Под капот", text: "Прочитайте первую главу Computer Science", icon: "cpu", target: 1,
-      value: function () { return read("cs", 0) ? 1 : 0; } },
-    { id: "game-theory", title: "Стратег", text: "Прочитайте первую главу теории игр", icon: "scale", target: 1,
+    { id: "sql-quiz", title: "SQL-практик", text: "Наберите 7 из 8 в тесте SQL", icon: "database", tone: "#15803d", target: 1,
+      value: function () { return quizBest("sql") >= 7 ? 1 : 0; } },
+    { id: "cs-quiz", title: "Под капот", text: "Наберите 7 из 8 в тесте Computer Science", icon: "cpu", tone: "#0891b2", target: 1,
+      value: function () { return quizBest("cs") >= 7 ? 1 : 0; } },
+    { id: "pandas-quiz", title: "pandas в руках", text: "Наберите 7 из 8 в тесте Python", icon: "code", tone: "#a16207", target: 1,
+      value: function () { return quizBest("python") >= 7 ? 1 : 0; } },
+    { id: "causal-quiz", title: "Причинный вывод", text: "Наберите 7 из 8 в тесте причинности", icon: "link", tone: "#9a3412", target: 1,
+      value: function () { return quizBest("causal") >= 7 ? 1 : 0; } },
+    { id: "game-theory", title: "Стратег", text: "Прочитайте первую главу теории игр", icon: "scale", tone: "#b45309", target: 1,
       value: function () { return read("gametheory", 0) ? 1 : 0; } },
-    { id: "capstone-first", title: "Первый ответ", text: "Решите одну задачу большого проекта", icon: "layers", target: 1,
+    { id: "capstone-first", title: "Первый ответ", text: "Решите одну задачу большого проекта", icon: "layers", tone: "#7c3aed", target: 1,
       value: function (c) { return c.capstone > 0 ? 1 : 0; } },
-    { id: "dbt-visited", title: "В прод", text: "Откройте сквозной проект dbt + BI", icon: "gear", target: 1,
+    { id: "dbt-visited", title: "В прод", text: "Откройте сквозной проект dbt + BI", icon: "gear", tone: "#475569", target: 1,
       value: function (c) { return c.dbt ? 1 : 0; } },
-    { id: "portfolio", title: "Портфолио", text: "Закройте оба проекта: розницу и подписку", icon: "note", target: 2,
+    { id: "portfolio", title: "Портфолио", text: "Закройте оба проекта: розницу и подписку", icon: "star", tone: "#db2777", target: 2,
       value: function (c) { return (c.capstone >= 6 ? 1 : 0) + (c.open >= 6 ? 1 : 0); } }
   ];
 
@@ -94,6 +99,7 @@
         title: d.title,
         text: d.text,
         icon: d.icon,
+        tone: d.tone,
         target: d.target,
         value: Math.min(raw, d.target),
         done: raw >= d.target,

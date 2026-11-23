@@ -87,7 +87,8 @@
     book: '<path d="M5 5.5A2.5 2.5 0 017.5 3H19v16H7.5A2.5 2.5 0 005 21.5z"/><path d="M5 18.5A2.5 2.5 0 017.5 16H19"/>',
     gear: '<circle cx="12" cy="12" r="3"/><path d="M12 3v3M12 18v3M4.2 7.5l2.6 1.5M17.2 15l2.6 1.5M4.2 16.5l2.6-1.5M17.2 9l2.6-1.5"/>',
     wave: '<path d="M3 15c3-7 6-7 9 0s6 7 9 0"/>',
-    shield: '<path d="M12 3l7 3v6c0 4-3 7-7 9-4-2-7-5-7-9V6z"/><path d="M9 12l2 2 4-4"/>'
+    shield: '<path d="M12 3l7 3v6c0 4-3 7-7 9-4-2-7-5-7-9V6z"/><path d="M9 12l2 2 4-4"/>',
+    star: '<path d="M12 3l2.7 5.5 6.1.9-4.4 4.3 1 6.1-5.4-2.9-5.4 2.9 1-6.1L3.2 9.4l6.1-.9z"/>'
   };
 
   function icon(name) {
@@ -274,8 +275,10 @@
       '<a href="#/project">Сквозной проект</a>' +
       '<a href="#/capstone">Большой проект</a>' +
       '<a href="#/open-project">Открытый проект</a>' +
+      '<a href="#/pandas-case">Pandas-кейс</a>' +
       '<a href="#/dbt-project">dbt + BI</a>' +
       '<a href="#/achievements">Достижения</a>' +
+      '<a href="#/session">30 минут</a>' +
       '<a href="#/datalab">Практика на данных</a>' +
       '<a href="#/cases">Кейсы</a>' +
       '<a href="#/prompt-lab">Тренажёр промптов</a>' +
@@ -310,6 +313,50 @@
       }).join("") + "</div>";
   }
 
+  function chapterCheatTerms(html) {
+    var terms = [], m, re = /<b>([\s\S]*?)<\/b>/g;
+    while ((m = re.exec(html)) && terms.length < 6) {
+      var t = m[1].replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
+      if (t && t.length <= 90 && t !== "Пример." && t !== "Пример" && terms.indexOf(t) < 0) terms.push(t);
+    }
+    return terms;
+  }
+
+  function chapterFormula(html) {
+    var m = html.match(/<div class="formula">([\s\S]*?)<\/div>/);
+    if (!m) return "";
+    return m[1].replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim().slice(0, 240);
+  }
+
+  function chapterCheatsheetHtml(id, c) {
+    var terms = chapterCheatTerms(c.html);
+    var formula = chapterFormula(c.html);
+    var chips = terms.length
+      ? '<div class="cheat-chips">' + terms.map(function (t) { return '<span class="cheat-chip">' + esc(t) + "</span>"; }).join("") + "</div>"
+      : '<p class="meta">Ключевые термины — в тексте главы.</p>';
+    return '<div class="chapter-cheatsheet"><h3>Шпаргалка главы</h3>' +
+      '<div class="cheat-cols"><div><b>Ключевые понятия</b>' + chips + "</div>" +
+      (formula ? '<div><b>Формула или правило</b><code class="cheat-formula">' + esc(formula) + "</code></div>" : "") +
+      "</div>" +
+      '<p class="meta"><a href="#/cheatsheet">Все шпаргалки</a> · <a href="#/quiz/' + id + '">Проверить тестом</a> · ' +
+      '<a href="#/trainer/' + id + '">Тренажёр</a></p></div>';
+  }
+
+  function chapterSourcesHtml(id) {
+    var list = (window.SOURCES && window.SOURCES[id]) || [];
+    if (!list.length) return "";
+    return '<div class="chapter-sources"><h3>Что почитать</h3><ul>' + list.map(function (s) {
+      return '<li><a href="' + s.url + '" target="_blank" rel="noopener">' + esc(s.title) + "</a>" +
+        '<span class="meta"> — ' + esc(s.note) + "</span></li>";
+    }).join("") + "</ul></div>";
+  }
+
+  function readingTime(html) {
+    var text = String(html).replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
+    var words = text ? text.split(" ").length : 0;
+    return Math.max(1, Math.round(words / 180));
+  }
+
   function theory(id, chapterIdx) {
     var t = window.TOPICS[id];
     var meta = TOPIC_META[id] || {};
@@ -324,11 +371,14 @@
       var next = i < t.chapters.length - 1 ? '<a class="btn small" href="#/theory/' + id + "/" + (i + 1) + '" data-ch="' + (i + 1) + '">' + esc(t.chapters[i + 1].title) + " &rarr;</a>" : "<span></span>";
       return '<section id="ch-' + i + '">' +
         '<div class="ch-head"><h2 id="ch-' + i + '-title">' + icon(chapterIcon(c.title) || meta.icon) + (i + 1) + ". " + esc(c.title) + "</h2>" +
-        '<span class="ch-actions"><button class="btn small" data-copy="' + i + '">Ссылка</button>' +
+        '<span class="ch-actions"><span class="meta ch-time">~' + readingTime(c.html) + ' мин</span>' +
+        '<button class="btn small" data-copy="' + i + '">Ссылка</button>' +
         '<button class="btn small' + (read ? " is-read" : "") + '" data-read="' + i + '" aria-pressed="' + read + '">' +
         (read ? "Прочитано" : "Отметить прочитанной") + "</button></span></div>" +
         c.html +
         chapterTermsHtml(id, i, c.html) +
+        chapterCheatsheetHtml(id, c) +
+        chapterSourcesHtml(id) +
         '<p class="meta"><a href="https://github.com/chipsfirst/analytics_lab/issues/new?title=' +
           encodeURIComponent("Ошибка в главе: " + c.title) + "&body=" +
           encodeURIComponent("Раздел: " + t.title + "\nГлава: " + c.title + "\nСсылка: " +
@@ -1270,6 +1320,52 @@
     });
   }
 
+  function pandasCasePage() {
+    var files = [
+      ["sub-users.csv", "Пользователи", "3 000"],
+      ["sub-subscriptions.csv", "Подписки", "3 604"],
+      ["sub-payments.csv", "Платежи", "20 672"],
+      ["sub-tickets.csv", "Обращения", "2 000"]
+    ];
+    return "<h1>Pandas-кейс: отчёт по подписке</h1>" +
+      '<p class="lead">Один сквозной сценарий на четырёх CSV: загрузка, качество, соединения, метрики, когорты и записка. ' +
+      "Без готового ответа: файл-стартер, шесть шагов и рубрика.</p>" +
+      '<div class="card"><h2>Бриф</h2><p>Сервис «Пульс» просит аналитика собрать месячный отчёт по подписке. ' +
+      "Нужно объяснить, что происходит с выручкой и удержанием, найти один проблемный сегмент и предложить действие на квартал.</p>" +
+      '<p><a class="btn primary" href="data/pandas-case-starter.py" download>Скачать стартовый файл</a> ' +
+      '<a class="btn" href="#/pysandbox">Открыть Python-песочницу</a> ' +
+      '<a class="btn" href="#/theory/python/5">Повторить pandas</a> ' +
+      '<a class="btn" href="https://github.com/chipsfirst/analytics_lab/issues/new?template=review.md" target="_blank" rel="noopener">Запросить ревью</a></p>' +
+      '<p class="meta">Данные синтетические. Запускать можно локально или в песочнице: pandas и чтение CSV уже доступны.</p></div>' +
+      '<h2>Данные</h2><div class="grid">' + files.map(function (f) {
+        return '<div class="card"><h3><a href="data/' + f[0] + '" download>' + esc(f[1]) + "</a></h3>" +
+          '<p class="meta">' + esc(f[2]) + " строк</p></div>";
+      }).join("") + "</div>" +
+      '<h2>Шесть шагов</h2><div class="grid">' +
+      '<div class="card"><h3>1. Загрузка и типы</h3><p>Прочитайте четыре файла, разберитесь с двумя форматами дат, ' +
+      "проверьте дубли payment_id и пропуски user_id. Посчитайте, сколько строк теряется на каждом шаге.</p></div>" +
+      '<div class="card"><h3>2. Соединение таблиц</h3><p>Соберите платежи с пользователями и подписками. ' +
+      "Проверьте зерно и кардинальность, даты до регистрации и после окончания подписки. Не удаляйте аномалии молча.</p></div>" +
+      '<div class="card"><h3>3. Метрики</h3><p>Помесячная net revenue, MRR на последний день, ARPU, доля failed payments, ' +
+      "возвраты. Для каждой метрики запишите формулу и период.</p></div>" +
+      '<div class="card"><h3>4. Когорты</h3><p>Сравните удержание по каналам за январь–март. ' +
+      "Найдите разрыв, который меняет решение, и проверьте, не объясняется ли он тарифом.</p></div>" +
+      '<div class="card"><h3>5. Поддержка</h3><p>Разберите обращения по категориям и приоритетам. ' +
+      "Свяжите нагрузку и удовлетворённость с тарифом или каналом.</p></div>" +
+      '<div class="card"><h3>6. Записка</h3><p>Пять пунктов для CMO: решение, три цифры, риск и следующий шаг. ' +
+      "Одна страница, без пересказа всех графиков.</p></div>" +
+      "</div>" +
+      '<h2>Рубрика</h2><div class="table-wrap"><table><thead><tr><th>Критерий</th><th>0</th><th>1</th><th>2</th></tr></thead><tbody>' +
+      "<tr><td>Качество</td><td>Дефекты не замечены</td><td>Перечислены без влияния</td><td>Посчитаны и связаны с метрикой</td></tr>" +
+      "<tr><td>Код</td><td>Не запускается</td><td>Работает, но без проверок</td><td>Читаемый, с проверками зерна и типов</td></tr>" +
+      "<tr><td>Метрики</td><td>Формулы неверны</td><td>Верно, но без определений</td><td>Верно, с периодом и оговорками</td></tr>" +
+      "<tr><td>Вывод</td><td>Нет решения</td><td>Есть цифры без действия</td><td>Решение, риск и следующий шаг</td></tr>" +
+      "</tbody></table></div>" +
+      '<p class="meta">Максимум 8 баллов. 6 и больше — работа, которую можно обсуждать на собеседовании.</p>' +
+      '<div class="note"><b>Подсказка.</b> Сначала зафиксируйте определения: что такое активная подписка, ' +
+      "как считается отток и входит ли возврат в выручку. Потом считайте — иначе цифры не сойдутся.</div>";
+  }
+
   function openProjectPage() {
     var files = [
       ["sub-users.csv", "Пользователи", "3 000", "user_id, signup_date, city, channel, age_group"],
@@ -1394,12 +1490,60 @@
       '<div class="grid">' + list.map(function (a) {
         var pct = Math.round(a.value / a.target * 100);
         return '<div class="card achievement-card ' + (a.done ? "done" : "locked") + '">' +
-          "<h3>" + icon(a.icon) + esc(a.title) + "</h3>" +
+          '<div class="ach-head"><span class="ach-icon" style="color:' + a.tone + ';background:' + a.tone + '1a">' + icon(a.icon) + "</span><h3>" + esc(a.title) + "</h3></div>" +
           "<p>" + esc(a.text) + "</p>" +
           '<div class="ach-bar"><div style="width:' + pct + '%"></div></div>' +
           '<p class="meta">' + (a.done ? "Открыто" + (a.at ? " " + new Date(a.at).toLocaleDateString("ru-RU") : "") :
             "Прогресс: " + a.value + " из " + a.target) + "</p></div>";
       }).join("") + "</div>";
+  }
+
+  function sessionPage() {
+    var last = window.PROGRESS.last();
+    var topic = last && window.TOPICS[last.id] ? last.id : "analytics";
+    var idx = last && window.TOPICS[last.id] && window.TOPICS[last.id].chapters[last.i] ? last.i : 0;
+    return "<h1>30 минут</h1>" +
+      '<p class="lead">Короткая сессия без выбора «что делать дальше»: немного теории, один тренажёр, тест и шпаргалка.</p>' +
+      '<div class="session-clock" id="sessionClock">30:00</div>' +
+      '<div class="btn-row"><button class="btn primary" id="sessionStart">Старт</button>' +
+      '<button class="btn" id="sessionReset">Сброс</button></div>' +
+      '<div class="grid">' +
+      '<div class="card"><h3>5 минут — теория</h3><p>Продолжите с последней главы или начните с введения.</p>' +
+        '<a class="btn" href="' + (last ? "#/theory/" + topic + "/" + idx : "#/theory/analytics/0") + '">Продолжить</a></div>' +
+      '<div class="card"><h3>10 минут — тренажёр</h3><p>Одна задача с автопроверкой: не скорость, а разбор ошибки.</p>' +
+        '<a class="btn" href="#/trainer/' + topic + '">К тренажёру</a></div>' +
+      '<div class="card"><h3>10 минут — тест</h3><p>Восемь вопросов из банка раздела и разбор ответов.</p>' +
+        '<a class="btn" href="#/quiz/' + topic + '">К тесту</a></div>' +
+      '<div class="card"><h3>5 минут — шпаргалка</h3><p>Повторите формулы и термины перед следующим шагом.</p>' +
+        '<a class="btn" href="#/cheatsheet">Открыть</a></div>' +
+      "</div>";
+  }
+
+  function bindSession() {
+    var clock = document.getElementById("sessionClock");
+    var start = document.getElementById("sessionStart");
+    var reset = document.getElementById("sessionReset");
+    if (!clock || !start) return;
+    var left = 30 * 60, timer = null;
+    function draw() {
+      var m = Math.floor(left / 60), s = left % 60;
+      clock.textContent = (m < 10 ? "0" : "") + m + ":" + (s < 10 ? "0" : "") + s;
+      clock.classList.toggle("done", left <= 0);
+    }
+    function stop() { if (timer) { clearInterval(timer); timer = null; } start.textContent = "Старт"; }
+    start.addEventListener("click", function () {
+      if (timer) { stop(); return; }
+      if (left <= 0) left = 30 * 60;
+      start.textContent = "Пауза";
+      timer = setInterval(function () {
+        left--;
+        draw();
+        if (left <= 0) stop();
+      }, 1000);
+    });
+    reset.addEventListener("click", function () { stop(); left = 30 * 60; draw(); });
+    draw();
+    cleanup = stop;
   }
 
   function calcPage() {
@@ -2106,6 +2250,7 @@
     if (seg === "project") return { html: projectPage(), after: bindProject };
     if (seg === "capstone") return { html: capstonePage(), after: bindCapstone };
     if (seg === "open-project") return { html: openProjectPage(), after: bindOpenProject };
+    if (seg === "pandas-case") return { html: pandasCasePage() };
     if (seg === "dbt-project") return { html: window.DBT_PROJECT.page(), after: window.DBT_PROJECT.bind };
     if (seg === "datalab") return { html: datalabPage(), after: bindDatalab };
     if (seg === "cases") return { html: casesPage() };
@@ -2114,6 +2259,7 @@
     if (seg === "progress") return { html: progressPage(), after: bindProgress };
     if (seg === "review") return { html: reviewPage(), after: bindReview };
     if (seg === "achievements") return { html: achievementsPage() };
+    if (seg === "session") return { html: sessionPage(), after: bindSession };
     if (seg === "calc") return { html: calcPage(), after: bindCalc };
     if (seg === "bi-exam") return { mount: biExamPage };
     if (seg === "analyst-exam") return { mount: analystExamPage };

@@ -89,7 +89,8 @@
       "<p>В архиве — dbt-модели, тесты, CI, README, <code>REVIEW.md</code>, запросы для BI и четыре CSV в <code>seeds/</code>. " +
         "Данные синтетические, но дефекты настоящие: дубли, пропуски, разные форматы дат.</p>",
       '<div class="links"><a class="btn primary" href="dbt-subscription.zip" download>Скачать dbt-subscription.zip</a>',
-      '<a class="btn" href="data/sub-users.csv" download>Данные: users</a></div></div>',
+      '<a class="btn" href="data/sub-users.csv" download>Данные: users</a>',
+      '<a class="btn" href="https://github.com/chipsfirst/analytics_lab/actions/workflows/dbt.yml" target="_blank" rel="noopener">dbt CI</a></div></div>',
       '<div class="grid">',
       '<div class="card"><h3>dbt-репозиторий</h3><p>staging, marts, seeds и профиль DuckDB. ' +
         "Можно запустить локально командой <code>dbt build</code>.</p></div>",

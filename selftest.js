@@ -10,6 +10,7 @@ require("./js/features/trainers.js");
 require("./js/features/dbt-project.js");
 require("./js/features/games.js");
 require("./js/core/progress.js");
+require("./js/core/sources.js");
 require("./js/core/achievements.js");
 require("./js/core/glossary.js");
 require("./js/core/search.js");
@@ -91,6 +92,7 @@ topicIds.forEach(function (id) {
 
 ok(window.DBT_PROJECT && typeof window.DBT_PROJECT.page === "function" && typeof window.DBT_PROJECT.bind === "function", "dbt-проект: страница не загрузилась");
 ok(window.ACHIEVEMENTS && typeof window.ACHIEVEMENTS.list === "function" && window.ACHIEVEMENTS.total() >= 10, "достижения: модуль не загрузился");
+ok(window.SOURCES && Object.keys(window.SOURCES).length === 18, "источники: не для всех разделов");
 ok(Array.isArray(window.TRACKS) && window.TRACKS.length === 7, "маршруты: ожидалось 7");
 ok(window.TOPICS.production && window.TOPICS.production.chapters.length === 6 && window.TOPICS.production.quiz.length === 12, "production: 6 глав / 12 вопросов");
 ok(window.TOPICS.analytics && window.TOPICS.analytics.chapters.length === 10 && window.TOPICS.analytics.quiz.length === 25, "analytics: 10 глав / 25 вопросов");

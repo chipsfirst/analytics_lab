@@ -66,6 +66,9 @@ window.TRACKS = [
       ["ml", 0],
       ["ml", 1],
       ["ml", 2]
+    ],
+    final: [
+      { title: "Pandas-кейс: отчёт по подписке", href: "#/pandas-case", note: "6 шагов на четырёх CSV" }
     ]
   },
   {
