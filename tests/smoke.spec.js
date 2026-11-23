@@ -44,3 +44,12 @@ test("таймер 30 минут переживает переход", async ({ 
   await page.evaluate(() => { location.hash = "#/theory/analytics/0"; });
   await expect(page.locator("#sessionDock")).toBeVisible();
 });
+
+test("Pyodide: pandas-кейс загружает CSV", async ({ page }) => {
+  test.setTimeout(240000);
+  await page.goto("/#/pandas-lab");
+  await page.locator("#nbStart").click();
+  await expect(page.locator("#nbStatus")).toContainText("Python готов", { timeout: 180000 });
+  await page.locator('button[data-run="0"]').click();
+  await expect(page.locator('[data-out="0"]')).toContainText("(3000, 6)", { timeout: 60000 });
+});
