@@ -64,8 +64,8 @@ topicIds.forEach(function (id) {
 var totalChapters = topicIds.reduce(function (n, id) { return n + window.TOPICS[id].chapters.length; }, 0);
 var totalQuiz = topicIds.reduce(function (n, id) { return n + window.TOPICS[id].quiz.length; }, 0);
 var totalTrainers = topicIds.reduce(function (n, id) { return n + (window.TRAINERS[id] || []).length; }, 0);
-ok(totalChapters === 173, "глав: " + totalChapters);
-ok(totalQuiz === 349, "вопросов: " + totalQuiz);
+ok(totalChapters === 185, "глав: " + totalChapters);
+ok(totalQuiz === 371, "вопросов: " + totalQuiz);
 ok(totalTrainers === 102, "тренажёров: " + totalTrainers);
 
 var seenQuestions = Object.create(null);
@@ -225,7 +225,7 @@ if (window.SEARCH) {
     "поиск по «Байес» не нашёл главу про формулу Байеса");
 
   var windows = window.SEARCH.find(index, "оконн");
-  ok(windows.some(function (h) { return h.entry.href === "#/theory/sql/5"; }), "глава про оконные функции не найдена");
+  ok(windows.some(function (h) { return h.entry.href === "#/theory/sql/7"; }), "глава про оконные функции не найдена");
   ok(window.SEARCH.find(index, "б").length === 0, "запрос из одного символа должен отбрасываться");
   ok(window.SEARCH.find(index, "ъъъъъ").length === 0, "мусорный запрос что-то нашёл");
 }

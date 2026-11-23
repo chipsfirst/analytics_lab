@@ -28,6 +28,21 @@
     return Math.max(1, Math.round(words / 180));
   }
 
+  function nextTopicHtml(id) {
+    var order = (window.TOPIC_ORDER || Object.keys(window.TOPICS)).filter(function (x) {
+      return !!window.TOPICS[x];
+    });
+    var pos = order.indexOf(id);
+    if (pos < 0) return "";
+    var nextId = order[pos + 1];
+    if (!nextId) {
+      return '<div class="topic-next"><span class="meta">Это последний раздел</span>' +
+        '<a class="btn" href="#/textbook">К списку разделов &rarr;</a></div>';
+    }
+    return '<div class="topic-next"><span class="meta">Следующий раздел</span>' +
+      '<a class="btn" href="#/theory/' + nextId + '">' + LAB.esc(window.TOPICS[nextId].title) + ' &rarr;</a></div>';
+  }
+
   function theory(id, chapterIdx) {
     var t = window.TOPICS[id];
     var meta = LAB.topicMeta[id] || {};
@@ -69,7 +84,7 @@
       (id === "python" ? '<div class="btn-row"><a class="btn" href="#/pysandbox">Песочница Python</a></div>' : "") +
       (id === "statistics" ? '<div class="btn-row"><a class="btn" href="#/cheatsheet">Какой критерий выбрать</a></div>' : "") +
       (id === "bi" ? '<div class="btn-row"><a class="btn" href="#/bi-exam">Сертификация</a></div>' : "") +
-      "</aside><article>" + body + topicTermsHtml(t) + topicSourcesHtml(id) + "</article></div></div>";
+      "</aside><article>" + body + topicTermsHtml(t) + topicSourcesHtml(id) + nextTopicHtml(id) + "</article></div></div>";
   }
 
   window.THEORY_PAGE = { page: theory };
