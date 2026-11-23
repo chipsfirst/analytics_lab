@@ -6,17 +6,35 @@ test("главная и версия", async ({ page }) => {
   await expect(page.locator(".home-action.primary")).toBeVisible();
 });
 
-test("тест: варианты и переход дальше", async ({ page }) => {
+test("тест: ответ и следующий вопрос", async ({ page }) => {
   await page.goto("/#/quiz/analytics");
   await expect(page.locator(".option")).toHaveCount(4);
   await page.locator(".option").first().click();
   await expect(page.locator("#next")).toBeVisible();
+  await page.locator("#next").click();
+  await expect(page.locator(".option")).toHaveCount(4);
 });
 
-test("тренажёр: задача отображается", async ({ page }) => {
+test("тренажёр: ответ даёт вердикт", async ({ page }) => {
   await page.goto("/#/trainer/analytics");
   await expect(page.locator("#app h1")).toContainText("Аналитика");
-  await expect(page.locator("#check, .option[data-k]")).toBeVisible();
+  if (await page.locator(".option[data-k]").count()) {
+    await page.locator(".option[data-k]").first().click();
+  } else {
+    await page.locator("#ans").fill("1");
+    await page.locator("#check").click();
+  }
+  await expect(page.locator(".verdict")).toBeVisible();
+});
+
+test("30 минут: шаг отмечается и сбрасывается", async ({ page }) => {
+  await page.goto("/#/session");
+  const step = page.locator('[data-session-step="theory"]');
+  await step.check();
+  await expect(step).toBeChecked();
+  await page.locator("#sessionReset").click();
+  await expect(step).not.toBeChecked();
+  await expect(page.locator("#sessionClock")).toHaveText("30:00");
 });
 
 test("таймер 30 минут переживает переход", async ({ page }) => {
