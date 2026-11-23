@@ -17,6 +17,7 @@
   var NAV = [
     ["#/", "Главная"],
     ["#/textbook", "Учебник"],
+    ["#/tools", "Инструменты"],
     ["#/games", "Игры"],
     ["#/demos", "Демо"],
     ["#/glossary", "Словарь"]
@@ -260,6 +261,52 @@
   // ---------- роутер ----------
 
   // Каждый маршрут описывает результат: html, побочный рендер или монтирование.
+  function toolsPage() {
+    function link(href, title, text, download) {
+      return '<a class="home-link" href="' + href + '"' + (download ? " download" : "") + '><b>' + title + '</b><span>' + text + '</span></a>';
+    }
+    return "<h1>Инструменты</h1>" +
+      '<p class="lead">Практика, повторение и песочницы — в одном месте, без длинного списка на главной.</p>' +
+      "<h2>Практика и проекты</h2><div class=\"home-links\">" +
+      link("#/project", "Сквозной проект", "Данные → SQL → Python → дашборд") +
+      link("#/capstone", "Большой проект", "Розница: 6 задач с автопроверкой") +
+      link("#/open-project", "Открытый проект", "Подписка: рубрика и защита решения") +
+      link("#/pandas-case", "Pandas-кейс", "Отчёт по подписке на четырёх CSV") +
+      link("#/dbt-project", "dbt + BI", "Репозиторий, тесты и живой дашборд") +
+      link("#/datalab", "Практика на данных", "Задачи по CSV с проверкой") +
+      link("#/cases", "Кейсы", "12 ситуаций с открытым ответом") +
+      link("#/notebook", "Python-блокнот", "Заказы в Pyodide без установки") +
+      "</div>" +
+      "<h2>Повторение и проверка</h2><div class=\"home-links\">" +
+      link("#/session", "30 минут", "Короткая сессия с таймером") +
+      link("#/achievements", "Достижения", "Прогресс и качество тестов") +
+      link("#/cards", "Карточки", "Повторение терминов") +
+      link("#/calc", "Калькуляторы", "Выборка, MDE, LTV и CAC") +
+      link("#/analyst-exam", "Сертификация", "20 вопросов на время") +
+      link("#/prompt-lab", "Тренажёр промптов", "8 рабочих ситуаций") +
+      "</div>" +
+      "<h2>Песочницы и офлайн</h2><div class=\"home-links\">" +
+      link("#/sandbox", "SQL-песочница", "Запросы к настоящей базе в браузере") +
+      link("#/pysandbox", "Python-песочница", "Блокнот на Pyodide") +
+      (window.OFFLINE_BUILD
+        ? link("#/offline", "Офлайн-версия", "Как установить сайт как приложение")
+        : link("analytics-lab-offline.zip", "Офлайн-архив", "Скачать сайт одним файлом", true)) +
+      "</div>";
+  }
+
+  function drawProgressPanel() {
+    var el = document.getElementById("progressPanel");
+    if (!el) return;
+    var s = window.PROGRESS.summary(window.TOPICS);
+    var pct = s.totalChapters ? Math.round(s.chapters / s.totalChapters * 100) : 0;
+    var ach = window.ACHIEVEMENTS ? window.ACHIEVEMENTS.count() : 0;
+    el.innerHTML = '<div class="progress-strip-inner">' +
+      '<div class="progress-strip-top"><span>Прогресс</span><b>' + s.chapters + " / " + s.totalChapters + " глав</b>" +
+      '<span class="meta">Тесты: ' + s.quizBest + " / " + s.quizTotal + " · Достижения: " + ach + "</span>" +
+      '<a href="#/progress">Подробнее</a></div>' +
+      '<div class="progress-strip-bar"><div style="width:' + pct + '%"></div></div></div>';
+  }
+
   function routeFor(p) {
     var seg = p[0], id = p[1];
 
@@ -308,6 +355,7 @@
     if (seg === "sandbox") return { mount: sandboxPage };
     if (seg === "pysandbox") return { mount: pySandboxPage };
     if (seg === "path") return { html: window.PATH_PAGE.page() };
+    if (seg === "tools") return { html: toolsPage() };
     if (seg === "cheatsheet") return { html: window.STATIC_PAGES.cheatsheet() };
     if (seg === "glossary") return { html: window.GLOSSARY_PAGE.page(id), after: function () { window.GLOSSARY_PAGE.bind(id); } };
     if (seg === "offline") return { html: window.STATIC_PAGES.offline() };
@@ -317,6 +365,7 @@
 
   function render() {
     if (cleanup) { try { cleanup(); } catch (e) {} cleanup = null; }
+    drawProgressPanel();
     if (window.SESSION) window.SESSION.drawDock();
     setKeys(null);
     var p = path();

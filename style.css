@@ -870,3 +870,11 @@ th { background: var(--accent-soft); color: var(--accent); }
 @media (max-width: 640px) { .session-dock { right: 10px; bottom: 10px; } }
 .home-meta { margin: 7px 0 0; }
 .home-tools + .home-tools { margin-top: 3px; }
+.progress-strip { width: min(760px, calc(100% - 32px)); margin: 8px auto 0; }
+.progress-strip-inner { padding: 7px 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--panel); }
+.progress-strip-top { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; font-size: 12px; }
+.progress-strip-top b { font-size: 13px; }
+.progress-strip-top a { margin-left: auto; color: var(--accent); }
+.progress-strip-bar { height: 3px; margin-top: 6px; overflow: hidden; border-radius: 99px; background: var(--line); }
+.progress-strip-bar > div { height: 100%; background: var(--accent); }
+@media (max-width: 640px) { .progress-strip { width: calc(100% - 20px); } .progress-strip-top .meta { display: none; } }

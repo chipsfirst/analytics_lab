@@ -102,32 +102,8 @@
       "</div>" +
       '<p class="meta home-meta">' + topicCount + " " + plural(topicCount, "раздел", "раздела", "разделов") + " · " +
         chapterCount + " " + plural(chapterCount, "глава", "главы", "глав") +
-        ' · <a href="#/textbook">Все разделы</a></p>' +
+        ' · <a href="#/textbook">Все разделы</a> · <a href="#/tools">Инструменты</a></p>' +
       roadmapBlock() +
-      '<div class="home-tools"><span>Практика:</span>' +
-      '<a href="#/project">Сквозной проект</a>' +
-      '<a href="#/capstone">Большой проект</a>' +
-      '<a href="#/open-project">Открытый проект</a>' +
-      '<a href="#/pandas-case">Pandas-кейс</a>' +
-      '<a href="#/dbt-project">dbt + BI</a>' +
-      '<a href="#/datalab">Практика на данных</a>' +
-      '<a href="#/cases">Кейсы</a>' +
-      '<a href="#/notebook">Python-блокнот</a></div>' +
-      '<div class="home-tools"><span>Ритм и проверка:</span>' +
-      '<a href="#/session">30 минут</a>' +
-      '<a href="#/achievements">Достижения</a>' +
-      '<a href="#/cards">Карточки</a>' +
-      '<a href="#/calc">Калькуляторы</a>' +
-      '<a href="#/analyst-exam">Сертификация</a>' +
-      '<a href="#/prompt-lab">Тренажёр промптов</a></div>' +
-      "</div>" +
-      progressBlock() +
-      '<div class="home-links">' +
-      '<a class="home-link" href="#/sandbox"><b>SQL-песочница</b><span>Запросы к настоящей базе в браузере</span></a>' +
-      '<a class="home-link" href="#/pysandbox"><b>Python-песочница</b><span>Блокнот на Pyodide без установки</span></a>' +
-      (window.OFFLINE_BUILD
-        ? '<a class="home-link" href="#/offline"><b>Офлайн-версия</b><span>Как установить сайт как приложение</span></a>'
-        : '<a class="home-link" href="analytics-lab-offline.zip" download><b>Офлайн-архив</b><span>Скачать сайт одним файлом</span></a>') +
       "</div>";
   }
 
