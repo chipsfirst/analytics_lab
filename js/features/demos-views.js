@@ -926,6 +926,47 @@
     render();
   }
 
+  function mountCode(root) {
+    root.innerHTML =
+      '<div class="card">' +
+      '<p class="lead">Один и тот же отчёт можно собрать в SQL, Python и BI. Сравните код, макет дашборда и схему выбора: результат должен совпасть, а инструмент — зависеть от задачи.</p>' +
+      '<div class="demo-code-grid">' +
+      '<section><h3>SQL: выручка по каналам</h3><pre><code>SELECT channel,\n' +
+      '       COUNT(*) FILTER (WHERE returned = 0) AS orders,\n' +
+      '       SUM(revenue) FILTER (WHERE returned = 0) AS revenue\n' +
+      'FROM bi_orders\n' +
+      'GROUP BY channel\n' +
+      'ORDER BY revenue DESC;</code></pre></section>' +
+      '<section><h3>Python: тот же результат</h3><pre><code>import pandas as pd\n\n' +
+      'df = pd.read_csv("data/bi-orders.csv")\n' +
+      'df = df[df["returned"] == 0]\n' +
+      'report = (df.groupby("channel")\n' +
+      '            .agg(orders=("order_id", "nunique"),\n' +
+      '                 revenue=("revenue", "sum"))\n' +
+      '            .sort_values("revenue", ascending=False))</code></pre></section>' +
+      '</div>' +
+      '<h3>Макет дашборда</h3>' +
+      '<figure class="figure"><svg viewBox="0 0 720 280" role="img" aria-label="Макет дашборда: три KPI и выручка по каналам">' +
+      '<rect x="20" y="20" width="680" height="240" rx="12" fill="none" stroke="currentColor" opacity=".35"/>' +
+      '<g font-size="12" fill="currentColor"><text x="40" y="46">Выручка без возвратов</text><text x="40" y="72" font-size="26" font-weight="700">268 100 ₽</text>' +
+      '<text x="270" y="46">Заказы</text><text x="270" y="72" font-size="26" font-weight="700">25</text>' +
+      '<text x="430" y="46">Средний чек</text><text x="430" y="72" font-size="26" font-weight="700">10 724 ₽</text>' +
+      '<text x="40" y="120">Выручка по каналам</text></g>' +
+      '<g fill="currentColor" opacity=".65"><rect x="70" y="190" width="54" height="34" rx="4"/><rect x="164" y="160" width="54" height="64" rx="4"/><rect x="258" y="176" width="54" height="48" rx="4"/><rect x="352" y="142" width="54" height="82" rx="4"/></g>' +
+      '<g font-size="11" fill="currentColor" text-anchor="middle"><text x="97" y="240">organic</text><text x="191" y="240">ads</text><text x="285" y="240">email</text><text x="379" y="240">referral</text></g>' +
+      '<g font-size="10" fill="currentColor" opacity=".65"><text x="520" y="122">Фильтры</text><text x="520" y="140">период · канал</text><text x="520" y="158">без возвратов</text><text x="520" y="176">дата обновления</text></g></svg>' +
+      '<figcaption>Сверху — KPI, ниже — один разрез. Тот же отчёт в SQL и Python даёт те же цифры, если совпадают фильтры и определения.</figcaption></figure>' +
+      '<h3>Что выбрать</h3>' +
+      '<figure class="figure"><svg viewBox="0 0 720 104" role="img" aria-label="SQL, Python и BI ведут к одному результату"><g font-size="11" fill="currentColor" text-anchor="middle">' +
+      '<rect x="10" y="30" width="180" height="42" rx="7" fill="none" stroke="currentColor" opacity=".5"/><text x="100" y="47">SQL</text><text x="100" y="62" opacity=".7">быстро спросить базу</text>' +
+      '<rect x="270" y="30" width="180" height="42" rx="7" fill="none" stroke="currentColor" opacity=".5"/><text x="360" y="47">Python</text><text x="360" y="62" opacity=".7">сложная очистка</text>' +
+      '<rect x="530" y="30" width="180" height="42" rx="7" fill="none" stroke="currentColor" opacity=".5"/><text x="620" y="47">BI</text><text x="620" y="62" opacity=".7">повторяемый экран</text>' +
+      '<path d="M190 51h70M450 51h70" stroke="currentColor" opacity=".45"/><text x="360" y="92" opacity=".65">один результат → разные способы его получить</text></g></svg>' +
+      '<figcaption>Инструмент выбирают по задаче: разовый вопрос, сложная обработка или регулярный дашборд.</figcaption></figure>' +
+      '<p class="demo-note">Проверка: выручка 268 100 ₽, 25 оплаченных заказов, средний чек 10 724 ₽. Если в одном инструменте получилось иначе, сначала сверяйте фильтр возвратов и определение даты.</p></div>';
+  }
+
+  window.DEMO_FNS.mountCode = mountCode;
   window.DEMO_FNS.mountCLT = mountCLT;
   window.DEMO_FNS.mountSample = mountSample;
   window.DEMO_FNS.mountRegression = mountRegression;

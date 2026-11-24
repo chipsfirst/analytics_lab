@@ -56,16 +56,16 @@
     }).join(", ") + "</p>";
   }
 
-  function glossaryItem(e) {
+  function glossaryRow(e) {
     var links = glossaryLinks(e);
     var search = [e.term, e.symbol || "", e.def, (e.aliases || []).join(" ")].join(" ").toLowerCase();
-    return '<div class="gloss-item" id="g-' + e.id + '" data-search="' + esc(search) + '">' +
-      '<div class="gloss-head"><b class="gloss-term">' + esc(e.term) + "</b>" +
-      (e.symbol ? '<span class="gloss-sym">' + esc(e.symbol) + "</span>" : "") + "</div>" +
-      '<p class="gloss-def">' + esc(e.def) + "</p>" +
-      '<p class="gloss-links">Где читать: ' + (links.length
+    return '<tr class="gloss-item" id="g-' + e.id + '" data-search="' + esc(search) + '">' +
+      '<td class="gloss-term-cell"><b class="gloss-term">' + esc(e.term) + "</b>" +
+      (e.symbol ? '<span class="gloss-sym">' + esc(e.symbol) + "</span>" : "") + "</td>" +
+      '<td><p class="gloss-def">' + esc(e.def) + "</p></td>" +
+      '<td><p class="gloss-links">' + (links.length
         ? links.map(function (l) { return '<a href="#/theory/' + l.id + "/" + l.i + '">' + esc(l.title) + "</a>"; }).join(" · ")
-        : "—") + "</p></div>";
+        : "—") + "</p></td></tr>";
   }
 
   function glossaryPage(slug) {
@@ -77,8 +77,10 @@
       '<div class="search-row"><label class="sr-only" for="glossFilter">Найти термин</label>' +
       '<input type="search" id="glossFilter" placeholder="Например: альфа, σ, precision" autocomplete="off"></div>' +
       groups.map(function (g) {
+        var rows = data.filter(function (e) { return e.group === g; });
         return '<section class="gloss-group"><h2>' + esc(g) + "</h2>" +
-          data.filter(function (e) { return e.group === g; }).map(glossaryItem).join("") + "</section>";
+          '<div class="table-wrap"><table class="gloss-table"><thead><tr><th>Термин</th><th>Определение</th><th>Где читать</th></tr></thead><tbody>' +
+          rows.map(glossaryRow).join("") + "</tbody></table></div></section>";
       }).join("") +
       '<p class="lead" id="glossEmpty" hidden>Ничего не найдено.</p>';
   }

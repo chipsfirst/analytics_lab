@@ -15,6 +15,7 @@
   var mountAiCost = F.mountAiCost;
   var mountMonteCarlo = F.mountMonteCarlo;
   var mountQueue = F.mountQueue;
+  var mountCode = F.mountCode;
   window.DEMOS = {
     clt: {
       title: "Центральная предельная теорема",
@@ -80,6 +81,11 @@
       title: "Очередь поддержки",
       tag: "Загрузка, среднее ожидание и p95",
       mount: mountQueue
+    },
+    code: {
+      title: "SQL, Python и дашборд",
+      tag: "Один результат тремя способами",
+      mount: mountCode
     }
   };
 })();

@@ -231,7 +231,7 @@ if (window.SEARCH) {
 }
 
 // --- демо и песочница ---
-ok(Object.keys(window.DEMOS).length === 13, "демонстраций: " + Object.keys(window.DEMOS).length);
+ok(Object.keys(window.DEMOS).length === 14, "демонстраций: " + Object.keys(window.DEMOS).length);
 Object.keys(window.DEMOS).forEach(function (id) {
   var d = window.DEMOS[id];
   ok(d.title && d.tag && typeof d.mount === "function", "демо " + id + " неполное");
