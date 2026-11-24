@@ -64,8 +64,8 @@ topicIds.forEach(function (id) {
 var totalChapters = topicIds.reduce(function (n, id) { return n + window.TOPICS[id].chapters.length; }, 0);
 var totalQuiz = topicIds.reduce(function (n, id) { return n + window.TOPICS[id].quiz.length; }, 0);
 var totalTrainers = topicIds.reduce(function (n, id) { return n + (window.TRAINERS[id] || []).length; }, 0);
-ok(totalChapters === 185, "глав: " + totalChapters);
-ok(totalQuiz === 371, "вопросов: " + totalQuiz);
+ok(totalChapters === 194, "глав: " + totalChapters);
+ok(totalQuiz === 387, "вопросов: " + totalQuiz);
 ok(totalTrainers === 102, "тренажёров: " + totalTrainers);
 
 var seenQuestions = Object.create(null);
@@ -111,7 +111,7 @@ ok(Array.isArray(window.TRACKS) && window.TRACKS.length === 7, "маршруты
 ok(window.TOPICS.production && window.TOPICS.production.chapters.length === 6 && window.TOPICS.production.quiz.length === 12, "production: 6 глав / 12 вопросов");
 ok(window.TOPICS.analytics && window.TOPICS.analytics.chapters.length === 10 && window.TOPICS.analytics.quiz.length === 25, "analytics: 10 глав / 25 вопросов");
 ok(window.TOPICS.gametheory && window.TOPICS.gametheory.chapters.length === 9 && window.TOPICS.gametheory.quiz.length === 16, "gametheory: 9 глав / 16 вопросов");
-ok(window.TOPICS.cs && window.TOPICS.cs.chapters.length === 6 && window.TOPICS.cs.quiz.length === 12, "cs: 6 глав / 12 вопросов");
+ok(window.TOPICS.cs && window.TOPICS.cs.chapters.length === 10 && window.TOPICS.cs.quiz.length === 20, "cs: 10 глав / 20 вопросов");
 ok((window.TRAINERS.production || []).length === 3, "production: тренажёры");
 window.TRACKS.forEach(function (t) {
   ok(t.title && t.tag && t.steps.length >= 6, "маршрут " + t.id + " неполный");
