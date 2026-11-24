@@ -300,7 +300,9 @@
       link("#/achievements", "Достижения", "Прогресс и качество тестов") +
       link("#/cards", "Карточки", "Повторение терминов") +
       link("#/calc", "Калькуляторы", "Выборка, MDE, LTV и CAC") +
-      link("#/analyst-exam", "Сертификация", "20 вопросов на время") +
+      link("#/analyst-exam", "Сертификация аналитика", "20 вопросов на время") +
+      link("#/data-exam", "Сертификация SQL и данные", "20 вопросов: SQL, данные, Excel") +
+      link("#/python-exam", "Сертификация Python и модели", "20 вопросов: Python, ML, регрессия") +
       link("#/prompt-lab", "Тренажёр промптов", "8 рабочих ситуаций") +
       "</div>" +
       "<h2>Песочницы и офлайн</h2><div class=\"home-links\">" +
@@ -369,6 +371,8 @@
     if (seg === "calc") return { html: window.CALC.page(), after: window.CALC.bind };
     if (seg === "bi-exam") return { mount: window.EXAMS.bi };
     if (seg === "analyst-exam") return { mount: window.EXAMS.analyst };
+    if (seg === "data-exam") return { mount: window.EXAMS.data };
+    if (seg === "python-exam") return { mount: window.EXAMS.python };
     if (seg === "notebook") return { mount: notebookPage };
     if (seg === "changelog") return { html: window.STATIC_PAGES.changelog() };
     if (seg === "dashboard") return { mount: window.DASHBOARD_BUILDER.mount };

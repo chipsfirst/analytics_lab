@@ -37,6 +37,17 @@
     return !!(window.PROGRESS && window.PROGRESS.isRead(topic, idx));
   }
 
+  function promptStats() {
+    var empty = { attempts: 0, perfect: 0, sessions: 0 };
+    try {
+      var p = JSON.parse(window.localStorage.getItem("analytics-lab-prompt-lab-v2") || "{}") || {};
+      var attempts = 0, perfect = 0;
+      Object.keys(p.attempts || {}).forEach(function (k) { attempts += Number(p.attempts[k]) || 0; });
+      Object.keys(p.best || {}).forEach(function (k) { if (Number(p.best[k]) >= 4) perfect++; });
+      return { attempts: attempts, perfect: perfect, sessions: Number(p.sessions) || 0 };
+    } catch (e) { return empty; }
+  }
+
   function quizFirst(id) {
     var q = window.PROGRESS && window.PROGRESS.quiz(id);
     if (!q) return { score: 0, total: 0 };
@@ -98,6 +109,14 @@
       value: function (c) { return c.capstone > 0 ? 1 : 0; } },
     { id: "dbt-visited", title: "В прод", text: "Откройте сквозной проект dbt + BI", icon: "gear", tone: "#475569", target: 1,
       value: function (c) { return c.dbt ? 1 : 0; } },
+    { id: "prompt-first", title: "Первый промпт", text: "Сохраните первую попытку в тренажёре промптов", icon: "note", tone: "#2563eb", target: 1,
+      value: function (c) { return c.promptAttempts; } },
+    { id: "prompt-five", title: "Пять промптов", text: "Сохраните пять попыток в тренажёре промптов", icon: "note", tone: "#7c3aed", target: 5,
+      value: function (c) { return c.promptAttempts; } },
+    { id: "prompt-perfect", title: "Сильный промпт", text: "Закройте все критерии хотя бы в одном задании", icon: "shield", tone: "#15803d", target: 1,
+      value: function (c) { return c.promptPerfect; } },
+    { id: "prompt-session", title: "Короткая сессия", text: "Завершите сессию из трёх задач", icon: "target", tone: "#0891b2", target: 1,
+      value: function (c) { return c.promptSessions; } },
     { id: "portfolio", title: "Портфолио", text: "Закройте оба проекта: розницу и подписку", icon: "star", tone: "#db2777", target: 2,
       value: function (c) { return (c.capstone >= 6 ? 1 : 0) + (c.open >= 6 ? 1 : 0); } }
   ];
@@ -115,6 +134,7 @@
       if (window.PROGRESS && window.PROGRESS.readCount(id) > 0) sections++;
     });
     var mini = window.PROGRESS ? window.PROGRESS.miniStats() : { total: 0 };
+    var prompt = promptStats();
     return {
       chapters: s.chapters || 0,
       sections: sections,
@@ -122,6 +142,9 @@
       attempts: attempts,
       perfect: perfect,
       miniTotal: Number(mini.total) || 0,
+      promptAttempts: prompt.attempts,
+      promptPerfect: prompt.perfect,
+      promptSessions: prompt.sessions,
       capstone: readCount("analytics-lab-capstone-v1"),
       open: readCount("analytics-lab-open-project-v1"),
       dbt: readFlag("analytics-lab-dbt-visited-v1")

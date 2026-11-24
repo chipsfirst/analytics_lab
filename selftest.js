@@ -107,8 +107,9 @@ topicIds.forEach(function (id) {
 });
 
 ok(window.DBT_PROJECT && typeof window.DBT_PROJECT.page === "function" && typeof window.DBT_PROJECT.bind === "function", "dbt-проект: страница не загрузилась");
-ok(window.ACHIEVEMENTS && typeof window.ACHIEVEMENTS.list === "function" && window.ACHIEVEMENTS.total() === 23, "достижения: ожидалось 23");
+ok(window.ACHIEVEMENTS && typeof window.ACHIEVEMENTS.list === "function" && window.ACHIEVEMENTS.total() === 27, "достижения: ожидалось 27");
 ok(window.PROMPT_TASKS && window.PROMPT_TASKS.length === 16, "промпты: ожидалось 16 ситуаций");
+ok(window.PROMPT_META && Object.keys(window.PROMPT_META).length === 16, "промпты: нет метаданных для всех ситуаций");
 var promptTitles = {};
 (window.PROMPT_TASKS || []).forEach(function (task, ti) {
   ok(Array.isArray(task) && task.length === 4, "промпт " + ti + ": неверная структура");

@@ -27,7 +27,23 @@
       '<section class="card calc-card"><h2>LTV, CAC и окупаемость</h2>' +
       '<div class="calc-grid">' + field("ueArpu", "Выручка с клиента в месяц, ₽", 900) +
       field("ueCac", "CAC, ₽", 2400) + field("ueChurn", "Отток в месяц, %", 5) + "</div>" +
-      '<p class="calc-out" id="ueOut" aria-live="polite"></p></section>';
+      '<p class="calc-out" id="ueOut" aria-live="polite"></p></section>' +
+      '<section class="card calc-card"><h2>ROAS и ROMI</h2>' +
+      '<div class="calc-grid">' + field("roasSpend", "Расход на рекламу, ₽", 100000) +
+      field("roasRevenue", "Выручка, ₽", 350000) + field("roasMargin", "Маржа, %", 35) + "</div>" +
+      '<p class="calc-out" id="roasOut" aria-live="polite"></p></section>' +
+      '<section class="card calc-card"><h2>CPA, CPC и конверсия</h2>' +
+      '<div class="calc-grid">' + field("cpaSpend", "Расход, ₽", 50000) +
+      field("cpaClicks", "Клики", 12000) + field("cpaConv", "Конверсии", 360) + "</div>" +
+      '<p class="calc-out" id="cpaOut" aria-live="polite"></p></section>' +
+      '<section class="card calc-card"><h2>Разница конверсий: 95% ДИ</h2>' +
+      '<div class="calc-grid">' + field("dAConv", "A: конверсий", 120) + field("dAN", "A: визитов", 1000) +
+      field("dBConv", "B: конверсий", 156) + field("dBN", "B: визитов", 1000) + "</div>" +
+      '<p class="calc-out" id="diffOut" aria-live="polite"></p></section>' +
+      '<section class="card calc-card"><h2>NPS</h2>' +
+      '<div class="calc-grid">' + field("npsProm", "Промоутеры", 45) +
+      field("npsPass", "Нейтралы", 30) + field("npsDetr", "Критики", 25) + "</div>" +
+      '<p class="calc-out" id="npsOut" aria-live="polite"></p></section>';
   }
 
   function bindCalc() {
@@ -88,15 +104,67 @@
       document.getElementById("ueOut").textContent = "LTV ≈ " + fmt(ltv) + " ₽, LTV/CAC = " +
         fmt(ratio, 2) + " (" + verdict + "), окупаемость CAC ≈ " + fmt(payback, 1) + " мес.";
     }
+    function roas() {
+      var spend = num("roasSpend"), revenue = num("roasRevenue"), margin = num("roasMargin");
+      var out = document.getElementById("roasOut");
+      if (!(spend > 0) || !(revenue >= 0) || !(margin >= 0 && margin <= 100)) {
+        out.textContent = "Проверьте расход, выручку и маржу (0–100%).";
+        return;
+      }
+      var profit = revenue * margin / 100 - spend;
+      out.textContent = "ROAS = " + fmt(revenue / spend, 2) + "×, прибыль после рекламы ≈ " +
+        fmt(profit) + " ₽, ROMI = " + fmt(profit / spend * 100, 1) + "%. ROAS не учитывает маржу.";
+    }
+    function cpa() {
+      var spend = num("cpaSpend"), clicks = num("cpaClicks"), conv = num("cpaConv");
+      var out = document.getElementById("cpaOut");
+      if (!(spend > 0 && clicks > 0 && conv >= 0 && conv <= clicks)) {
+        out.textContent = "Проверьте расход, клики и конверсии (не больше кликов).";
+        return;
+      }
+      out.textContent = "CPC = " + fmt(spend / clicks, 1) + " ₽, CR = " + fmt(conv / clicks * 100, 1) +
+        "%, CPA = " + (conv ? fmt(spend / conv, 1) + " ₽" : "— (нет конверсий)") + ".";
+    }
+    function diff() {
+      var aC = num("dAConv"), aN = num("dAN"), bC = num("dBConv"), bN = num("dBN");
+      var out = document.getElementById("diffOut");
+      if (!(aN > 0 && bN > 0 && aC >= 0 && bC >= 0 && aC <= aN && bC <= bN)) {
+        out.textContent = "Проверьте конверсии и визиты: конверсий не больше визитов.";
+        return;
+      }
+      var pa = aC / aN, pb = bC / bN, d = pb - pa;
+      var se = Math.sqrt(pa * (1 - pa) / aN + pb * (1 - pb) / bN);
+      var lo = d - 1.959964 * se, hi = d + 1.959964 * se;
+      var verdict = lo > 0 ? "B выше" : hi < 0 ? "A выше" : "разница не доказана";
+      out.textContent = "A: " + fmt(pa * 100, 1) + "%, B: " + fmt(pb * 100, 1) + "%, разница " +
+        fmt(d * 100, 1) + " п.п. 95% ДИ: " + fmt(lo * 100, 1) + "…" + fmt(hi * 100, 1) +
+        " п.п. — " + verdict + ". Это интервал, а не p-value.";
+    }
+    function nps() {
+      var p = num("npsProm"), n = num("npsPass"), d = num("npsDetr");
+      var out = document.getElementById("npsOut");
+      var total = p + n + d;
+      if (!(p >= 0 && n >= 0 && d >= 0) || !(total > 0)) {
+        out.textContent = "Введите неотрицательные числа; всего ответов должно быть больше нуля.";
+        return;
+      }
+      var score = (p - d) / total * 100;
+      out.textContent = "NPS = " + fmt(score, 1) + " (" + fmt(p / total * 100, 1) + "% промоутеров, " +
+        fmt(d / total * 100, 1) + "% критиков). Нейтралы не входят в числитель.";
+    }
     var map = { csP1: sample, csP2: sample, csPower: sample, csAlpha: sample,
       mdeBase: mde, mdeN: mde, mdePower: mde, mdeAlpha: mde,
       durN: duration, durTraffic: duration, ciConv: interval, ciVisitors: interval,
-      ueArpu: unit, ueCac: unit, ueChurn: unit };
+      ueArpu: unit, ueCac: unit, ueChurn: unit,
+      roasSpend: roas, roasRevenue: roas, roasMargin: roas,
+      cpaSpend: cpa, cpaClicks: cpa, cpaConv: cpa,
+      dAConv: diff, dAN: diff, dBConv: diff, dBN: diff,
+      npsProm: nps, npsPass: nps, npsDetr: nps };
     Object.keys(map).forEach(function (id) {
       var el = document.getElementById(id);
       if (el) { el.addEventListener("input", map[id]); el.addEventListener("change", map[id]); }
     });
-    sample(); mde(); duration(); interval(); unit();
+    sample(); mde(); duration(); interval(); unit(); roas(); cpa(); diff(); nps();
   }
 
   window.CALC = { page: calcPage, bind: bindCalc };

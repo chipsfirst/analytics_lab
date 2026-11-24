@@ -126,5 +126,27 @@
     });
   }
 
-  window.EXAMS = { bi: biExamPage, analyst: analystExamPage };
+  function dataExamPage() {
+    var bank = window.TOPICS.sql.quiz.slice(0, 8)
+      .concat(window.TOPICS.data.quiz.slice(0, 6), window.TOPICS.excel.quiz.slice(0, 6));
+    examPage({
+      bank: bank,
+      title: "Сертификация: SQL и данные",
+      lead: "20 вопросов по SQL, данным и Excel, 15 минут. Проходной балл — 14 правильных ответов.",
+      pass: 14, minutes: 15, back: "#/theory/sql", backLabel: "к разделу SQL"
+    });
+  }
+
+  function pythonExamPage() {
+    var bank = window.TOPICS.python.quiz.slice(0, 8)
+      .concat(window.TOPICS.ml.quiz.slice(0, 6), window.TOPICS.regression.quiz.slice(0, 6));
+    examPage({
+      bank: bank,
+      title: "Сертификация: Python и модели",
+      lead: "20 вопросов по Python, машинному обучению и регрессии, 15 минут. Проходной балл — 14 правильных ответов.",
+      pass: 14, minutes: 15, back: "#/theory/python", backLabel: "к разделу Python"
+    });
+  }
+
+  window.EXAMS = { bi: biExamPage, analyst: analystExamPage, data: dataExamPage, python: pythonExamPage };
 })();
