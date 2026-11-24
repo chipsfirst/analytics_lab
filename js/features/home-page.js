@@ -60,6 +60,15 @@
     return many;
   }
 
+  function nextStepBlock() {
+    if (!window.LEARNING) return "";
+    var n = window.LEARNING.nextStep();
+    return '<section class="learning-next card"><p class="meta">' + esc(n.kind) + "</p>" +
+      "<h2>" + esc(n.title) + "</h2><p>" + esc(n.text) + "</p>" +
+      '<p class="meta">' + esc(n.why) + "</p>" +
+      '<a class="btn primary" href="' + n.href + '">' + esc(n.cta) + " &rarr;</a></section>";
+  }
+
   function roadmapBlock() {
     var steps = [
       ["01", "Введение", "Что такое аналитика и чем занимается аналитик", "#/theory/analytics/0"],
@@ -86,17 +95,13 @@
     var chapterCount = Object.keys(window.TOPICS).reduce(function (n, id) {
       return n + window.TOPICS[id].chapters.length;
     }, 0);
-    var resume = resumeTarget();
-    var resumeTopic = window.TOPICS[resume.id];
-    var resumeChapter = resumeTopic && resumeTopic.chapters[resume.i];
     return '<div class="hero">' +
       "<h1>Лаборатория аналитики</h1>" +
       '<p class="lead">Практикум по аналитике данных: статистика, SQL, Python, BI и эксперименты.<br>' +
       "Короткая теория, тесты и тренажёры. Прогресс хранится в браузере.</p>" +
+      nextStepBlock() +
       '<div class="home-actions">' +
-      '<a class="home-action primary" href="#/theory/' + resume.id + '/' + resume.i + '">' +
-        "<b>" + (resume.allRead ? "Повторить с начала" : (window.PROGRESS.last() ? "Продолжить" : "Начать обучение")) + "</b><span>" +
-        esc(resume.allRead ? "Все главы прочитаны" : resumeTopic.title + " · " + resumeChapter.title) + "</span></a>" +
+      '<a class="home-action primary" href="#/textbook"><b>Учебник</b><span>Все разделы и главы</span></a>' +
       '<a class="home-action" href="#/path"><b>Маршрут обучения</b><span>Семь треков под цель</span></a>' +
       '<a class="home-action" href="#/trainer"><b>Тренажёры</b><span>Задачи с автопроверкой</span></a>' +
       "</div>" +

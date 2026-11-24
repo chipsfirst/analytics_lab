@@ -300,6 +300,7 @@
       link("#/achievements", "Достижения", "Прогресс и качество тестов") +
       link("#/cards", "Карточки", "Повторение терминов") +
       link("#/calc", "Калькуляторы", "Выборка, MDE, LTV и CAC") +
+      link("#/skills", "Карта навыков", "Где проседает и что подтянуть") +
       link("#/analyst-exam", "Сертификация аналитика", "20 вопросов на время") +
       link("#/data-exam", "Сертификация SQL и данные", "20 вопросов: SQL, данные, Excel") +
       link("#/python-exam", "Сертификация Python и модели", "20 вопросов: Python, ML, регрессия") +
@@ -369,6 +370,7 @@
     if (seg === "achievements") return { html: window.ACHIEVEMENTS_PAGE.page(), after: window.ACHIEVEMENTS_PAGE.bind };
     if (seg === "session") return { html: window.SESSION.page(), after: window.SESSION.bind };
     if (seg === "calc") return { html: window.CALC.page(), after: window.CALC.bind };
+    if (seg === "skills") return { html: window.SKILLS_PAGE.page() };
     if (seg === "bi-exam") return { mount: window.EXAMS.bi };
     if (seg === "analyst-exam") return { mount: window.EXAMS.analyst };
     if (seg === "data-exam") return { mount: window.EXAMS.data };

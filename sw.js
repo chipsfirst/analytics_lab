@@ -1,6 +1,6 @@
 // Кеш оболочки приложения. При изменении файлов поднимите версию —
 // иначе браузер продолжит отдавать старую копию.
-const VERSION = "0.9.12";
+const VERSION = "0.9.14";
 const CACHE = "analytics-lab-" + VERSION;
 
 const ASSETS = [
@@ -12,6 +12,7 @@ const ASSETS = [
   "js/features/achievements-page.js",
   "js/features/search-page.js",
   "js/features/progress-page.js",
+  "js/features/skills-page.js",
   "js/core/prompt-tasks.js",
   "js/features/prompt-lab.js",
   "js/features/datalab.js",
@@ -96,6 +97,7 @@ const ASSETS = [
   "js/features/games-core.js",
   "js/features/games-views.js",
   "js/features/games.js",
+  "js/core/learning.js",
   "js/core/progress.js",
   "js/core/sources.js",
   "js/core/achievements.js",

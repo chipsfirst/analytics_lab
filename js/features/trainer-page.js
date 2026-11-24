@@ -63,6 +63,14 @@
       trainer.checked = true;
       trainer.total++;
       if (trainer.ok) trainer.correct++;
+      if (window.LEARNING) {
+        window.LEARNING.log("trainer", {
+          topic: trainer.id,
+          skill: window.LEARNING.skillFor(trainer.id, ""),
+          correct: trainer.ok ? 1 : 0,
+          total: 1
+        });
+      }
       renderTrainer();
     }
 

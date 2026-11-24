@@ -67,6 +67,7 @@
       var k = topic + ":" + i;
       if (v) data.chapters[k] = 1; else delete data.chapters[k];
       save();
+      if (window.LEARNING) window.LEARNING.log("read", { topic: topic, chapter: i, read: !!v });
     },
 
     readCount: readCount,
@@ -84,6 +85,7 @@
       data.quizzes = {};
       data.srs = {};
       save();
+      if (window.LEARNING) window.LEARNING.clear();
     },
 
     // answers: [{ idx, ok }], idx — номер вопроса в банке раздела
@@ -108,6 +110,14 @@
         review: Object.keys(review).map(Number).sort(function (a, b) { return a - b; })
       };
       save();
+      if (window.LEARNING) {
+        window.LEARNING.log("quiz", {
+          topic: topic,
+          skill: window.LEARNING.skillFor(topic, ""),
+          correct: score,
+          total: answers.length
+        });
+      }
       return data.quizzes[topic];
     },
 
@@ -122,6 +132,14 @@
         attempts: cur.attempts + 1
       };
       save();
+      if (window.LEARNING) {
+        window.LEARNING.log("mini", {
+          topic: topic,
+          skill: window.LEARNING.skillFor(topic, ""),
+          correct: Number(correct) || 0,
+          total: Number(total) || 0
+        });
+      }
     },
 
     mini: function (topic) { return data.mini[topic] || null; },
@@ -135,7 +153,11 @@
       return { correct: correct, total: total };
     },
 
-    clear: function () { data = empty(); save(); },
+    clear: function () {
+      data = empty();
+      save();
+      if (window.LEARNING) window.LEARNING.clear();
+    },
 
     exportData: function () {
       return JSON.stringify({

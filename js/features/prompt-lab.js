@@ -175,6 +175,10 @@
       state.attempts[i] = (Number(state.attempts[i]) || 0) + 1;
       state.best[i] = Math.max(Number(state.best[i]) || 0, score(i));
       save();
+      if (window.LEARNING) {
+        var task = (window.PROMPT_TASKS || [])[i];
+        window.LEARNING.log("prompt", { skill: "Промпты", correct: score(i), total: total, task: task ? task[0] : "" });
+      }
       syncCard(card);
       var status = card.querySelector("[data-save-status]");
       if (status) status.textContent = "Попытка " + state.attempts[i] + ": " + score(i) + " из " + total;

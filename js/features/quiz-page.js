@@ -92,8 +92,12 @@
       }).join("") + "</div>";
 
     if (quiz.picked >= 0) {
-      html += '<div class="explain" aria-live="polite"><b>' + (q.options[quiz.picked].ok ? "Верно" : "Неверно") +
-        "</b>" + q.explain + "</div>" +
+      var chosen = q.options[quiz.picked];
+      var right = q.options.filter(function (o) { return o.ok; })[0];
+      var why = chosen.ok ? "" : '<p class="meta"><b>Почему не «' + LAB.esc(chosen.text) +
+        '»:</b> правильный вариант — «' + LAB.esc(right ? right.text : "") + "».</p>";
+      html += '<div class="explain" aria-live="polite"><b>' + (chosen.ok ? "Верно" : "Неверно") +
+        "</b>" + why + "<p>" + q.explain + "</p></div>" +
         '<div class="btn-row"><button class="btn primary" id="next">' +
         (quiz.i + 1 < quiz.qs.length ? "Следующий вопрос" : "Результат") + "</button></div>";
     }
