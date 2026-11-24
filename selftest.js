@@ -23,6 +23,7 @@ require("./js/features/games.js");
 require("./js/core/progress.js");
 require("./js/core/sources.js");
 require("./js/core/achievements.js");
+require("./js/core/prompt-tasks.js");
 require("./js/core/glossary.js");
 require("./js/core/search.js");
 require("./js/features/demos-core.js");
@@ -106,7 +107,18 @@ topicIds.forEach(function (id) {
 });
 
 ok(window.DBT_PROJECT && typeof window.DBT_PROJECT.page === "function" && typeof window.DBT_PROJECT.bind === "function", "dbt-проект: страница не загрузилась");
-ok(window.ACHIEVEMENTS && typeof window.ACHIEVEMENTS.list === "function" && window.ACHIEVEMENTS.total() >= 10, "достижения: модуль не загрузился");
+ok(window.ACHIEVEMENTS && typeof window.ACHIEVEMENTS.list === "function" && window.ACHIEVEMENTS.total() === 23, "достижения: ожидалось 23");
+ok(window.PROMPT_TASKS && window.PROMPT_TASKS.length === 16, "промпты: ожидалось 16 ситуаций");
+var promptTitles = {};
+(window.PROMPT_TASKS || []).forEach(function (task, ti) {
+  ok(Array.isArray(task) && task.length === 4, "промпт " + ti + ": неверная структура");
+  ok(typeof task[0] === "string" && task[0].length > 3, "промпт " + ti + ": нет названия");
+  ok(!promptTitles[task[0]], "промпт " + ti + ": дубль названия");
+  promptTitles[task[0]] = 1;
+  ok(typeof task[1] === "string" && task[1].length > 10, "промпт " + ti + ": нет задачи");
+  ok(typeof task[2] === "string" && task[2].length > 30, "промпт " + ti + ": нет каркаса");
+  ok(Array.isArray(task[3]) && task[3].length >= 3, "промпт " + ti + ": мало критериев");
+});
 ok(window.SOURCES && Object.keys(window.SOURCES).length === 22, "источники: не для всех разделов");
 ok(Array.isArray(window.TRACKS) && window.TRACKS.length === 7, "маршруты: ожидалось 7");
 ok(window.TOPICS.production && window.TOPICS.production.chapters.length === 9 && window.TOPICS.production.quiz.length === 18, "production: 9 глав / 18 вопросов");

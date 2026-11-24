@@ -56,11 +56,25 @@
   var DEFS = [
     { id: "first-chapter", title: "Первый шаг", text: "Прочитайте первую главу", icon: "book", tone: "#4f46e5", target: 1,
       value: function (c) { return c.chapters; } },
+    { id: "five-chapters", title: "Пять глав", text: "Прочитайте пять глав", icon: "book", tone: "#0891b2", target: 5,
+      value: function (c) { return c.chapters; } },
+    { id: "ten-sections", title: "Десять разделов", text: "Прочитайте хотя бы одну главу в десяти разделах", icon: "layers", tone: "#7c3aed", target: 10,
+      value: function (c) { return c.sections; } },
+    { id: "twenty-five-chapters", title: "Четверть пути", text: "Прочитайте 25 глав", icon: "trend", tone: "#0f766e", target: 25,
+      value: function (c) { return c.chapters; } },
+    { id: "fifty-chapters", title: "Полсотни", text: "Прочитайте 50 глав", icon: "star", tone: "#b45309", target: 50,
+      value: function (c) { return c.chapters; } },
     { id: "first-quiz", title: "Проверка", text: "Пройдите первый тест", icon: "target", tone: "#0891b2", target: 1,
       value: function (c) { return c.attempts > 0 ? 1 : 0; } },
+    { id: "five-tests", title: "Пять тестов", text: "Пройдите тесты в пяти разных разделах", icon: "target", tone: "#2563eb", target: 5,
+      value: function (c) { return c.tests; } },
+    { id: "ten-tests", title: "Десять тестов", text: "Пройдите тесты в десяти разных разделах", icon: "target", tone: "#7c3aed", target: 10,
+      value: function (c) { return c.tests; } },
     { id: "perfect-quiz", title: "Чистый тест", text: "Пройдите тест без ошибок с первой попытки", icon: "shield", tone: "#15803d", target: 1,
       value: function (c) { return c.perfect ? 1 : 0; } },
     { id: "mini-ten", title: "Десять задач", text: "Решите 10 заданий в тренажёрах", icon: "flask", tone: "#a16207", target: 10,
+      value: function (c) { return c.miniTotal; } },
+    { id: "hundred-mini", title: "Сто задач", text: "Решите 100 заданий в тренажёрах", icon: "flask", tone: "#9a3412", target: 100,
       value: function (c) { return c.miniTotal; } },
     { id: "sql-quiz", title: "SQL-практик", text: "С первой попытки: 7 из 8 в тесте SQL", icon: "database", tone: "#15803d", target: 1,
       value: function () { return firstAtLeast("sql", 7); } },
@@ -70,6 +84,14 @@
       value: function () { return firstAtLeast("python", 7); } },
     { id: "causal-quiz", title: "Причинный вывод", text: "С первой попытки: 7 из 8 в тесте причинности", icon: "link", tone: "#9a3412", target: 1,
       value: function () { return firstAtLeast("causal", 7); } },
+    { id: "analytics-quiz", title: "Аналитик", text: "С первой попытки: 7 из 8 в тесте аналитики", icon: "target", tone: "#2563eb", target: 1,
+      value: function () { return firstAtLeast("analytics", 7); } },
+    { id: "stats-quiz", title: "Статистик", text: "С первой попытки: 7 из 8 в тесте статистики", icon: "flask", tone: "#0f766e", target: 1,
+      value: function () { return firstAtLeast("statistics", 7); } },
+    { id: "bi-quiz", title: "BI-практик", text: "С первой попытки: 7 из 8 в тесте BI", icon: "chart", tone: "#7c3aed", target: 1,
+      value: function () { return firstAtLeast("bi", 7); } },
+    { id: "toolkit-quiz", title: "Настроенный сетап", text: "С первой попытки: 7 из 8 в тесте инструментария", icon: "gear", tone: "#475569", target: 1,
+      value: function () { return firstAtLeast("toolkit", 7); } },
     { id: "game-theory", title: "Стратег", text: "Прочитайте первую главу теории игр", icon: "scale", tone: "#b45309", target: 1,
       value: function () { return read("gametheory", 0) ? 1 : 0; } },
     { id: "capstone-first", title: "Первый ответ", text: "Решите одну задачу большого проекта", icon: "layers", tone: "#7c3aed", target: 1,
@@ -82,16 +104,21 @@
 
   function context() {
     var s = window.PROGRESS ? window.PROGRESS.summary(window.TOPICS) : { chapters: 0, totalChapters: 0 };
-    var attempts = 0, perfect = false;
+    var attempts = 0, perfect = false, tests = 0, sections = 0;
     Object.keys(window.TOPICS || {}).forEach(function (id) {
       var q = window.PROGRESS && window.PROGRESS.quiz(id);
-      if (!q) return;
-      attempts += Number(q.attempts) || 0;
-      if (Number(q.firstTotal) > 0 && Number(q.firstScore) === Number(q.firstTotal)) perfect = true;
+      if (q && Number(q.attempts) > 0) tests++;
+      if (q) {
+        attempts += Number(q.attempts) || 0;
+        if (Number(q.firstTotal) > 0 && Number(q.firstScore) === Number(q.firstTotal)) perfect = true;
+      }
+      if (window.PROGRESS && window.PROGRESS.readCount(id) > 0) sections++;
     });
     var mini = window.PROGRESS ? window.PROGRESS.miniStats() : { total: 0 };
     return {
       chapters: s.chapters || 0,
+      sections: sections,
+      tests: tests,
       attempts: attempts,
       perfect: perfect,
       miniTotal: Number(mini.total) || 0,

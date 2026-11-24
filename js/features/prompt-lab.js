@@ -4,7 +4,7 @@
   var LAB = window.LAB;
   function promptLabPage() {
     return "<h1>Тренажёр промптов</h1>" +
-      '<p class="lead">Восемь рабочих ситуаций. Напишите свой промпт, затем откройте разбор и проверьте его по критериям. ' +
+      '<p class="lead">' + window.PROMPT_TASKS.length + ' рабочих ситуаций. Напишите свой промпт, затем откройте разбор и проверьте его по критериям. ' +
       "Это не автопроверка: хороший промпт зависит от задачи и контекста.</p>" +
       '<div class="grid">' + window.PROMPT_TASKS.map(function (t, i) {
         return '<article class="card prompt-card" data-prompt="' + i + '"><p class="meta">Задача ' + (i + 1) + "</p><h3>" + LAB.esc(t[0]) + "</h3>" +
