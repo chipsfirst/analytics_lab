@@ -133,7 +133,6 @@ window.TRACKS = [
       ["analytics", 2],
       ["marketing", 1],
       ["marketing", 2],
-      ["causal", 0],
       ["causal", 1],
       ["causal", 2],
       ["causal", 3],
@@ -141,6 +140,7 @@ window.TRACKS = [
       ["causal", 5],
       ["causal", 6],
       ["causal", 7],
+      ["causal", 8],
       ["ethics", 4]
     ]
   },

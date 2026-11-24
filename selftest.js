@@ -64,8 +64,8 @@ topicIds.forEach(function (id) {
 var totalChapters = topicIds.reduce(function (n, id) { return n + window.TOPICS[id].chapters.length; }, 0);
 var totalQuiz = topicIds.reduce(function (n, id) { return n + window.TOPICS[id].quiz.length; }, 0);
 var totalTrainers = topicIds.reduce(function (n, id) { return n + (window.TRAINERS[id] || []).length; }, 0);
-ok(totalChapters === 194, "глав: " + totalChapters);
-ok(totalQuiz === 387, "вопросов: " + totalQuiz);
+ok(totalChapters === 204, "глав: " + totalChapters);
+ok(totalQuiz === 401, "вопросов: " + totalQuiz);
 ok(totalTrainers === 102, "тренажёров: " + totalTrainers);
 
 var seenQuestions = Object.create(null);
