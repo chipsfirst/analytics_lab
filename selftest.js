@@ -64,8 +64,8 @@ topicIds.forEach(function (id) {
 var totalChapters = topicIds.reduce(function (n, id) { return n + window.TOPICS[id].chapters.length; }, 0);
 var totalQuiz = topicIds.reduce(function (n, id) { return n + window.TOPICS[id].quiz.length; }, 0);
 var totalTrainers = topicIds.reduce(function (n, id) { return n + (window.TRAINERS[id] || []).length; }, 0);
-ok(totalChapters === 204, "глав: " + totalChapters);
-ok(totalQuiz === 401, "вопросов: " + totalQuiz);
+ok(totalChapters === 238, "глав: " + totalChapters);
+ok(totalQuiz === 469, "вопросов: " + totalQuiz);
 ok(totalTrainers === 102, "тренажёров: " + totalTrainers);
 
 var seenQuestions = Object.create(null);
@@ -108,9 +108,9 @@ ok(window.DBT_PROJECT && typeof window.DBT_PROJECT.page === "function" && typeof
 ok(window.ACHIEVEMENTS && typeof window.ACHIEVEMENTS.list === "function" && window.ACHIEVEMENTS.total() >= 10, "достижения: модуль не загрузился");
 ok(window.SOURCES && Object.keys(window.SOURCES).length === 21, "источники: не для всех разделов");
 ok(Array.isArray(window.TRACKS) && window.TRACKS.length === 7, "маршруты: ожидалось 7");
-ok(window.TOPICS.production && window.TOPICS.production.chapters.length === 6 && window.TOPICS.production.quiz.length === 12, "production: 6 глав / 12 вопросов");
+ok(window.TOPICS.production && window.TOPICS.production.chapters.length === 9 && window.TOPICS.production.quiz.length === 18, "production: 9 глав / 18 вопросов");
 ok(window.TOPICS.analytics && window.TOPICS.analytics.chapters.length === 10 && window.TOPICS.analytics.quiz.length === 25, "analytics: 10 глав / 25 вопросов");
-ok(window.TOPICS.gametheory && window.TOPICS.gametheory.chapters.length === 9 && window.TOPICS.gametheory.quiz.length === 16, "gametheory: 9 глав / 16 вопросов");
+ok(window.TOPICS.gametheory && window.TOPICS.gametheory.chapters.length === 12 && window.TOPICS.gametheory.quiz.length === 23, "gametheory: 12 глав / 23 вопроса");
 ok(window.TOPICS.cs && window.TOPICS.cs.chapters.length === 10 && window.TOPICS.cs.quiz.length === 20, "cs: 10 глав / 20 вопросов");
 ok((window.TRAINERS.production || []).length === 3, "production: тренажёры");
 window.TRACKS.forEach(function (t) {

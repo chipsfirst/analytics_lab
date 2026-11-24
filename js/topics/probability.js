@@ -191,7 +191,7 @@ p_six = (rolls == 6).mean()</div>
 E[X] = λ,   Var(X) = λ</div>
 <figure class="figure"><svg viewBox="0 0 360 100" role="img" aria-label="События Пуассона на временной шкале с одинаковой средней интенсивностью"><g font-size="9" fill="currentColor" text-anchor="middle"><line x1="20" y1="58" x2="340" y2="58" stroke="currentColor" opacity=".35"/><g fill="currentColor"><circle cx="42" cy="58" r="4"/><circle cx="78" cy="58" r="4"/><circle cx="120" cy="58" r="4"/><circle cx="150" cy="58" r="4"/><circle cx="204" cy="58" r="4"/><circle cx="244" cy="58" r="4"/><circle cx="282" cy="58" r="4"/><circle cx="324" cy="58" r="4"/></g><text x="180" y="26">события во времени</text><text x="180" y="86" opacity=".65">интервалы случайны, средняя частота постоянна</text></g></svg><figcaption>В процессе Пуассона события происходят с постоянной средней интенсивностью, но промежутки между ними случайны.</figcaption></figure>
 <div class="table-wrap"><table><thead><tr><th>Ситуация</th><th>Модель</th><th>Что проверять</th></tr></thead><tbody>
-<tr><td>Заявки в поддержку</td><td>число за час — Пуассон</td><td>нет ли всплесков и смены смены</td></tr>
+<tr><td>Заявки в поддержку</td><td>число за час — Пуассон</td><td>нет ли всплесков и смены интенсивности</td></tr>
 <tr><td>Время между заявками</td><td>экспоненциальное</td><td>постоянна ли интенсивность</td></tr>
 <tr><td>Ошибки на странице</td><td>Пуассон с λ на страницу</td><td>одинаков ли объём страниц</td></tr>
 <tr><td>Заказы в минуту</td><td>Пуассон, если поток редкий</td><td>нет ли корреляции и пиков</td></tr>
