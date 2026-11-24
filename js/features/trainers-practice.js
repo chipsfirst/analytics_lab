@@ -555,6 +555,48 @@
     };
   }
 
+  function tSqlNullLogic() {
+    return {
+      prompt: "Что вернёт выражение <code>NULL = NULL</code> в SQL?",
+      solution: "NULL означает неизвестное значение; сравнение с ним даёт UNKNOWN, а не TRUE.",
+      answer: { type: "choice", options: [
+        { text: "UNKNOWN", ok: true },
+        { text: "TRUE", ok: false },
+        { text: "FALSE", ok: false },
+        { text: "Синтаксическую ошибку", ok: false }
+      ] }
+    };
+  }
+
+  function tSqlDateBoundary() {
+    return {
+      prompt: "Как надёжнее всего выбрать заказы за февраль 2026 по timestamp?",
+      solution: "Полуинтервал включает начало и не включает следующее начало: события на границе не теряются.",
+      answer: { type: "choice", options: [
+        { text: "created_at >= '2026-02-01' AND created_at < '2026-03-01'", ok: true },
+        { text: "created_at BETWEEN '2026-02-01' AND '2026-02-28'", ok: false },
+        { text: "MONTH(created_at) = 2", ok: false },
+        { text: "created_at = '2026-02-01'", ok: false }
+      ] }
+    };
+  }
+
+  function tSqlQuality() {
+    return {
+      prompt: "Как найти заказы, у которых нет пользователя в таблице users?",
+      solution: "LEFT JOIN сохраняет заказы без пары, а фильтр по users.id IS NULL оставляет только сирот.",
+      answer: { type: "choice", options: [
+        { text: "LEFT JOIN users и WHERE users.id IS NULL", ok: true },
+        { text: "INNER JOIN users", ok: false },
+        { text: "ORDER BY user_id", ok: false },
+        { text: "COUNT(*) без JOIN", ok: false }
+      ] }
+    };
+  }
+
+  window.TRAINER_FNS.tSqlNullLogic = tSqlNullLogic;
+  window.TRAINER_FNS.tSqlDateBoundary = tSqlDateBoundary;
+  window.TRAINER_FNS.tSqlQuality = tSqlQuality;
   window.TRAINER_FNS.tToolSource = tToolSource;
   window.TRAINER_FNS.tToolTask = tToolTask;
   window.TRAINER_FNS.tToolGit = tToolGit;

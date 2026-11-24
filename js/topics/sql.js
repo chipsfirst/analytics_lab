@@ -1,7 +1,7 @@
 // Раздел «sql»: главы и банк вопросов.
 window.TOPICS.sql = {
     title: "SQL",
-    tag: "SELECT · GROUP BY · JOIN · окна · планы",
+    tag: "SELECT · JOIN · окна · NULL · даты · качество · транзакции",
     lead: "Как достать нужные строки из таблицы, соединить данные и понять, почему запрос работает медленно.",
     chapters: [
       {
@@ -256,6 +256,123 @@ FROM orders;</div>
   </ul>
   <div class="example"><b>Пример.</b> Отчёт по заказам за день шёл 40 секунд: условие оборачивало дату в функцию. Диапазон дат и индекс по <code>order_date</code> сократили до 0,8 секунды; <code>EXPLAIN ANALYZE</code> подтвердил переход с Seq Scan на Index Scan.</div>
   `
+      },
+      {
+        title: "NULL и трёхзначная логика",
+        html: `
+<div class="note"><b>Простыми словами</b>NULL — не ноль и не пустая строка, а «значение неизвестно». Поэтому NULL не равен даже самому себе, а условие может быть не истинным и не ложным, а неизвестным.</div>
+<p><b>Три состояния.</b> В SQL логическое выражение возвращает <code>TRUE</code>, <code>FALSE</code> или <code>UNKNOWN</code>. <code>WHERE</code> оставляет только строки, где условие истинно; <code>UNKNOWN</code> отбрасывается так же, как ложь.</p>
+<div class="table-wrap"><table><thead><tr><th>Выражение</th><th>Результат</th></tr></thead><tbody>
+<tr><td><code>NULL = NULL</code></td><td><code>UNKNOWN</code></td></tr>
+<tr><td><code>NULL &lt;&gt; 5</code></td><td><code>UNKNOWN</code></td></tr>
+<tr><td><code>TRUE AND UNKNOWN</code></td><td><code>UNKNOWN</code></td></tr>
+<tr><td><code>FALSE AND UNKNOWN</code></td><td><code>FALSE</code></td></tr>
+<tr><td><code>TRUE OR UNKNOWN</code></td><td><code>TRUE</code></td></tr>
+</tbody></table></div>
+<figure class="figure"><svg viewBox="0 0 360 94" role="img" aria-label="NULL не равен NULL: сравнение даёт UNKNOWN"><g font-size="9" fill="currentColor" text-anchor="middle"><rect x="8" y="24" width="92" height="34" rx="6" fill="none" stroke="currentColor" opacity=".5"/><text x="54" y="45">NULL</text><text x="112" y="45">=</text><rect x="126" y="24" width="92" height="34" rx="6" fill="none" stroke="currentColor" opacity=".5"/><text x="172" y="45">NULL</text><text x="230" y="45">→</text><rect x="244" y="24" width="108" height="34" rx="6" fill="currentColor" opacity=".1"/><text x="298" y="45">UNKNOWN</text><text x="180" y="80" opacity=".65">NULL проверяют через IS NULL, а не через =</text></g></svg><figcaption>Сравнение с NULL не доказывает ни равенство, ни неравенство. Для проверки используют IS NULL и IS NOT NULL.</figcaption></figure>
+<p><b>Где это ломает отчёты.</b> <code>WHERE discount != 10</code> не вернёт строки, где <code>discount IS NULL</code>. <code>NOT IN (SELECT ...)</code> с NULL в подзапросе может вернуть пустой результат. Для анти-джойна надёжнее <code>NOT EXISTS</code>:</p>
+<pre><code>SELECT u.id
+FROM users u
+WHERE NOT EXISTS (
+  SELECT 1 FROM orders o WHERE o.user_id = u.id
+);</code></pre>
+<p><b>Агрегаты и NULL.</b> <code>COUNT(*)</code> считает строки, <code>COUNT(col)</code> — только непустые значения. <code>SUM</code>, <code>AVG</code>, <code>MIN</code> и <code>MAX</code> пропускают NULL; <code>AVG</code> делит на число непустых значений, а не всех строк.</p>
+<p><b>Подстановка значений.</b> <code>COALESCE(col, 0)</code> возвращает первое непустое значение, <code>NULLIF(x, 0)</code> превращает ноль в NULL — удобно перед делением. Но подстановка меняет смысл: «нет данных» и «ноль» — разные вещи, поэтому решение фиксируют в определении метрики.</p>
+<div class="example"><b>Пример.</b> Средний чек по заказам со скидкой: <code>AVG(amount)</code> по строкам, где <code>discount IS NOT NULL</code>. Если заменить NULL на 0 через COALESCE, среднее изменится и перестанет отвечать на исходный вопрос.</div>
+<div class="note"><b>Совет</b>Проверяя отчёт, отдельно посчитайте <code>COUNT(*)</code> и <code>COUNT(ключевой_столбец)</code>. Разница показывает, сколько строк выпадет из метрик, где NULL не учитывается.</div>
+`
+      },
+      {
+        title: "Даты, время и границы периода",
+        html: `
+<div class="note"><b>Простыми словами</b>Период — это не «февраль», а конкретный полуинтервал времени: от начала месяца включительно до начала следующего месяца не включая. Такой интервал не теряет и не задваивает события на границе.</div>
+<p><b>Типы.</b> <code>DATE</code> хранит дату, <code>TIMESTAMP</code> — дату и время без часового пояса, <code>TIMESTAMPTZ</code> в PostgreSQL — момент времени с учётом зоны. Для событий, которые происходят в разных регионах, обычно нужен timestamp с зоной; для календарных дней — date.</p>
+<div class="table-wrap"><table><thead><tr><th>Задача</th><th>Безопасный приём</th></tr></thead><tbody>
+<tr><td>Заказы за февраль</td><td><code>ts &gt;= '2026-02-01' AND ts &lt; '2026-03-01'</code></td></tr>
+<tr><td>Начало месяца</td><td><code>date_trunc('month', ts)</code></td></tr>
+<tr><td>Последние 7 дней</td><td><code>ts &gt;= current_date - interval '7 days'</code></td></tr>
+<tr><td>Местное время</td><td><code>ts AT TIME ZONE 'Europe/Moscow'</code></td></tr>
+</tbody></table></div>
+<figure class="figure"><svg viewBox="0 0 360 96" role="img" aria-label="Полуинтервал периода: начало включительно, следующий месяц не включая"><g font-size="9" fill="currentColor"><line x1="20" y1="52" x2="340" y2="52" stroke="currentColor" opacity=".35"/><rect x="82" y="44" width="176" height="16" rx="4" fill="currentColor" opacity=".15"/><text x="82" y="34">1 февраля</text><text x="258" y="34">1 марта</text><text x="82" y="78">включительно</text><text x="258" y="78">не включая</text><text x="18" y="78" opacity=".6">31 января</text><text x="310" y="78" opacity=".6">2 марта</text></g></svg><figcaption>Полуинтервал <code>[начало; следующее начало)</code> покрывает месяц без двойного учёта события ровно в полночь.</figcaption></figure>
+<p><b>Почему не BETWEEN.</b> <code>BETWEEN '2026-02-01' AND '2026-02-28'</code> для timestamp часто теряет события 28 февраля после 00:00. Если очень нужен BETWEEN, берите конец периода как <code>&lt; следующий день</code>, а не «последний день месяца».</p>
+<p><b>Часовые пояса.</b> Один и тот же момент в Москве и Лондоне — разные локальные даты. Сначала решите, по какой зоне считается день в отчёте, затем применяйте <code>AT TIME ZONE</code>. Иначе ночные заказы попадут не в тот день, а «сегодня» у аналитика и у базы разойдутся.</p>
+<div class="example"><b>Пример.</b> Отчёт по дням: <code>SELECT date_trunc('day', created_at AT TIME ZONE 'Europe/Moscow') AS day, COUNT(*) ...</code>. Если убрать приведение зоны, сервер посчитает дни по UTC и вечерние заказы уедут в следующий день.</div>
+<div class="note"><b>Совет</b>Для каждого отчёта зафиксируйте три вещи: часовой пояс, границы периода и включает ли конец периода последнюю секунду. Эти три строки в определении метрики предотвращают большинство расхождений.</div>
+`
+      },
+      {
+        title: "UNION, CASE и условные агрегаты",
+        html: `
+<div class="note"><b>Простыми словами</b>UNION склеивает строки, CASE выбирает значение по условию, а условный агрегат превращает строки в колонки. Вместе они позволяют собрать сводку без Excel.</div>
+<p><b>Операции над результатами.</b> <code>UNION</code> склеивает два запроса и удаляет дубликаты, <code>UNION ALL</code> оставляет все строки. <code>INTERSECT</code> возвращает общие строки, <code>EXCEPT</code> — строки первого запроса, которых нет во втором. Количество и типы столбцов должны совпадать.</p>
+<div class="table-wrap"><table><thead><tr><th>Операция</th><th>Что оставляет</th><th>Когда нужна</th></tr></thead><tbody>
+<tr><td><code>UNION ALL</code></td><td>Все строки</td><td>Склеить периоды или источники</td></tr>
+<tr><td><code>UNION</code></td><td>Уникальные строки</td><td>Убрать повторы, если это действительно нужно</td></tr>
+<tr><td><code>INTERSECT</code></td><td>Совпадения</td><td>Найти общих клиентов</td></tr>
+<tr><td><code>EXCEPT</code></td><td>Только слева</td><td>Сравнить две выгрузки</td></tr>
+</tbody></table></div>
+<p><b>CASE.</b> Выражение <code>CASE WHEN ... THEN ... ELSE ... END</code> работает как if. Его можно использовать в SELECT, WHERE, ORDER BY и внутри агрегата.</p>
+<pre><code>SELECT
+  SUM(CASE WHEN channel = 'ads' THEN revenue ELSE 0 END) AS ads,
+  SUM(CASE WHEN channel = 'organic' THEN revenue ELSE 0 END) AS organic
+FROM orders
+WHERE returned = 0;</code></pre>
+<figure class="figure"><svg viewBox="0 0 360 96" role="img" aria-label="Условный агрегат превращает строки каналов в колонки"><g font-size="8.5" fill="currentColor" text-anchor="middle"><rect x="6" y="18" width="98" height="52" rx="5" fill="none" stroke="currentColor" opacity=".45"/><text x="55" y="34">ads</text><text x="55" y="48">organic</text><text x="55" y="62">ads</text><text x="132" y="46">→</text><rect x="158" y="18" width="190" height="52" rx="5" fill="currentColor" opacity=".1"/><text x="253" y="34">ads | organic</text><text x="253" y="52">сумма | сумма</text><text x="253" y="68" opacity=".65">одна строка вместо списка</text></g></svg><figcaption>CASE внутри SUM не сворачивает строки заранее: каждая строка попадает в свою колонку, а SUM складывает только нужные значения.</figcaption></figure>
+<p><b>Не склеивайте без нужды.</b> Если нужны разные агрегаты по одним данным, обычно лучше условные агрегаты, чем три запроса с UNION ALL. Если объединяете периоды, заранее приведите колонки к одному порядку и типу.</p>
+<div class="example"><b>Пример.</b> Сводка «канал × месяц»: <code>SUM(CASE WHEN channel = 'ads' THEN revenue ELSE 0 END)</code> по месяцам. Один проход по таблице вместо отдельного запроса на каждый канал.</div>
+<div class="note"><b>Совет</b>Для проверки двух выгрузок используйте <code>EXCEPT</code> в обе стороны. Если оба результата пусты, наборы строк совпадают; если нет — вы увидите конкретные расхождения, а не «где-то не сходится».</div>
+`
+      },
+      {
+        title: "Проверка качества данных запросами",
+        html: `
+<div class="note"><b>Простыми словами</b>Перед отчётом проверяют не «выглядит ли красиво», а конкретные свойства: ключ уникален, обязательные поля заполнены, даты в разумном диапазоне, связи не потеряны.</div>
+<p><b>Пять базовых проверок.</b> Они занимают минуты, но ловят большинство ошибок, которые потом выглядят как «странная метрика».</p>
+<div class="table-wrap"><table><thead><tr><th>Проверка</th><th>Запрос</th><th>Что означает</th></tr></thead><tbody>
+<tr><td>Дубли ключа</td><td><code>GROUP BY id HAVING COUNT(*) &gt; 1</code></td><td>Строка задваивается</td></tr>
+<tr><td>Пропуски</td><td><code>COUNT(*) - COUNT(col)</code></td><td>NULL в обязательном поле</td></tr>
+<tr><td>Сироты</td><td><code>LEFT JOIN ... WHERE right.id IS NULL</code></td><td>Нет родительской записи</td></tr>
+<tr><td>Диапазон дат</td><td><code>MIN(ts), MAX(ts)</code></td><td>Данные не за период</td></tr>
+<tr><td>Сверка сумм</td><td><code>SUM(amount)</code> в двух источниках</td><td>Расхождение выручки</td></tr>
+</tbody></table></div>
+<figure class="figure"><svg viewBox="0 0 360 92" role="img" aria-label="Проверка данных: ключ, пропуски, связи, диапазоны, сверка"><g font-size="8" fill="currentColor" text-anchor="middle"><rect x="4" y="24" width="58" height="34" rx="5" fill="none" stroke="currentColor" opacity=".45"/><text x="33" y="39">ключ</text><text x="33" y="51" opacity=".65">дубли</text><text x="70" y="45">→</text><rect x="78" y="24" width="58" height="34" rx="5" fill="none" stroke="currentColor" opacity=".45"/><text x="107" y="39">NULL</text><text x="107" y="51" opacity=".65">пропуски</text><text x="144" y="45">→</text><rect x="152" y="24" width="58" height="34" rx="5" fill="none" stroke="currentColor" opacity=".45"/><text x="181" y="39">связи</text><text x="181" y="51" opacity=".65">сироты</text><text x="218" y="45">→</text><rect x="226" y="24" width="58" height="34" rx="5" fill="none" stroke="currentColor" opacity=".45"/><text x="255" y="39">даты</text><text x="255" y="51" opacity=".65">период</text><text x="292" y="45">→</text><rect x="300" y="24" width="56" height="34" rx="5" fill="currentColor" opacity=".1"/><text x="328" y="39">суммы</text><text x="328" y="51" opacity=".65">сверка</text></g></svg><figcaption>Проверки идут от структуры к смыслу: сначала ключи и связи, затем диапазоны и итоговые суммы.</figcaption></figure>
+<pre><code>-- дубли ключа
+SELECT order_id, COUNT(*) AS n
+FROM orders
+GROUP BY order_id
+HAVING COUNT(*) &gt; 1;
+
+-- сироты: заказы без пользователя
+SELECT o.order_id
+FROM orders o
+LEFT JOIN users u ON u.id = o.user_id
+WHERE u.id IS NULL;</code></pre>
+<p><b>Сверка двух источников.</b> Сравнивайте не только итог, но и набор ключей: <code>EXCEPT</code> покажет строки, которые есть в одном источнике и отсутствуют в другом. Совпавшая сумма при разных наборах строк — плохой знак.</p>
+<div class="note"><b>Важно</b>Зелёная проверка не доказывает, что данные правильные. Она доказывает только, что выбранное свойство выполнено. Определение метрики, период и источник всё равно нужно фиксировать отдельно.</div>
+<div class="example"><b>Пример.</b> Выручка в SQL 268 100 ₽, в дашборде 296 700 ₽. Сначала проверяют дубли заказов и фильтр возвратов, затем период и валюту. Только после этого ищут «ошибку в BI».</div>
+`
+      },
+      {
+        title: "Транзакции и безопасные изменения",
+        html: `
+<div class="note"><b>Простыми словами</b>Транзакция — набор изменений, который применяется целиком или не применяется вообще. Это защита от ситуации «обновили половину строк и остановились».</div>
+<p><b>Запись в базу.</b> <code>INSERT</code> добавляет строки, <code>UPDATE</code> меняет, <code>DELETE</code> удаляет. Аналитик чаще работает в режиме чтения, но иногда нужно загрузить справочник или исправить тестовые данные. В рабочей базе такие операции должны быть согласованы с владельцем.</p>
+<div class="table-wrap"><table><thead><tr><th>Команда</th><th>Риск</th><th>Защита</th></tr></thead><tbody>
+<tr><td><code>INSERT</code></td><td>Дубли и неверные типы</td><td>Ключи, проверка схемы, тестовая таблица</td></tr>
+<tr><td><code>UPDATE</code></td><td>Затронуты лишние строки</td><td><code>WHERE</code>, <code>SELECT</code> с тем же условием, транзакция</td></tr>
+<tr><td><code>DELETE</code></td><td>Удалено больше, чем нужно</td><td>Архив, ограничение по ключу, транзакция</td></tr>
+</tbody></table></div>
+<pre><code>BEGIN;
+UPDATE orders
+SET status = 'cancelled'
+WHERE order_id = 42 AND status = 'new';
+-- проверьте, что изменилась ровно одна строка
+COMMIT;</code></pre>
+<figure class="figure"><svg viewBox="0 0 360 92" role="img" aria-label="Транзакция: BEGIN, изменения, COMMIT или ROLLBACK"><g font-size="9" fill="currentColor" text-anchor="middle"><rect x="6" y="28" width="76" height="34" rx="5" fill="none" stroke="currentColor" opacity=".45"/><text x="44" y="48">BEGIN</text><text x="92" y="49">→</text><rect x="102" y="28" width="92" height="34" rx="5" fill="currentColor" opacity=".1"/><text x="148" y="48">изменения</text><text x="204" y="49">→</text><rect x="216" y="6" width="136" height="26" rx="5" fill="none" stroke="currentColor" opacity=".45"/><text x="284" y="23">COMMIT — сохранить</text><rect x="216" y="58" width="136" height="26" rx="5" fill="none" stroke="currentColor" opacity=".45"/><text x="284" y="75">ROLLBACK — отменить</text></g></svg><figcaption>До COMMIT изменения можно отменить. После COMMIT они становятся видимыми другим и откат требует отдельного решения.</figcaption></figure>
+<p><b>Уровни изоляции</b> определяют, какие параллельные изменения видны транзакции. Чем слабее изоляция, тем выше скорость и тем больше риск прочитать несогласованные данные. Для аналитических выгрузок часто используют согласованный снимок или read-only транзакцию.</p>
+<p><b>Перед UPDATE или DELETE</b> выполните тот же <code>SELECT</code> с <code>WHERE</code>, посмотрите количество строк и сохраните его. Проверьте, что условие однозначно, а ключ уникален. В PostgreSQL помогает <code>RETURNING</code>, в других СУБД — отдельный SELECT до и после.</p>
+<div class="note"><b>Совет</b>Не выполняйте <code>UPDATE</code> или <code>DELETE</code> без <code>WHERE</code> в общей базе. Если сомневаетесь, начните транзакцию, проверьте строки и сделайте <code>ROLLBACK</code>; это дешевле восстановления из резервной копии.</div>
+`
       }
     ],
     quiz: [
@@ -446,6 +563,116 @@ FROM orders;</div>
         ],
         correct: 0,
         explain: "Если в списке есть NULL, NOT IN не может доказать истинность условия. Надёжнее NOT EXISTS или анти-джойн."
+      },
+      {
+        q: "Что вернёт выражение NULL = NULL в SQL?",
+        options: [
+          "UNKNOWN, а не TRUE",
+          "TRUE",
+          "FALSE",
+          "Ошибку синтаксиса"
+        ],
+        correct: 0,
+        explain: "NULL означает неизвестное значение. Сравнение с ним даёт UNKNOWN; для проверки используют IS NULL."
+      },
+      {
+        q: "В таблице 10 строк, в колонке discount у 4 строк NULL. Что вернут COUNT(*) и COUNT(discount)?",
+        options: [
+          "COUNT(*) — 10, COUNT(discount) — 6",
+          "Оба — 10",
+          "Оба — 6",
+          "COUNT(*) — 6, COUNT(discount) — 10"
+        ],
+        correct: 0,
+        explain: "COUNT(*) считает строки, а COUNT(col) пропускает NULL. Разница показывает число пропусков."
+      },
+      {
+        q: "Чем опасен NOT IN с подзапросом, где встречается NULL?",
+        options: [
+          "Сравнение с NULL даёт UNKNOWN, и результат может оказаться пустым",
+          "NOT IN всегда удаляет таблицу",
+          "Подзапрос обязан возвращать больше одной колонки",
+          "Он работает только с числами"
+        ],
+        correct: 0,
+        explain: "При NULL в списке NOT IN не может доказать истинность. Надёжнее NOT EXISTS или анти-джойн."
+      },
+      {
+        q: "Как безопаснее всего задать февральский период для timestamp?",
+        options: [
+          "created_at >= '2026-02-01' AND created_at < '2026-03-01'",
+          "created_at BETWEEN '2026-02-01' AND '2026-02-28'",
+          "MONTH(created_at) = 2",
+          "created_at = '2026-02-01'"
+        ],
+        correct: 0,
+        explain: "Полуинтервал включает начало и не включает следующее начало, поэтому не теряет и не задваивает события на границе."
+      },
+      {
+        q: "Зачем в отчёте по дням явно указывать часовой пояс?",
+        options: [
+          "Иначе один момент времени попадёт в разные календарные дни",
+          "Иначе SQL перестанет считать строки",
+          "Часовой пояс нужен только для текстовых полей",
+          "Это ускоряет любой запрос"
+        ],
+        correct: 0,
+        explain: "День зависит от зоны: вечерний заказ в Москве может быть другим днём по UTC. Зону фиксируют в определении отчёта."
+      },
+      {
+        q: "Чем UNION ALL отличается от UNION?",
+        options: [
+          "UNION ALL оставляет все строки, UNION удаляет дубликаты",
+          "UNION ALL работает только с числами",
+          "UNION всегда быстрее",
+          "Они полностью одинаковы"
+        ],
+        correct: 0,
+        explain: "Дедупликация в UNION стоит дополнительной работы. Если повторы допустимы, выбирают UNION ALL."
+      },
+      {
+        q: "Как одной строкой посчитать выручку отдельно по каналам ads и organic?",
+        options: [
+          "SUM(CASE WHEN channel = 'ads' THEN revenue ELSE 0 END) и SUM(CASE WHEN channel = 'organic' THEN revenue ELSE 0 END)",
+          "SELECT revenue FROM orders",
+          "ORDER BY channel",
+          "COUNT(DISTINCT channel)"
+        ],
+        correct: 0,
+        explain: "Условный агрегат относит каждую строку в нужную колонку и суммирует только подходящие значения."
+      },
+      {
+        q: "Как найти заказы без существующего пользователя?",
+        options: [
+          "LEFT JOIN users и фильтр WHERE users.id IS NULL",
+          "INNER JOIN users",
+          "ORDER BY user_id",
+          "COUNT(*) без JOIN"
+        ],
+        correct: 0,
+        explain: "LEFT JOIN сохраняет заказы без пары, а IS NULL оставляет именно сирот."
+      },
+      {
+        q: "Что произойдёт при UPDATE orders SET status = 'cancelled' без WHERE?",
+        options: [
+          "Изменится каждая строка таблицы",
+          "Изменится только первая строка",
+          "СУБД попросит подтверждение",
+          "Запрос выполнится только для NULL"
+        ],
+        correct: 0,
+        explain: "UPDATE без WHERE применяется ко всей таблице. Перед изменением проверяют условие и число строк."
+      },
+      {
+        q: "Что делает ROLLBACK в транзакции?",
+        options: [
+          "Отменяет изменения текущей транзакции",
+          "Сохраняет изменения навсегда",
+          "Удаляет таблицу",
+          "Создаёт резервную копию"
+        ],
+        correct: 0,
+        explain: "ROLLBACK откатывает изменения до BEGIN. COMMIT, наоборот, фиксирует их."
       }
     ],
     terms: [
@@ -471,6 +698,18 @@ FROM orders;</div>
       { term: "Внешний ключ", def: "Поле, которое ссылается на ключ в другой таблице и задаёт связь." },
       { term: "Кардинальность", def: "Сколько строк одной таблицы соответствует одной строке другой: 1:1, 1:N или N:N." },
       { term: "Анти-джойн", def: "Поиск строк, для которых нет пары в другой таблице: LEFT JOIN + IS NULL или NOT EXISTS." },
+      { term: "UNKNOWN", def: "Третье логическое состояние SQL: условие нельзя признать ни истинным, ни ложным." },
+      { term: "COALESCE", def: "Возвращает первое непустое значение из списка." },
+      { term: "NULLIF", def: "Возвращает NULL, если два значения равны; удобен перед делением." },
+      { term: "TIMESTAMPTZ", def: "Момент времени с учётом часового пояса." },
+      { term: "date_trunc", def: "Округляет дату или время до начала периода: дня, месяца, года." },
+      { term: "AT TIME ZONE", def: "Переводит timestamp между часовыми поясами." },
+      { term: "INTERSECT", def: "Оставляет строки, которые есть в обоих результатах." },
+      { term: "EXCEPT", def: "Оставляет строки первого результата, которых нет во втором." },
+      { term: "Условный агрегат", def: "SUM или COUNT с CASE внутри: строки распределяются по колонкам." },
+      { term: "Транзакция", def: "Набор изменений, который применяется целиком или отменяется." },
+      { term: "ROLLBACK", def: "Отмена изменений текущей транзакции." },
+      { term: "COMMIT", def: "Фиксация изменений транзакции." },
       { term: "Self-join", def: "Соединение таблицы с самой собой через два разных псевдонима." }
     ]
   };

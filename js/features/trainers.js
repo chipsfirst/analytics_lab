@@ -14,6 +14,7 @@
   var tRegPredict = F.tRegPredict, tRegRmse = F.tRegRmse, tRegDummies = F.tRegDummies, tRidgeChoice = F.tRidgeChoice, tLeakageChoice = F.tLeakageChoice, tClfPrecision = F.tClfPrecision, tClfRecall = F.tClfRecall, tClfThreshold = F.tClfThreshold, tClfOdds = F.tClfOdds, tPoisson = F.tPoisson, tKnnClass = F.tKnnClass, tForestVote = F.tForestVote, tKmeansAssign = F.tKmeansAssign, tCalibrationChoice = F.tCalibrationChoice, tMacroF1 = F.tMacroF1, tSmaCalc = F.tSmaCalc, tNaiveForecast = F.tNaiveForecast, tMapeForecast = F.tMapeForecast, tAteCalc = F.tAteCalc, tDiffInDiff = F.tDiffInDiff, tConfounder = F.tConfounder, tConsentChoice = F.tConsentChoice, tAnonChoice = F.tAnonChoice, tEthicsChoice = F.tEthicsChoice, tVizChoice = F.tVizChoice, tNoteType = F.tNoteType, tReportFirst = F.tReportFirst, tPortfolioProof = F.tPortfolioProof, tBiConversion = F.tBiConversion, tBiChartChoice = F.tBiChartChoice, tDaxChoice = F.tDaxChoice, tLodChoice = F.tLodChoice, tMissingChoice = F.tMissingChoice, tDataType = F.tDataType, tDupKey = F.tDupKey, tGrainJoin = F.tGrainJoin, tMissingMNAR = F.tMissingMNAR, tScaleChoice = F.tScaleChoice, tFreshness = F.tFreshness, tIdempotent = F.tIdempotent, tProdLayer = F.tProdLayer, tProdDbtTest = F.tProdDbtTest, tProdFreshness = F.tProdFreshness, tShapley = F.tShapley, tSignaling = F.tSignaling, tCsComplexity = F.tCsComplexity, tCsStructure = F.tCsStructure, tCsIndex = F.tCsIndex, tPyMemory = F.tPyMemory, tPyWindow = F.tPyWindow;
   var tAiEval = F.tAiEval, tAiCost = F.tAiCost;
   var tToolSource = F.tToolSource, tToolTask = F.tToolTask, tToolGit = F.tToolGit;
+  var tSqlNullLogic = F.tSqlNullLogic, tSqlDateBoundary = F.tSqlDateBoundary, tSqlQuality = F.tSqlQuality;
   var tCacCalc = F.tCacCalc, tRoasCalc = F.tRoasCalc, tEoqCalc = F.tEoqCalc, tQueueUtil = F.tQueueUtil;
 
 
@@ -83,7 +84,7 @@
     probability: [tComb, tUnion, tBayes, tBinom, tDice, tAtLeastOne],
     gametheory: [tNash, tDominant, tMaximin, tMixed, tShapley, tSignaling],
     data: [tMissingChoice, tDataType, tDupKey, tGrainJoin, tMissingMNAR, tScaleChoice, tFreshness, tIdempotent],
-    sql: [tSqlWhere, tSqlDistinct, tSqlGroupHaving, tSqlOrderLimit, tSqlNull, tSqlJoin, tSqlWindow, tSqlAvgNull],
+    sql: [tSqlWhere, tSqlDistinct, tSqlGroupHaving, tSqlOrderLimit, tSqlNull, tSqlJoin, tSqlWindow, tSqlAvgNull, tSqlNullLogic, tSqlDateBoundary, tSqlQuality],
     excel: [tXlSumIf, tXlCountIf, tXlIf, tXlVlookup, tXlPct, tXlAbs],
     python: [tPySlice, tPyType, tPyConvert, tPyPrec, tPyRange, tPyBool, tPyFind, tPyMemory, tPyWindow],
     regression: [tRegPredict, tRegRmse, tRegDummies, tRidgeChoice, tLeakageChoice],
