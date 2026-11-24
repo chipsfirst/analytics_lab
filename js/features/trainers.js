@@ -13,6 +13,7 @@
   var tMean = F.tMean, tMedian = F.tMedian, tVariance = F.tVariance, tSd = F.tSd, tZ = F.tZ, tSe = F.tSe, tComb = F.tComb, tUnion = F.tUnion, tBayes = F.tBayes, tBinom = F.tBinom, tDice = F.tDice, tAtLeastOne = F.tAtLeastOne, tNash = F.tNash, tDominant = F.tDominant, tMaximin = F.tMaximin, tMixed = F.tMixed, tSqlWhere = F.tSqlWhere, tSqlDistinct = F.tSqlDistinct, tSqlGroupHaving = F.tSqlGroupHaving, tSqlOrderLimit = F.tSqlOrderLimit, tSqlNull = F.tSqlNull, tSqlJoin = F.tSqlJoin, tSqlWindow = F.tSqlWindow, tSqlAvgNull = F.tSqlAvgNull, tXlSumIf = F.tXlSumIf, tXlCountIf = F.tXlCountIf, tXlIf = F.tXlIf, tXlVlookup = F.tXlVlookup, tXlPct = F.tXlPct, tXlAbs = F.tXlAbs, tPySlice = F.tPySlice, tPyType = F.tPyType, tPyConvert = F.tPyConvert, tPyPrec = F.tPyPrec, tPyRange = F.tPyRange, tPyBool = F.tPyBool, tPyFind = F.tPyFind;
   var tRegPredict = F.tRegPredict, tRegRmse = F.tRegRmse, tRegDummies = F.tRegDummies, tRidgeChoice = F.tRidgeChoice, tLeakageChoice = F.tLeakageChoice, tClfPrecision = F.tClfPrecision, tClfRecall = F.tClfRecall, tClfThreshold = F.tClfThreshold, tClfOdds = F.tClfOdds, tPoisson = F.tPoisson, tKnnClass = F.tKnnClass, tForestVote = F.tForestVote, tKmeansAssign = F.tKmeansAssign, tCalibrationChoice = F.tCalibrationChoice, tMacroF1 = F.tMacroF1, tSmaCalc = F.tSmaCalc, tNaiveForecast = F.tNaiveForecast, tMapeForecast = F.tMapeForecast, tAteCalc = F.tAteCalc, tDiffInDiff = F.tDiffInDiff, tConfounder = F.tConfounder, tConsentChoice = F.tConsentChoice, tAnonChoice = F.tAnonChoice, tEthicsChoice = F.tEthicsChoice, tVizChoice = F.tVizChoice, tNoteType = F.tNoteType, tReportFirst = F.tReportFirst, tPortfolioProof = F.tPortfolioProof, tBiConversion = F.tBiConversion, tBiChartChoice = F.tBiChartChoice, tDaxChoice = F.tDaxChoice, tLodChoice = F.tLodChoice, tMissingChoice = F.tMissingChoice, tDataType = F.tDataType, tDupKey = F.tDupKey, tGrainJoin = F.tGrainJoin, tMissingMNAR = F.tMissingMNAR, tScaleChoice = F.tScaleChoice, tFreshness = F.tFreshness, tIdempotent = F.tIdempotent, tProdLayer = F.tProdLayer, tProdDbtTest = F.tProdDbtTest, tProdFreshness = F.tProdFreshness, tShapley = F.tShapley, tSignaling = F.tSignaling, tCsComplexity = F.tCsComplexity, tCsStructure = F.tCsStructure, tCsIndex = F.tCsIndex, tPyMemory = F.tPyMemory, tPyWindow = F.tPyWindow;
   var tAiEval = F.tAiEval, tAiCost = F.tAiCost;
+  var tToolSource = F.tToolSource, tToolTask = F.tToolTask, tToolGit = F.tToolGit;
   var tCacCalc = F.tCacCalc, tRoasCalc = F.tRoasCalc, tEoqCalc = F.tEoqCalc, tQueueUtil = F.tQueueUtil;
 
 
@@ -97,6 +98,7 @@
     causal: [tAteCalc, tDiffInDiff, tConfounder],
     ai: [tAiEval, tAiCost],
     marketing: [tCacCalc, tRoasCalc],
-    simulation: [tEoqCalc, tQueueUtil]
+    simulation: [tEoqCalc, tQueueUtil],
+    toolkit: [tToolSource, tToolTask, tToolGit]
   };
 })();

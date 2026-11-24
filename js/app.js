@@ -65,6 +65,7 @@
     causal: { icon: "link" },
     ethics: { icon: "shield" },
     useful: { icon: "note" },
+    toolkit: { icon: "gear" },
     bi: { icon: "chart" },
     production: { icon: "gear" }
   };
@@ -174,20 +175,31 @@
     }).join("") + "</div>";
   }
 
+  function topicGroups(cta, linkable) {
+    var ids = topicIds();
+    var levels = window.TOPIC_LEVELS || {};
+    var groups = window.TOPIC_GROUPS || [{ id: "base", title: "Разделы", lead: "" }];
+    return groups.map(function (g) {
+      var list = ids.filter(function (id) { return (levels[id] || "base") === g.id; });
+      if (!list.length) return "";
+      return '<section class="topic-group"><h2>' + esc(g.title) + "</h2>" +
+        (g.lead ? '<p class="meta">' + esc(g.lead) + "</p>" : "") +
+        '<div class="grid">' + list.map(function (id) {
+          return topicCard(id, cta, linkable);
+        }).join("") + "</div></section>";
+    }).join("");
+  }
+
   function listPage(kind, title, lead, label) {
     return "<h1>" + esc(title) + "</h1><p class=\"lead\">" + lead + "</p>" +
-      '<div class="grid">' + topicIds().map(function (id) {
-        return topicCard(id, { kind: kind, label: label });
-      }).join("") + "</div>";
+      topicGroups({ kind: kind, label: label });
   }
 
   function textbookPage() {
     return "<h1>Учебник</h1>" +
       '<p class="lead">Теория, тесты и тренажёры по каждому разделу — в одном месте. ' +
-      "Начните с главы, проверьте себя тестом и закрепите расчёт в тренажёре.</p>" +
-      '<div class="grid">' + topicIds().map(function (id) {
-        return topicCard(id, null, true);
-      }).join("") + "</div>";
+      "Сначала базовые разделы, затем продвинутые: начните с главы, проверьте себя тестом и закрепите расчёт в тренажёре.</p>" +
+      topicGroups(null, true);
   }
 
   function gamesList() {
@@ -281,6 +293,7 @@
       link("#/datalab", "Практика на данных", "Задачи по CSV с проверкой") +
       link("#/cases", "Кейсы", "12 ситуаций с открытым ответом") +
       link("#/notebook", "Python-блокнот", "Заказы в Pyodide без установки") +
+      link("#/theory/toolkit", "Инструментарий", "Установка Python, SQL, BI и Git") +
       "</div>" +
       "<h2>Повторение и проверка</h2><div class=\"home-links\">" +
       link("#/session", "30 минут", "Короткая сессия с таймером") +

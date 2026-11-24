@@ -210,6 +210,9 @@ p { margin: 0 0 10px; }
   gap: 10px;
   margin-top: 12px;
 }
+.topic-group { margin: 26px 0 8px; }
+.topic-group h2 { margin: 0 0 4px; }
+.topic-group .grid { margin-top: 10px; }
 
 .card {
   background: var(--panel);
@@ -886,6 +889,8 @@ th { background: var(--accent-soft); color: var(--accent); }
 .reader article section .formula { max-width: none; }
 .reader article section .table-wrap,
 .reader article section figure { width: 100%; }
+.reader article section pre { overflow-x: auto; max-width: 100%; }
+.topic-page[data-topic="toolkit"] .table-wrap table { width: 100%; }
 @media (max-width: 900px) {
   .reader article section { padding: 16px 16px 12px; }
 }

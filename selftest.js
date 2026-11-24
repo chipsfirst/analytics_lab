@@ -43,7 +43,7 @@ function ok(cond, msg) {
 
 // --- структура контента ---
 var topicIds = Object.keys(window.TOPICS);
-ok(topicIds.length === 21, "ожидалось 21 раздел, найдено " + topicIds.length);
+ok(topicIds.length === 22, "ожидалось 21 раздел, найдено " + topicIds.length);
 ok((window.TOPIC_ORDER || []).join() === topicIds.join(), "порядок TOPIC_ORDER не совпадает с порядком загрузки разделов");
 
 topicIds.forEach(function (id) {
@@ -65,9 +65,9 @@ topicIds.forEach(function (id) {
 var totalChapters = topicIds.reduce(function (n, id) { return n + window.TOPICS[id].chapters.length; }, 0);
 var totalQuiz = topicIds.reduce(function (n, id) { return n + window.TOPICS[id].quiz.length; }, 0);
 var totalTrainers = topicIds.reduce(function (n, id) { return n + (window.TRAINERS[id] || []).length; }, 0);
-ok(totalChapters === 238, "глав: " + totalChapters);
-ok(totalQuiz === 469, "вопросов: " + totalQuiz);
-ok(totalTrainers === 102, "тренажёров: " + totalTrainers);
+ok(totalChapters === 249, "глав: " + totalChapters);
+ok(totalQuiz === 481, "вопросов: " + totalQuiz);
+ok(totalTrainers === 105, "тренажёров: " + totalTrainers);
 
 var seenQuestions = Object.create(null);
 topicIds.forEach(function (id) {
@@ -107,12 +107,13 @@ topicIds.forEach(function (id) {
 
 ok(window.DBT_PROJECT && typeof window.DBT_PROJECT.page === "function" && typeof window.DBT_PROJECT.bind === "function", "dbt-проект: страница не загрузилась");
 ok(window.ACHIEVEMENTS && typeof window.ACHIEVEMENTS.list === "function" && window.ACHIEVEMENTS.total() >= 10, "достижения: модуль не загрузился");
-ok(window.SOURCES && Object.keys(window.SOURCES).length === 21, "источники: не для всех разделов");
+ok(window.SOURCES && Object.keys(window.SOURCES).length === 22, "источники: не для всех разделов");
 ok(Array.isArray(window.TRACKS) && window.TRACKS.length === 7, "маршруты: ожидалось 7");
 ok(window.TOPICS.production && window.TOPICS.production.chapters.length === 9 && window.TOPICS.production.quiz.length === 18, "production: 9 глав / 18 вопросов");
 ok(window.TOPICS.analytics && window.TOPICS.analytics.chapters.length === 10 && window.TOPICS.analytics.quiz.length === 25, "analytics: 10 глав / 25 вопросов");
 ok(window.TOPICS.gametheory && window.TOPICS.gametheory.chapters.length === 12 && window.TOPICS.gametheory.quiz.length === 23, "gametheory: 12 глав / 23 вопроса");
 ok(window.TOPICS.cs && window.TOPICS.cs.chapters.length === 10 && window.TOPICS.cs.quiz.length === 20, "cs: 10 глав / 20 вопросов");
+ok(window.TOPICS.toolkit && window.TOPICS.toolkit.chapters.length === 11 && window.TOPICS.toolkit.quiz.length === 12, "toolkit: 11 глав / 12 вопросов");
 ok((window.TRAINERS.production || []).length === 3, "production: тренажёры");
 window.TRACKS.forEach(function (t) {
   ok(t.title && t.tag && t.steps.length >= 6, "маршрут " + t.id + " неполный");
@@ -126,7 +127,7 @@ window.CHEATSHEET.forEach(function (r, i) {
   ok(r.task && r.main && r.check, "шпаргалка: строка " + i + " неполная");
 });
 
-ok(Object.keys(window.TRAINERS).length === 21, "тренажёры есть не для всех разделов");
+ok(Object.keys(window.TRAINERS).length === 22, "тренажёры есть не для всех разделов");
 topicIds.forEach(function (id) {
   ok(window.TRAINERS[id] && window.TRAINERS[id].length > 0, id + ": нет тренажёров");
 });

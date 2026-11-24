@@ -24,5 +24,20 @@ window.TOPIC_ORDER = [
   "timeseries",
   "gametheory",
   "ethics",
-  "useful"
+  "useful",
+  "toolkit"
 ];
+
+// Два уровня: с чего начать и что изучать после практики.
+window.TOPIC_GROUPS = [
+  { id: "base", title: "Базовые", lead: "Старт: понятия, данные, SQL, Python, статистика и BI." },
+  { id: "advanced", title: "Продвинутые", lead: "После базы: модели, причинность, продакшен и сложные системы." }
+];
+window.TOPIC_LEVELS = {
+  analytics: "base", data: "base", sql: "base", excel: "base", python: "base",
+  statistics: "base", probability: "base", bi: "base", marketing: "base",
+  ethics: "base", useful: "base", toolkit: "base",
+  causal: "advanced", production: "advanced", regression: "advanced",
+  classification: "advanced", ml: "advanced", cs: "advanced", ai: "advanced",
+  simulation: "advanced", timeseries: "advanced", gametheory: "advanced"
+};

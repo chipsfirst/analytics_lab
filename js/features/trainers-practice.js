@@ -516,6 +516,48 @@
     };
   }
 
+  function tToolSource() {
+    return {
+      prompt: "Где безопаснее скачать Python для учебного проекта?",
+      solution: "Официальный сайт python.org даёт проверенный установщик и обновления; сторонние сборки могут содержать лишнее.",
+      answer: { type: "choice", options: [
+        { text: "С официального сайта python.org", ok: true },
+        { text: "С файлообменника без проверки", ok: false },
+        { text: "Из архива со взломом", ok: false },
+        { text: "Из случайного комментария", ok: false }
+      ] }
+    };
+  }
+
+  function tToolTask() {
+    return {
+      prompt: "Нужно сравнить два города по средней выручке и сразу увидеть разницу. Что выбрать?",
+      solution: "Для небольшого табличного среза и быстрой проверки достаточно Excel или BI; SQL нужен, когда данные уже в базе.",
+      answer: { type: "choice", options: [
+        { text: "BI-инструмент или сводную таблицу", ok: true },
+        { text: "Git", ok: false },
+        { text: "Только текстовый редактор", ok: false },
+        { text: "Архиватор", ok: false }
+      ] }
+    };
+  }
+
+  function tToolGit() {
+    return {
+      prompt: "Что делает команда git commit?",
+      solution: "Коммит фиксирует изменения в истории репозитория; push отправляет их в удалённый репозиторий.",
+      answer: { type: "choice", options: [
+        { text: "Сохраняет изменения в истории с сообщением", ok: true },
+        { text: "Публикует сайт в интернете", ok: false },
+        { text: "Удаляет все файлы проекта", ok: false },
+        { text: "Устанавливает Python", ok: false }
+      ] }
+    };
+  }
+
+  window.TRAINER_FNS.tToolSource = tToolSource;
+  window.TRAINER_FNS.tToolTask = tToolTask;
+  window.TRAINER_FNS.tToolGit = tToolGit;
   window.TRAINER_FNS.tSmaCalc = tSmaCalc;
   window.TRAINER_FNS.tNaiveForecast = tNaiveForecast;
   window.TRAINER_FNS.tMapeForecast = tMapeForecast;

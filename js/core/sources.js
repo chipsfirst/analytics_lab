@@ -104,5 +104,33 @@ window.SOURCES = {
     { title: "Storytelling with Data", url: "https://www.storytellingwithdata.com/books", note: "визуализация и подача" },
     { title: "Google: технические заметки", url: "https://abseil.io/resources/swe-book", note: "инженерная культура" },
     { title: "Lenny's Newsletter", url: "https://www.lennysnewsletter.com/", note: "продукт, аналитика и коммуникация" }
+  ],
+  toolkit: [
+    { title: "Python: документация", url: "https://docs.python.org/3/", note: "язык и стандартная библиотека" },
+    { title: "VS Code: документация", url: "https://code.visualstudio.com/docs", note: "редактор, терминал и расширения" },
+    { title: "JupyterLab: документация", url: "https://jupyterlab.readthedocs.io/en/stable/", note: "блокноты и ячейки" },
+    { title: "PostgreSQL: документация", url: "https://www.postgresql.org/docs/", note: "СУБД и SQL" },
+    { title: "SQLite: документация", url: "https://www.sqlite.org/docs.html", note: "встраиваемая база в одном файле" },
+    { title: "DBeaver: документация", url: "https://dbeaver.com/docs/dbeaver/", note: "SQL-клиент и подключения" },
+    { title: "Power BI: документация", url: "https://learn.microsoft.com/en-us/power-bi/", note: "Desktop, сервис и DAX" },
+    { title: "Tableau: справка", url: "https://help.tableau.com/current/pro/desktop/en-us/default.htm", note: "Desktop и визуализация" },
+    { title: "Looker Studio: справка", url: "https://support.google.com/looker-studio/", note: "отчёты в браузере" },
+    { title: "Metabase: документация", url: "https://www.metabase.com/docs/latest/", note: "self-service BI" },
+    { title: "Excel: справка", url: "https://support.microsoft.com/en-us/excel", note: "формулы, сводные и Power Query" },
+    { title: "Google Sheets: справка", url: "https://support.google.com/docs/", note: "таблицы и совместная работа" },
+    { title: "R: руководства", url: "https://cran.r-project.org/manuals.html", note: "язык и статистические пакеты" },
+    { title: "RStudio: документация", url: "https://docs.posit.co/ide/user/", note: "IDE для R" },
+    { title: "SPSS: документация", url: "https://www.ibm.com/docs/en/spss-statistics", note: "статистические процедуры" },
+    { title: "Git: документация", url: "https://git-scm.com/docs", note: "команды и концепции" },
+    { title: "Docker: документация", url: "https://docs.docker.com/", note: "образы, контейнеры и Compose" },
+    { title: "OpenSSH: руководство", url: "https://www.openssh.com/manual.html", note: "ssh, scp и ключи" },
+    { title: "GNU nano: документация", url: "https://www.nano-editor.org/docs.php", note: "простой терминальный редактор" },
+    { title: "Vim: документация", url: "https://www.vim.org/docs.php", note: "режимы и команды" },
+    { title: "Emacs: руководство", url: "https://www.gnu.org/software/emacs/manual/", note: "редактор и среда" },
+    { title: "Bash: руководство", url: "https://www.gnu.org/software/bash/manual/", note: "оболочка и команды" },
+    { title: "Windows: документация", url: "https://learn.microsoft.com/en-us/windows/", note: "система, PowerShell и WSL" },
+    { title: "macOS: поддержка", url: "https://support.apple.com/macos", note: "система и терминал" },
+    { title: "Ubuntu: документация", url: "https://documentation.ubuntu.com/", note: "Linux и пакеты" },
+    { title: "tmux: вики", url: "https://github.com/tmux/tmux/wiki", note: "долгие SSH-сессии" }
   ]
 };

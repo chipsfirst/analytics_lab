@@ -54,6 +54,7 @@ FILES = [
     "js/topics/timeseries.js",
     "js/topics/causal.js",
     "js/topics/useful.js",
+    "js/topics/toolkit.js",
     "js/topics/ethics.js",
     "js/topics/bi.js",
     "js/topics/production.js",
