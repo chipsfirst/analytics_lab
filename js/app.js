@@ -276,6 +276,7 @@
       link("#/open-project", "Открытый проект", "Подписка: рубрика и защита решения") +
       link("#/pandas-case", "Pandas-кейс", "Отчёт по подписке на четырёх CSV") +
       link("#/dbt-project", "dbt + BI", "Репозиторий, тесты и живой дашборд") +
+      link("#/dashboard", "Конструктор дашборда", "SQL или Python → настройка экрана") +
       link("#/marketing-project", "Записка CMO", "Маркетинговый проект: CAC, ROAS и решение") +
       link("#/datalab", "Практика на данных", "Задачи по CSV с проверкой") +
       link("#/cases", "Кейсы", "12 ситуаций с открытым ответом") +
@@ -357,6 +358,7 @@
     if (seg === "analyst-exam") return { mount: window.EXAMS.analyst };
     if (seg === "notebook") return { mount: notebookPage };
     if (seg === "changelog") return { html: window.STATIC_PAGES.changelog() };
+    if (seg === "dashboard") return { mount: window.DASHBOARD_BUILDER.mount };
     if (seg === "sandbox") return { mount: sandboxPage };
     if (seg === "pysandbox") return { mount: pySandboxPage };
     if (seg === "path") return { html: window.PATH_PAGE.page() };

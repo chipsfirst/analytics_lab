@@ -79,6 +79,7 @@ FILES = [
     "js/features/demos-core.js",
     "js/features/demos-views.js",
     "js/features/demos.js",
+    "js/features/dashboard-builder.js",
     "js/features/dbt-project.js",
     "js/sandboxes/sql.js",
     "js/sandboxes/python.js",

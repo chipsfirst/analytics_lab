@@ -15,6 +15,7 @@ require("./js/features/trainers-ai.js");
 require("./js/features/trainers-marketing.js");
 require("./js/features/trainers-simulation.js");
 require("./js/features/trainers.js");
+require("./js/features/dashboard-builder.js");
 require("./js/features/dbt-project.js");
 require("./js/features/games-core.js");
 require("./js/features/games-views.js");
@@ -236,6 +237,20 @@ Object.keys(window.DEMOS).forEach(function (id) {
   var d = window.DEMOS[id];
   ok(d.title && d.tag && typeof d.mount === "function", "демо " + id + " неполное");
 });
+var dashRows = [
+  { city: "Москва", channel: "ads", revenue: 100, units: 2 },
+  { city: "Москва", channel: "organic", revenue: 50, units: 1 },
+  { city: "Казань", channel: "ads", revenue: 30, units: 3 }
+];
+var dashCols = window.DASHBOARD_BUILDER.columnsOf(dashRows);
+ok(dashCols.filter(function (c) { return c.key === "revenue" && c.numeric; }).length === 1, "конструктор: выручка не распознана как число");
+ok(dashCols.filter(function (c) { return c.key === "city" && !c.numeric; }).length === 1, "конструктор: город распознан как число");
+var dashModel = window.DASHBOARD_BUILDER.buildModel(dashRows, { dim: "city", metric: "revenue", agg: "sum", chart: "bar" });
+ok(dashModel.total === 180, "конструктор: неверная сумма");
+ok(dashModel.groups[0].label === "Москва" && dashModel.groups[0].value === 150, "конструктор: неверная группировка");
+var dashAvg = window.DASHBOARD_BUILDER.buildModel(dashRows, { dim: "city", metric: "revenue", agg: "avg", chart: "table" });
+ok(dashAvg.total === 60, "конструктор: неверное среднее");
+ok(window.DASHBOARD_BUILDER.parseCsv("a,b\n1,2\n")[0].b === "2", "конструктор: CSV не разобран");
 ok(typeof window.SANDBOX === "object" && typeof window.SANDBOX.mount === "function", "SANDBOX не загрузился");
 ok(typeof window.PYSANDBOX === "object" && typeof window.PYSANDBOX.mount === "function", "PYSANDBOX не загрузился");
 

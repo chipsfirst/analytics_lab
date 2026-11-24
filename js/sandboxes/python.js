@@ -40,6 +40,7 @@
     var currentOut = null;
     var fatal = false;
     var files = opts.files || {};
+    var onData = opts.onData;
 
     root.innerHTML =
       '<div class="nb-bar">' +
@@ -188,6 +189,10 @@
 
       worker.onmessage = function (e) {
         var msg = e.data;
+        if (msg.type === "data") {
+          if (typeof onData === "function") onData(msg.rows);
+          return;
+        }
         if (msg.type === "stdout" || msg.type === "stderr") {
           write(msg.text);
           return;

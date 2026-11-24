@@ -96,6 +96,20 @@ self.onmessage = function (e) {
   if (msg.type === "run" && pyodide) {
     pyodide.runPythonAsync(msg.code)
       .then(function (result) {
+        var rows = null;
+        try {
+          var json = pyodide.runPython(
+            "import json as _json\n" +
+            "_payload = result\n" +
+            "if hasattr(_payload, 'to_dict'):\n" +
+            "    _payload = _payload.to_dict('records')\n" +
+            "if isinstance(_payload, list):\n" +
+            "    _payload = _payload[:2000]\n" +
+            "_json.dumps(_payload, ensure_ascii=False, default=str)"
+          );
+          if (json && json !== "null") rows = JSON.parse(json);
+        } catch (e) { /* переменной result нет — это обычная ячейка */ }
+        send({ type: "data", rows: rows });
         send({ type: "done", result: result === undefined ? "" : String(result) });
       })
       .catch(function (err) {
