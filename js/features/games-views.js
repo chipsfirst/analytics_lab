@@ -228,7 +228,7 @@
 
     function draw() {
       if (!state.running && state.i === 0) {
-        root.innerHTML = '<div class="card center"><p>45 секунд, вопросы из всех четырёх разделов. ' +
+        root.innerHTML = '<div class="card center"><p>45 секунд, вопросы из всех разделов. ' +
           "Один правильный ответ — одно очко.</p>" +
           '<div class="btn-row" style="justify-content:center"><button class="btn primary" id="start">Начать</button></div></div>';
         document.getElementById("start").addEventListener("click", start);
@@ -655,13 +655,13 @@
         document.getElementById("place").addEventListener("click", function () {
           state.bid = Number(document.getElementById("bid").value) || 0;
           state.done = true;
-          if (state.bid > state.rival) state.profit += Math.max(0, state.value - state.rival);
+          if (state.bid > state.rival) state.profit += state.value - state.rival;
           draw();
         });
         return;
       }
       var won = state.bid > state.rival;
-      var gain = won ? Math.max(0, state.value - state.rival) : 0;
+      var gain = won ? state.value - state.rival : 0;
       root.innerHTML = '<div class="card"><div class="progress"><span>Раунд ' + (state.round + 1) + ' из ' + ROUNDS +
         '</span><span>Прибыль: ' + state.profit + '</span></div>' +
         '<p>Ваша ставка ' + state.bid + ', соперник поставил ' + state.rival + '.</p>' +

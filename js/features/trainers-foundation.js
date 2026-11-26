@@ -574,8 +574,16 @@
     ];
     var it = items[rndInt(0, items.length - 1)];
     var pool = ["int", "str", "float", "bool", "list", "dict"].filter(function (t) { return t !== it[1]; });
-    var wrong = [pool[rndInt(0, pool.length - 1)], pool[rndInt(0, pool.length - 1)]];
-    var opts = uniqOptions([it[1]].concat(wrong)).slice(0, 4);
+    var wrong = [];
+    while (wrong.length < 3) {
+      var cand = pool[rndInt(0, pool.length - 1)];
+      if (wrong.indexOf(cand) === -1) wrong.push(cand);
+    }
+    var opts = [it[1]].concat(wrong);
+    for (var si = opts.length - 1; si > 0; si--) {
+      var sj = rndInt(0, si);
+      var tmp = opts[si]; opts[si] = opts[sj]; opts[sj] = tmp;
+    }
     return {
       prompt: "<p>Что вернёт выражение <code>" + esc(it[0]) + "</code>?</p>",
       solution: "Это " + it[1] + ": " + it[2] + ".",

@@ -4,6 +4,13 @@
   var LAB = window.LAB, app = LAB.app;
   function shuffle(a) { a=a.slice(); for (var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=a[i];a[i]=a[j];a[j]=t;} return a; }
   function quizOptions(q) { return shuffle((q.options||[]).map(function(o,i){return typeof o==="string"?{text:o,ok:i===q.correct}:{text:o.text,ok:!!o.ok};})); }
+  function spread(list, n) {
+    if (list.length <= n) return list.slice();
+    if (n <= 1) return list.slice(0, n);
+    var out = [];
+    for (var i = 0; i < n; i++) out.push(list[Math.round(i * (list.length - 1) / (n - 1))]);
+    return out;
+  }
   function examPage(cfg) {
     var bank = cfg.bank;
     var state = null;
@@ -108,7 +115,7 @@
 
   function biExamPage() {
     examPage({
-      bank: window.TOPICS.bi.quiz,
+      bank: spread(window.TOPICS.bi.quiz, 20),
       title: "Сертификация BI",
       lead: "20 вопросов, 15 минут. Проходной балл — 14 правильных ответов.",
       pass: 14, minutes: 15, back: "#/theory/bi", backLabel: "к разделу BI"
@@ -116,8 +123,8 @@
   }
 
   function analystExamPage() {
-    var bank = window.TOPICS.statistics.quiz.slice(0, 7)
-      .concat(window.TOPICS.probability.quiz.slice(0, 7), window.TOPICS.analytics.quiz.slice(0, 6));
+    var bank = spread(window.TOPICS.statistics.quiz, 7)
+      .concat(spread(window.TOPICS.probability.quiz, 7), spread(window.TOPICS.analytics.quiz, 6));
     examPage({
       bank: bank,
       title: "Сертификация аналитика",
@@ -127,8 +134,8 @@
   }
 
   function dataExamPage() {
-    var bank = window.TOPICS.sql.quiz.slice(0, 8)
-      .concat(window.TOPICS.data.quiz.slice(0, 6), window.TOPICS.excel.quiz.slice(0, 6));
+    var bank = spread(window.TOPICS.sql.quiz, 8)
+      .concat(spread(window.TOPICS.data.quiz, 6), spread(window.TOPICS.excel.quiz, 6));
     examPage({
       bank: bank,
       title: "Сертификация: SQL и данные",
@@ -138,8 +145,8 @@
   }
 
   function pythonExamPage() {
-    var bank = window.TOPICS.python.quiz.slice(0, 8)
-      .concat(window.TOPICS.ml.quiz.slice(0, 6), window.TOPICS.regression.quiz.slice(0, 6));
+    var bank = spread(window.TOPICS.python.quiz, 8)
+      .concat(spread(window.TOPICS.ml.quiz, 6), spread(window.TOPICS.regression.quiz, 6));
     examPage({
       bank: bank,
       title: "Сертификация: Python и модели",

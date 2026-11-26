@@ -51,8 +51,29 @@
     function fmt(n, digits) {
       return Number(n).toLocaleString("ru-RU", { maximumFractionDigits: digits == null ? 0 : digits });
     }
-    function zAlpha(a) { return a === 0.01 ? 2.575829 : 1.959964; }
-    function zPower(p) { return p === 0.9 ? 1.281552 : 0.841621; }
+    function normInv(p) {
+      if (!(p > 0 && p < 1)) return NaN;
+      var a = [-39.69683028665376, 220.9460984245205, -275.9285104469687, 138.357751867269, -30.66479806614716, 2.506628277459239];
+      var b = [-54.47609879822406, 161.5858368580409, -155.6989798598866, 66.80131188771972, -13.28068155288572];
+      var c = [-0.007784894002430293, -0.3223964580411365, -2.400758277161838, -2.549732539343734, 4.374664141464968, 2.938163982698783];
+      var d = [0.007784695709041462, 0.3224671290700398, 2.445134137142996, 3.754408661907416];
+      var plow = 0.02425, phigh = 1 - plow, q, r;
+      if (p < plow) {
+        q = Math.sqrt(-2 * Math.log(p));
+        return (((((c[0] * q + c[1]) * q + c[2]) * q + c[3]) * q + c[4]) * q + c[5]) /
+          ((((d[0] * q + d[1]) * q + d[2]) * q + d[3]) * q + 1);
+      }
+      if (p > phigh) {
+        q = Math.sqrt(-2 * Math.log(1 - p));
+        return -(((((c[0] * q + c[1]) * q + c[2]) * q + c[3]) * q + c[4]) * q + c[5]) /
+          ((((d[0] * q + d[1]) * q + d[2]) * q + d[3]) * q + 1);
+      }
+      q = p - 0.5; r = q * q;
+      return (((((a[0] * r + a[1]) * r + a[2]) * r + a[3]) * r + a[4]) * r + a[5]) * q /
+        (((((b[0] * r + b[1]) * r + b[2]) * r + b[3]) * r + b[4]) * r + 1);
+    }
+    function zAlpha(a) { return normInv(1 - a / 2); }
+    function zPower(p) { return normInv(p); }
     function size(p1, p2, power, alpha) {
       var za = zAlpha(alpha), zp = zPower(power), d = Math.abs(p2 - p1);
       if (!(p1 > 0 && p1 < 1 && p2 > 0 && p2 < 1) || d < 0.000001) return null;
@@ -60,7 +81,12 @@
     }
     function sample() {
       var p1 = num("csP1") / 100, p2 = num("csP2") / 100;
-      var n = size(p1, p2, num("csPower"), num("csAlpha"));
+      var power = num("csPower"), alpha = num("csAlpha");
+      if (!(power > 0 && power < 1) || !(alpha > 0 && alpha < 1)) {
+        document.getElementById("csOut").textContent = "Мощность и α должны быть между 0 и 1.";
+        return;
+      }
+      var n = size(p1, p2, power, alpha);
       document.getElementById("csOut").textContent = n
         ? "Нужно примерно " + fmt(n) + " наблюдений в каждой группе, всего " + fmt(2 * n) + "."
         : "Введите две разные конверсии от 0 до 100%.";
@@ -68,6 +94,10 @@
     function mde() {
       var p1 = num("mdeBase") / 100, n = num("mdeN"), power = num("mdePower"), alpha = num("mdeAlpha");
       if (!(p1 > 0 && p1 < 1) || !(n > 0)) { document.getElementById("mdeOut2").textContent = "Проверьте базовую конверсию и выборку."; return; }
+      if (!(power > 0 && power < 1) || !(alpha > 0 && alpha < 1)) {
+        document.getElementById("mdeOut2").textContent = "Мощность и α должны быть между 0 и 1.";
+        return;
+      }
       var za = zAlpha(alpha), zp = zPower(power), lo = 0, hi = 1 - p1;
       for (var i = 0; i < 60; i++) {
         var mid = (lo + hi) / 2, p2 = p1 + mid;
@@ -83,7 +113,7 @@
       if (!(n > 0 && traffic > 0)) { document.getElementById("durOut").textContent = "Проверьте выборку и трафик."; return; }
       var days = Math.ceil(2 * n / traffic);
       document.getElementById("durOut").textContent = "Примерно " + fmt(days) + " дней, или " +
-        fmt(days / 7, 1) + " недель. Округляйте вверх и не останавливайте тест раньше срока.";
+        fmt(days / 7, 1) + " нед. Округляйте вверх и не останавливайте тест раньше срока.";
     }
     function interval() {
       var c = num("ciConv"), n = num("ciVisitors");

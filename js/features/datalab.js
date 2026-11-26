@@ -6,7 +6,7 @@
     var datasets = [
       ["ab-test.csv", "A/B-тест", "1 200 пользователей, группы A и B, конверсия и выручка.", "user_id, group, converted, revenue"],
       ["churn.csv", "Отток", "600 клиентов: срок, платеж, обращения в поддержку, факт оттока.", "customer_id, tenure_months, monthly_charges, support_calls, churned"],
-      ["marketing.csv", "Маркетинг", "90 дней по трём каналам: расходы, клики, конверсии, выручка.", "date, channel, spend, clicks, conversions, revenue"],
+      ["marketing.csv", "Маркетинг", "30 дней по трём каналам, 90 строк: расходы, клики, конверсии, выручка.", "date, channel, spend, clicks, conversions, revenue"],
       ["dirty-customers.csv", "Грязные данные", "24 строки: дубли, пропуски, разные форматы дат, городов и сумм.", "customer_id, name, email, city, signup_date, amount, status"]
     ];
     var tasks = [

@@ -18,8 +18,8 @@
       '<p>Выручка без возвратов: <code>SELECT SUM(revenue) FROM orders WHERE returned = 0;</code></p>' +
       '<div class="answer-row"><label class="sr-only" for="p2">Выручка</label><input type="number" id="p2" placeholder="Ответ"><button class="btn" data-check="2" data-answer="268100">Проверить</button></div></section>' +
       '<section class="project-stage" data-stage="3"><h2>3. Python</h2>' +
-      '<p>Средний чек: <code>df[df.returned == 0].revenue.sum() / len(df)</code>.</p>' +
-      '<div class="answer-row"><label class="sr-only" for="p3">Средний чек</label><input type="number" id="p3" placeholder="Ответ"><button class="btn" data-check="3" data-answer="9575" data-tol="2">Проверить</button></div></section>' +
+      '<p>Средний чек: <code>df[df.returned == 0].revenue.sum() / len(df[df.returned == 0])</code>.</p>' +
+      '<div class="answer-row"><label class="sr-only" for="p3">Средний чек</label><input type="number" id="p3" placeholder="Ответ"><button class="btn" data-check="3" data-answer="10724" data-tol="2">Проверить</button></div></section>' +
       '<section class="project-stage" data-stage="4"><h2>4. Дашборд</h2>' +
       '<p>Соберите экран по шаблону: <a href="data/dashboard-sales-template.md" download>sales-шаблон</a>.</p>' +
       '<label><input type="checkbox" class="p4"> KPI выручки, заказов и среднего чека</label>' +
@@ -28,7 +28,7 @@
       '<label><input type="checkbox" class="p4"> Подписаны период и дата обновления</label></section>' +
       '<section class="project-stage" data-stage="5"><h2>5. Вывод</h2>' +
       '<p>Что корректно сказать по данным?</p>' +
-      '<div class="options"><button class="option" data-p5="0">Выручка 268 100 ₽ без возвратов, 28 заказов, средний чек 9 575 ₽</button>' +
+      '<div class="options"><button class="option" data-p5="0">Выручка 268 100 ₽ без возвратов, 25 оплаченных заказов, средний чек 10 724 ₽</button>' +
       '<button class="option" data-p5="1">Выручка 296 700 ₽, потому что возвраты тоже продажи</button>' +
       '<button class="option" data-p5="2">Средний чек нельзя посчитать без гипотезы</button></div></section>';
   }

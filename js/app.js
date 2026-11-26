@@ -304,7 +304,7 @@
       link("#/analyst-exam", "Сертификация аналитика", "20 вопросов на время") +
       link("#/data-exam", "Сертификация SQL и данные", "20 вопросов: SQL, данные, Excel") +
       link("#/python-exam", "Сертификация Python и модели", "20 вопросов: Python, ML, регрессия") +
-      link("#/prompt-lab", "Тренажёр промптов", "8 рабочих ситуаций") +
+      link("#/prompt-lab", "Тренажёр промптов", (window.PROMPT_TASKS ? window.PROMPT_TASKS.length : 16) + " рабочих ситуаций") +
       "</div>" +
       "<h2>Песочницы и офлайн</h2><div class=\"home-links\">" +
       link("#/sandbox", "SQL-песочница", "Запросы к настоящей базе в браузере") +

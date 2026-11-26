@@ -18,9 +18,12 @@
   }
 
   function tQueueUtil() {
-    var lambda = rndStep(12, 90, 6);
-    var mu = rndStep(4, 20, 2);
-    var c = rndStep(2, 8, 1);
+    var lambda, mu, c;
+    do {
+      lambda = rndStep(12, 90, 6);
+      mu = rndStep(4, 20, 2);
+      c = rndStep(2, 8, 1);
+    } while (lambda >= c * mu);
     var ans = lambda / (c * mu) * 100;
     return {
       prompt: "В систему приходит " + lambda + " заявок в час, один канал обслуживает " + mu +

@@ -2,7 +2,7 @@
 window.TOPICS.sql = {
     title: "SQL",
     tag: "SELECT · JOIN · окна · NULL · даты · качество · транзакции",
-    lead: "Как достать нужные строки из таблицы, соединить данные и понять, почему запрос работает медленно.",
+    lead: "Как достать нужные строки из таблицы, соединить данные и понять, почему запрос работает медленно. Примеры — для PostgreSQL, если не указано иное.",
     chapters: [
       {
         title: "Что такое SQL и зачем он нужен",
@@ -52,7 +52,7 @@ FROM таблица
 <div class="formula">FROM → WHERE → GROUP BY → HAVING → SELECT → DISTINCT → ORDER BY → LIMIT</div>
 <figure class="figure"><svg viewBox="0 0 360 150" role="img" aria-label="Порядок выполнения SQL: FROM, WHERE, GROUP BY, HAVING, SELECT, ORDER BY и LIMIT"><g font-size="9" fill="currentColor" text-anchor="middle"><rect x="80" y="4" width="200" height="18" rx="5" fill="none" stroke="currentColor" opacity=".5"/><text x="180" y="17">FROM / JOIN</text><path d="M180 22v6" stroke="currentColor" opacity=".4"/><rect x="80" y="28" width="200" height="18" rx="5" fill="none" stroke="currentColor" opacity=".5"/><text x="180" y="41">WHERE</text><path d="M180 46v6" stroke="currentColor" opacity=".4"/><rect x="80" y="52" width="200" height="18" rx="5" fill="none" stroke="currentColor" opacity=".5"/><text x="180" y="65">GROUP BY</text><path d="M180 70v6" stroke="currentColor" opacity=".4"/><rect x="80" y="76" width="200" height="18" rx="5" fill="none" stroke="currentColor" opacity=".5"/><text x="180" y="89">HAVING</text><path d="M180 94v6" stroke="currentColor" opacity=".4"/><rect x="80" y="100" width="200" height="18" rx="5" fill="none" stroke="currentColor" opacity=".5"/><text x="180" y="113">SELECT</text><path d="M180 118v6" stroke="currentColor" opacity=".4"/><rect x="80" y="124" width="200" height="18" rx="5" fill="none" stroke="currentColor" opacity=".5"/><text x="180" y="137">ORDER BY / LIMIT</text></g></svg><figcaption>Запрос пишут сверху вниз, начиная с SELECT, но выполняют почти наоборот. Поэтому алиас из SELECT не виден в WHERE.</figcaption></figure>
 <p>Отсюда два правила. Первое: псевдоним из SELECT не работает в WHERE — на момент фильтрации его ещё нет. Второе: LIMIT применяется последним, поэтому «первые 10 строк» без ORDER BY означают «какие попались».</p>
-<p><b>SELECT *</b> удобен, когда вы впервые смотрите на таблицу. В постоянном запросе он тянет лишние столбцы и ломается, когда в таблицу добавляют поле. Перечисляйте нужные столбцы явно.</p>
+<p><b>SELECT *</b> удобен, когда вы впервые смотрите на таблицу. В постоянном запросе он может потянуть лишние столбцы и сломать зависимый код, когда в таблицу добавляют поле. Перечисляйте нужные столбцы явно.</p>
 <div class="example"><b>Пример.</b> SELECT city, COUNT(*) AS orders FROM orders WHERE amount &gt; 1000 GROUP BY city HAVING COUNT(*) &gt;= 5 ORDER BY orders DESC LIMIT 3;</div>
 
 <h3>Дополнительно: порядок выполнения и типичные ошибки</h3>

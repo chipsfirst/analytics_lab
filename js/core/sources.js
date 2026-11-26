@@ -51,7 +51,7 @@ window.SOURCES = {
     { title: "Код: пять визуализаций", url: "https://thecode.media/5-visual", note: "разбор видов графиков для данных" }
   ],
   production: [
-    { title: "dbt: production", url: "https://docs.getdbt.com/docs/deploy/production", note: "запуск и деплой" },
+    { title: "dbt: deployments", url: "https://docs.getdbt.com/docs/deploy/deployments", note: "запуск и деплой" },
     { title: "dbt: тесты", url: "https://docs.getdbt.com/docs/build/data-tests", note: "контракты и качество" },
     { title: "Data Engineering Weekly", url: "https://www.dataengineeringweekly.com/", note: "новости и практика data-инженерии" }
   ],
@@ -72,7 +72,7 @@ window.SOURCES = {
   ],
   marketing: [
     { title: "Google Ads: атрибуция", url: "https://support.google.com/google-ads/answer/1722022", note: "модели атрибуции и отчёты" },
-    { title: "Robyn: MMM", url: "https://robynrmm.org/", note: "маркетинг-микс и калибровка" },
+    { title: "Robyn: MMM", url: "https://github.com/facebookexperimental/Robyn", note: "маркетинг-микс и калибровка" },
     { title: "Avinash Kaushik", url: "https://www.kaushik.net/avinash/", note: "маркетинговая аналитика и измерение" }
   ],
   simulation: [
